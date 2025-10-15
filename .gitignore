@@ -1,6 +1,6 @@
 # Node modules (frontend et backend)
 **/node_modules/
-
+.node-version
 # Build outputs (frontend)
 frontend/dist/
 frontend/build/
