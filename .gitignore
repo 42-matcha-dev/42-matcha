@@ -1,0 +1,37 @@
+# Node modules (frontend et backend)
+**/node_modules/
+
+# Build outputs (frontend)
+frontend/dist/
+frontend/build/
+
+# Build outputs (backend, si transpilation type TypeScript)
+backend/dist/
+backend/build/
+
+# Logs
+**/*.log
+**/logs/
+**/log/
+
+# Environments
+**/.env
+**/.env.*
+
+# Autoriser les fichiers d'exemple
+!**/.env.example
+!**/.env.local.example
+
+# OS / Editor configs
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Optional: Dependency lockfiles (si tu veux que chaque dev utilise le sien, mais souvent on les garde)
+# frontend/package-lock.json
+# backend/package-lock.json
+# frontend/yarn.lock
+# backend/yarn.lock
