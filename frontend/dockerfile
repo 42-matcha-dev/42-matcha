@@ -1,12 +1,44 @@
-FROM node:20.19.0
+# Étape 1 : Build de l’application
+FROM node:20.19.0 AS builder
 
+# Définir le répertoire de travail
 WORKDIR /app
 
+# Copier uniquement les fichiers nécessaires pour installer les dépendances
 COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Installer les dépendances
 RUN npm install
 
+# Copier le reste du code
 COPY . .
 
+# Build de l'application Next.js
+RUN npm run build
+
+# Étape 2 : Image finale légère pour la prod
+FROM node:20.19.0-slim AS runner
+
+# Définir NODE_ENV
+ENV NODE_ENV=production
+
+# Répertoire de travail
+WORKDIR /app
+
+# Installer uniquement les dépendances de prod
+COPY --from=builder /app/package*.json ./
+RUN npm install --omit=dev
+
+# Copier les fichiers nécessaires pour exécuter l’app
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# Exposer le port défini dans config (ou hardcodé)
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Démarrer l'application
+CMD ["npm", "start"]

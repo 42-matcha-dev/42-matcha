@@ -40,3 +40,19 @@ Ensuite, tu peux appeler /api/hello directement côté frontend sans te soucier 
 ------------------------------------------------------------------------
 
 faire une configuration de base pour docker
+
+. ENV NODE_ENV=development
+ENV NODE_ENV=development
+
+🔧 Ce que ça fait :
+
+Définit une variable d’environnement dans le conteneur, accessible via process.env.NODE_ENV dans ton code.
+
+🎯 Pourquoi c’est utile ?
+
+C’est une convention largement utilisée pour :
+
+Valeur	Utilisation
+development	Mode dev : logs détaillés, hot reload
+production	Optimisations, pas de logs inutiles
+test	Pour les tests automatisés

@@ -19,7 +19,8 @@ all: up
 
 up:
 	@echo "$(GREEN)[+] Starting $(PROJECT_NAME) containers...$(NC)"
-	@$(DOCKER_COMPOSE) up --build
+	@$(DOCKER_COMPOSE) --env-file .env up -d --build
+
 
 clean:
 	@echo "$(YELLOW)[*] Stopping and removing containers (but keeping volumes)...$(NC)"

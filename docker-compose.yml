@@ -13,6 +13,8 @@ services:
       - backend
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    env_file:
+      - ./frontend/.env
 
   backend:
     build:
@@ -29,6 +31,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
+    env_file:
+      - ./backend/.env
     depends_on:
       - db
 
