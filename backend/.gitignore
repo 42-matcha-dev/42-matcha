@@ -2,14 +2,14 @@
 node_modules/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
@@ -18,27 +18,28 @@ pids
 coverage/
 
 # Optional npm cache directory
-.npm
+.npm/
 
 # Optional eslint cache
 .eslintcache
 
-# dotenv environment variables file
+# dotenv environment variables files (except example)
 .env
 .env.local
 .env.*.local
+!.env.example
 
-# TypeScript compiled output
+# TypeScript / build output
 dist/
 build/
 
 # VSCode settings
 .vscode/
 
-# MacOS files
+# MacOS system files
 .DS_Store
 
-# IDE specific files
+# IDE-specific files
 .idea/
 *.iml
 
@@ -54,3 +55,6 @@ coverage/
 
 # Misc
 *.tgz
+
+# Dossier generer automatiquement par next.js
+.next/
