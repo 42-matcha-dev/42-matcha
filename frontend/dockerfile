@@ -1,3 +1,11 @@
+# dev
+FROM node:20.19.0 AS dev
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+ENV NODE_ENV=development
+CMD ["npm","run","dev"]
+
 # Étape 1 : Build de l’application
 FROM node:20.19.0 AS builder
 

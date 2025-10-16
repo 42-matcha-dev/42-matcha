@@ -1,26 +1,17 @@
-# Base officielle avec Node.js 20.19.0
-FROM node:20.19.0
-
-# Dossier de travail dans le conteneur
+# --- Dev stage ---
+FROM node:20.19.0 AS dev
 WORKDIR /app
-
-# Copie les fichiers de dépendances en premier (meilleure cache)
-COPY package*.json ./
-
-# Installation des dépendances
-RUN npm install
-
-# Copie tout le code (après install pour tirer parti du cache Docker)
-COPY . .
-
-# Copie .env si tu veux qu'il soit dispo (optionnel, si tu n'utilises pas docker-compose pour injecter)
-# COPY .env .env
-
-# Définit la variable d’environnement (bonnes pratiques)
+COPY package*.json tsconfig*.json ./
+RUN npm ci
 ENV NODE_ENV=development
+CMD ["npm", "run", "dev"]
 
-# Expose le bon port (4000 selon ton .env)
+# --- Prod stage ---
+FROM node:20.19.0-slim AS runner
+WORKDIR /app
+COPY package*.json tsconfig*.json ./
+RUN npm ci --omit=dev
+COPY . .
+ENV NODE_ENV=production
 EXPOSE 4000
-
-# Commande de lancement
-CMD ["node", "src/index.js"]
+CMD ["npm", "start"]

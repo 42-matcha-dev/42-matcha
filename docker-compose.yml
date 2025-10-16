@@ -1,24 +1,43 @@
 version: '3.9'
 
 services:
+  # dev
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "${PORT_FRONTEND}:${PORT_FRONTEND}"
+      target: dev
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    depends_on:
-      - backend
+    ports:
+      - "${PORT_FRONTEND}:3000"
     environment:
+      - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     env_file:
       - ./frontend/.env
+    depends_on:
+      - backend
+  # prod
+  # frontend:
+    # build:
+    #   context: ./frontend
+    #   target: runner
+    # ports:
+    #   - "${PORT_FRONTEND}:3000"
+    # environment:
+    #   - NODE_ENV=production
+    #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    # env_file:
+    #   - ./frontend/.env
+    # depends_on:
+    #   - backend
+    # restart: unless-stopped
 
   backend:
     build:
       context: ./backend
+      target: dev
     ports:
       - "${PORT_BACKEND}:${PORT_BACKEND}"
     volumes:
