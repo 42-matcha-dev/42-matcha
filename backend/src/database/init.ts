@@ -11,9 +11,19 @@ const pool = new Pool({
 });
 
 export const initDB = async () => {
-  await pool.query(createUserTable);
-  await pool.query(createPendingUserTable);
-  console.log('✅ Database initialized');
+  for (let i = 0; i < 10; i++) {
+    try {
+      await pool.query(createUserTable);
+      await pool.query(createPendingUserTable);
+      console.log('✅ Database initialized');
+      return;
+    } catch (err) {
+      console.log(`⏳ Waiting for database... (${i + 1}/10)`);
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+  throw new Error('❌ Database connection failed after retries');
 };
+
 
 export default pool;
