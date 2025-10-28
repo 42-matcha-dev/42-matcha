@@ -1,16 +1,17 @@
 import { Pool } from 'pg';
 import { createUserTable } from '../models/user.model.js';
 import { createPendingUserTable } from '../models/pending_user.model.js';
-import { createClient } from '@supabase/supabase-js'
 
 let pool: any;
 
 if (process.env.NODE_ENV === 'production') {
+  console.log('🚀 Using Supabase');
   pool = new Pool({
     connectionString: process.env.SUPABASE_DB_URL, // from Supabase settings
     ssl: { rejectUnauthorized: false },
   });
 } else {
+  console.log('🚀 Using local database');
   pool = new Pool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
