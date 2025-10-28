@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 
 export default function Home() {
   const [message, setMessage] = useState('')
-
+  const api = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
-    fetch('http://localhost:4000/api/hello')
+    fetch(`${api}/api/hello`)
       .then(res => res.json())
       .then(data => setMessage(data.message))
       .catch(err => console.error(err));
