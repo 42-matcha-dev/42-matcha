@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { createUserTable } from '../models/user.model.js';
+import { createPendingUserTable } from '../models/pending_user.model.js';
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -11,6 +12,7 @@ const pool = new Pool({
 
 export const initDB = async () => {
   await pool.query(createUserTable);
+  await pool.query(createPendingUserTable);
   console.log('✅ Database initialized');
 };
 
