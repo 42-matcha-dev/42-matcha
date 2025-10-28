@@ -1,14 +1,25 @@
 import { Pool } from 'pg';
 import { createUserTable } from '../models/user.model.js';
 import { createPendingUserTable } from '../models/pending_user.model.js';
+import { createClient } from '@supabase/supabase-js'
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+let pool: any;
+
+if (process.env.NODE_ENV === 'production') {
+  pool = new Pool({
+    connectionString: process.env.SUPABASE_DB_URL, // from Supabase settings
+    ssl: { rejectUnauthorized: false },
+  });
+} else {
+  pool = new Pool({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+}
+
 
 export const initDB = async () => {
   for (let i = 0; i < 10; i++) {
