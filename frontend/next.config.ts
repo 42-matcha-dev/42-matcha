@@ -4,15 +4,15 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
-// module.exports = {
-//   async rewrites() {
-//     return [
-//       {
-//         source: '/api/hello',
-//         destination: 'http://localhost:5000/api/hello',
-//       },
-//     ];
-//   },
-// };
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/hello',
+        destination: 'http://localhost:4000/api/hello',
+      },
+    ];
+  },
+};
 
 export default nextConfig;

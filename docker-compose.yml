@@ -10,7 +10,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "${PORT_FRONTEND}:3000"
+      - "${PORT_FRONTEND}:${PORT_FRONTEND}"
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
@@ -45,6 +45,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - PORT=${PORT_BACKEND}
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}

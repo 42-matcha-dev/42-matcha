@@ -52,3 +52,23 @@ Cela lance Next.js sur http://localhost:3000
 - node server.js
 
 Cela lance Express sur http://localhost:5000
+
+--------------------------------------------------------
+27/10/2025
+Erreur de fetching au niveau du port
+plus de port 5000, que du 4000 (a revoir pour merge avec co-equipier)
+bien faire attention a mettre le port backend dans le .env du backend
+installer les node_modules dans frontend/ npm install et backend/ npm install
+
+
+pour vérifier apres une installation de paquet via npm:
+
+Nettoyer le conteneur et rebuild
+docker-compose stop frontend
+docker-compose rm -f frontend
+docker-compose up -d --build frontend
+
+Vérification rapide à l’intérieur du conteneur
+docker-compose exec frontend bash
+# maintenant dans le conteneur
+ls node_modules/@hookform/resolvers
