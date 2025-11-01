@@ -20,8 +20,9 @@ type registerSignupSchema = z.infer<typeof registerSignupSchema>;
 export default function RegisterBasicForm() {
 
     const router = useRouter();
-    const { register, handleSubmit } = useForm<registerSignupSchema>({
+    const { register, handleSubmit, formState: { errors }} = useForm<registerSignupSchema>({
         resolver: zodResolver(registerSignupSchema),
+        mode: "onBlur",
         defaultValues: {
             email: "",
             password: "",
@@ -35,14 +36,14 @@ export default function RegisterBasicForm() {
     };
 
   return (
-    <div className="w-1/2 h-full bg-white text-black p-4 border">
+    <div className="flex justify-center items-center min-h-screen w-1/2 h-full bg-white text-black p-4 border">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center w-1/2 m-55 gap-15">
-          <Title title="Create your account" sub_title="Join Matcha – start by entering your email."/>
-          <InputForm label="Email" {...register("email")}/>
-          <InputForm label="Password" {...register("password")}/>
-          <InputForm label="ConfirmPassword" {...register("repeatPassword")}/>
+        className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
+          <Title title="Create your account" subTitle="Join Matcha – start by entering your email."/>
+          <InputForm label="Email" type="text" error={errors.email} {...register("email")}/>
+          <InputForm label="Password" type="password" error={errors.password} {...register("password")}/>
+          <InputForm label="RepeatPassword" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
           <NextButton text="Next"/>
       </form>
     </div>

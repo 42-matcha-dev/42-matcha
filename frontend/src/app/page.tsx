@@ -18,8 +18,11 @@ export default function Home() {
     <main className="flex flex-col h-screen">
       <Header />
       <h1 className='bg-blue-500 text-white p-4'>{message}</h1>
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-row">
         <SignupMain />
+        <div className="w-1/2 h-full">
+          <img className="h-full" src="image.jpeg" alt="visuel" />
+        </div>
       </div>
     </main>
   );

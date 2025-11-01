@@ -9,7 +9,7 @@ const BackButton = ({ text, onClick }: BackButtonProps) => {
     return (
         <div>
             <button 
-                className="border bg-blue-500 rounded-2xl p-4 text-white hover:bg-blue-600"
+                className="w-full border bg-white rounded-2xl p-4 text-black hover:bg-gray-300"
                 onClick={onClick}
             >
                 {text}

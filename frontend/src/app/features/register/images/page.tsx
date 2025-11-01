@@ -8,6 +8,8 @@ import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
+import BackButton from "@/app/components/Buttons/BackButton";
+import Stepper from "@/app/components/Stepper";
 
 const registerImagesSchema = registerSchema.extend({
   images: z
@@ -24,8 +26,9 @@ type RegisterImagesSchema = z.infer<typeof registerImagesSchema>;
 
 export default function RegisterImagesForm() {
   const router = useRouter();
-  const { register, handleSubmit, watch } = useForm<RegisterImagesSchema>({
+  const { register, handleSubmit, watch, formState: { errors }} = useForm<RegisterImagesSchema>({
     resolver: zodResolver(registerImagesSchema),
+    mode: "onBlur",
     defaultValues: { images: [] },
   });
 
@@ -36,16 +39,21 @@ export default function RegisterImagesForm() {
     router.push("/register/next-step");
   };
 
+  const handleBack = () => {
+    router.back();
+  }
+
   return (
     <div className="w-1/2 h-full bg-white text-black p-4 border">
       <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center w-1/2 m-55 gap-4"
+        onSubmit={handleSubmit(onSubmit)} 
+        className="flex flex-col items-left w-1/2 m-55 gap-4"
       >
         <Title
           title="Complete Your Profile"
-          sub_title="Add up to 5 profile images"
+          subTitle="Add up to 5 profile images"
         />
+        <Stepper currentStep="2" />
 
         {/* Champ d’upload */}
         <InputForm
@@ -68,7 +76,8 @@ export default function RegisterImagesForm() {
           ))}
         </div>
 
-        <NextButton text="Next" />
+        <BackButton text="Back" onClick={handleBack}/>
+        <NextButton text="Complete" />
       </form>
     </div>
   );

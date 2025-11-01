@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import InputForm from "../components/InputForm";
 import Title from "../components/Title";
 import NextButton from "../components/Buttons/NextButton";
-import Stepper from "./Stepper";
+import Stepper from "../components/Stepper";
 import { useRouter } from "next/navigation";
 
 // Define types for our step and form data
