@@ -30,15 +30,16 @@ export default function RegisterSpecificForm() {
         resolver: zodResolver(registerSpecificSchema),
         mode: "onBlur",
         defaultValues: {
-            gender: "Male",
-            lookingFor: "Male",
+            gender: undefined,
+            lookingFor: undefined,
             description: "",
             curiousAbout: ""
         }
     });
 
     const onSubmit = (data: registerSpecificSchema) => {
-        console.log(data);
+        // Save form data to sessionStorage
+        sessionStorage.setItem("registerSpecific", JSON.stringify(data));
         const url = token ? `/register/images?token=${token}` : "/register/images";
         router.push(url);
     };
@@ -54,8 +55,8 @@ export default function RegisterSpecificForm() {
         className="flex flex-col items-left w-1/2 m-55 gap-15">
           <Title title="Complete Your Profile" subTitle="Tell us more about you."/>
           <Stepper currentStep="1" />
-          <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female"]} {...register("gender")}/>
-          <InputFormSelect label="LookingFor" error={errors.lookingFor} values={["Male", "Female"]} {...register("lookingFor")}/>
+          <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female", "Other"]} {...register("gender")}/>
+          <InputFormSelect label="LookingFor" error={errors.lookingFor} values={["Male", "Female", "Both"]} {...register("lookingFor")}/>
           <InputForm label="Description" type="text" error={errors.description} {...register("description")}/>
           <InputForm label="CuriousAbout" type="text" error={errors.curiousAbout} {...register("curiousAbout")}/>
           <BackButton text="Back" onClick={handleBack}/>

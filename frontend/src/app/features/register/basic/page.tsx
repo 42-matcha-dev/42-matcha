@@ -36,7 +36,8 @@ export default function RegisterBasicForm() {
     });
 
     const onSubmit = (data: registerBasicSchema) => {
-        console.log(data);
+        // Save form data to sessionStorage
+        sessionStorage.setItem("registerBasic", JSON.stringify(data));
         const url = token ? `/register/specific?token=${token}` : "/register/specific";
         router.push(url);
     };

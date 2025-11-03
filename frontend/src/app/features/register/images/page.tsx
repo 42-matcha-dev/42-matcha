@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 
@@ -14,9 +14,12 @@ type SignedUrlData = {
 
 export default function RegisterImagesForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Helper: upload selected files
   const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
@@ -62,9 +65,80 @@ export default function RegisterImagesForm() {
     router.back();
   };
 
-  const handleComplete = () => {
-    // TODO: Handle completion logic
-    router.push("/register/next-step");
+  const handleComplete = async () => {
+    if (!token) {
+      alert("Missing token. Please start registration from the email link.");
+      return;
+    }
+
+    if (!iconUrl) {
+      alert("Please upload a profile icon.");
+      return;
+    }
+
+    if (photoUrls.length === 0) {
+      alert("Please upload at least one photo.");
+      return;
+    }
+
+    // Get form data from previous steps stored in sessionStorage
+    const basicData = JSON.parse(sessionStorage.getItem("registerBasic") || "{}");
+    const specificData = JSON.parse(sessionStorage.getItem("registerSpecific") || "{}");
+
+    // Validate that we have all required data
+    if (!basicData.firstName || !basicData.lastName || !basicData.location) {
+      alert("Missing basic information. Please complete previous steps.");
+      return;
+    }
+
+    if (!specificData.gender || !specificData.lookingFor || !specificData.description) {
+      alert("Missing profile information. Please complete previous steps.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${apiUrl}/api/auth/register?token=${token}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: basicData.firstName,
+          lastName: basicData.lastName,
+          gender: specificData.gender.toLowerCase(),
+          lookingFor: specificData.lookingFor.toLowerCase(),
+          description: specificData.description,
+          location: basicData.location,
+          iconImage: iconUrl,
+          photos: photoUrls.filter((url) => url !== undefined && url !== null),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Registration error:", errorData);
+        alert(`Registration failed: ${errorData.error || "Unknown error"}`);
+        setSubmitting(false);
+        return;
+      }
+
+      const result = await response.json();
+      console.log("Registration successful:", result);
+
+      // Clear session storage
+      sessionStorage.removeItem("registerBasic");
+      sessionStorage.removeItem("registerSpecific");
+
+      // Redirect to success page or login
+      router.push("/email-sent");
+    } catch (error) {
+      console.error("Registration request failed:", error);
+      alert("Registration failed. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -190,9 +264,9 @@ export default function RegisterImagesForm() {
         </div>
 
         {/* Nav buttons */}
-        <div className="flex justify-between w-full max-w-[400px] mt-8">
+        <div className="flex flex-col gap-4 justify-between w-full max-w-[400px] mt-8">
           <BackButton text="Back" onClick={handleBack} />
-          <NextButton text="Complete" onClick={handleComplete} />
+          <NextButton text="Complete" onClick={handleComplete} disabled={submitting || uploading} />
         </div>
       </div>
     </div>
