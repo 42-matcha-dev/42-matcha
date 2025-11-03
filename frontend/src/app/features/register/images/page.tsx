@@ -1,84 +1,200 @@
 "use client";
 
-import { z } from "zod";
-import { registerSchema } from "../schema";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import Title from "@/app/components/Title";
-import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 
-const registerImagesSchema = registerSchema.extend({
-  images: z
-    .array(
-      z.instanceof(File)
-        .refine(file => file.size < 5 * 1024 * 1024, "Chaque image doit faire moins de 5Mo")
-        .refine(file => ["image/jpeg", "image/png"].includes(file.type), "Format non supporté")
-    )
-    .min(1, "Ajoute au moins une image")
-    .max(5, "Tu peux ajouter jusqu'à 5 images"),
-});
-
-type RegisterImagesSchema = z.infer<typeof registerImagesSchema>;
+type SignedUrlData = {
+  signedUrl: string;
+  path: string;
+};
 
 export default function RegisterImagesForm() {
   const router = useRouter();
-  const { register, handleSubmit, watch, formState: { errors }} = useForm<RegisterImagesSchema>({
-    resolver: zodResolver(registerImagesSchema),
-    mode: "onBlur",
-    defaultValues: { images: [] },
-  });
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
-  const images = watch("images");
+  // Helper: upload selected files
+  const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
 
-  const onSubmit = (data: RegisterImagesSchema) => {
-    console.log(data.images);
-    router.push("/register/next-step");
+    const fileNames = Array.from(files).map((f) => f.name);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fileNames }),
+    });
+    const { urls }: { urls: SignedUrlData[] } = await res.json();
+
+    await Promise.all(
+      Array.from(files).map((file, i) =>
+        fetch(urls[i].signedUrl, { method: "PUT", body: file })
+      )
+    );
+
+    const uploaded = urls.map(
+      (u) =>
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${u.path}`
+    );
+
+    if (type === "icon") setIconUrl(uploaded[0]);
+    else if (index !== undefined) {
+      setPhotoUrls((prev) => {
+        const newPhotos = [...prev];
+        newPhotos[index] = uploaded[0];
+        return newPhotos;
+      });
+    }
+
+    setUploading(false);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleBack = () => {
     router.back();
-  }
+  };
+
+  const handleComplete = () => {
+    // TODO: Handle completion logic
+    router.push("/register/next-step");
+  };
 
   return (
-    <div className="w-1/2 h-full bg-white text-black p-4 border">
-      <form
-        onSubmit={handleSubmit(onSubmit)} 
-        className="flex flex-col items-left w-1/2 m-55 gap-4"
-      >
-        <Title
-          title="Complete Your Profile"
-          subTitle="Add up to 5 profile images"
-        />
+    <div className="w-1/2 min-h-screen bg-white text-black p-4 border">
+      <div className="flex flex-col items-center w-full p-8">
+        <Title title="Complete Your Profile" subTitle="Tell us more about you." />
         <Stepper currentStep="2" />
 
-        {/* Champ d’upload */}
-        <InputForm
-          label="Images"
-          type="file"
-          multiple
-          accept="image/png, image/jpeg"
-          {...register("images")}
-        />
-
-        {/* Aperçu */}
-        <div className="flex gap-2 flex-wrap mt-4">
-          {images && Array.from(images).map((file: File, i: number) => (
-            <img
-              key={i}
-              src={URL.createObjectURL(file)}
-              alt={`preview-${i}`}
-              className="w-24 h-24 object-cover rounded-md border"
+        {/* Profile Icon */}
+        <div className="flex items-center gap-4 mt-6">
+          <label className="cursor-pointer">
+            {iconUrl ? (
+              <img
+                src={iconUrl}
+                alt="icon"
+                className="w-[120px] h-[120px] rounded-full object-cover bg-gray-300"
+              />
+            ) : (
+              <div className="w-[120px] h-[120px] rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
+                +
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files && uploadFiles(e.target.files, "icon")}
+              disabled={uploading}
             />
-          ))}
+          </label>
+          <button
+            className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
+            onClick={() =>
+              document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
+            }
+          >
+            Upload Your Icon
+          </button>
         </div>
 
-        <BackButton text="Back" onClick={handleBack}/>
-        <NextButton text="Complete" />
-      </form>
+        {/* Photos Upload */}
+        <div className="mt-8 text-left w-full max-w-[420px]">
+          <h2 className="text-base font-bold mb-3">Upload Photos (4 maximum)</h2>
+
+          <div className="grid grid-cols-[3fr_1fr] gap-4 items-stretch">
+            {/* Left: main large photo */}
+            <label
+              className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer w-full h-full"
+            >
+              {photoUrls[0] ? (
+                <>
+                  <img
+                    src={photoUrls[0]}
+                    alt="main-photo"
+                    className="w-full h-full object-cover block"
+                  />
+                  <button
+                    className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-6 h-6 text-sm cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      removePhoto(0);
+                    }}
+                  >
+                    ✕
+                  </button>
+                </>
+              ) : (
+                <div className="w-full h-full flex justify-center items-center text-gray-600 text-3xl">
+                  +
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files && uploadFiles(e.target.files, "photos", 0)}
+                disabled={uploading}
+              />
+            </label>
+
+            {/* Right: 3 stacked small square photos */}
+            <div className="flex flex-col justify-between gap-4">
+              {[1, 2, 3].map((i) => (
+                <label
+                  key={i}
+                  className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer"
+                >
+                  {photoUrls[i] ? (
+                    <>
+                      <img
+                        src={photoUrls[i]}
+                        alt={`photo-${i}`}
+                        className="w-full h-full object-cover block"
+                      />
+                      <button
+                        className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removePhoto(i);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex justify-center items-center text-gray-600 text-2xl">
+                      +
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      e.target.files && uploadFiles(e.target.files, "photos", i)
+                    }
+                    disabled={uploading}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Nav buttons */}
+        <div className="flex justify-between w-full max-w-[400px] mt-8">
+          <BackButton text="Back" onClick={handleBack} />
+          <NextButton text="Complete" onClick={handleComplete} />
+        </div>
+      </div>
     </div>
   );
 }
