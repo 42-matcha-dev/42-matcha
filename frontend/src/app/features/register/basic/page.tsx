@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Stepper from "@/app/components/Stepper";
 
 const registerBasicSchema = registerSchema.pick({
@@ -22,6 +22,8 @@ type registerBasicSchema = z.infer<typeof registerBasicSchema>;
 export default function RegisterBasicForm() {
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
     const { register, handleSubmit, formState: { errors }} = useForm<registerBasicSchema>({
         resolver: zodResolver(registerBasicSchema),
         mode: "onBlur",
@@ -35,7 +37,8 @@ export default function RegisterBasicForm() {
 
     const onSubmit = (data: registerBasicSchema) => {
         console.log(data);
-        router.push("/register/specific")
+        const url = token ? `/register/specific?token=${token}` : "/register/specific";
+        router.push(url);
     };
 
   return (

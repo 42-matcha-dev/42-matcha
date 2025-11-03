@@ -8,7 +8,7 @@ import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import InputFormSelect from "@/app/components/InputFormSelect";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 
@@ -24,6 +24,8 @@ type registerSpecificSchema = z.infer<typeof registerSpecificSchema>;
 export default function RegisterSpecificForm() {
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
     const { register, handleSubmit,  formState: { errors } } = useForm<registerSpecificSchema>({
         resolver: zodResolver(registerSpecificSchema),
         mode: "onBlur",
@@ -37,7 +39,8 @@ export default function RegisterSpecificForm() {
 
     const onSubmit = (data: registerSpecificSchema) => {
         console.log(data);
-        router.push("/register/images")
+        const url = token ? `/register/images?token=${token}` : "/register/images";
+        router.push(url);
     };
 
     const handleBack = () => {
