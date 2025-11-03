@@ -16,3 +16,8 @@ A faire:
 merger la derniere page de signup "images" - reprendre page co-équipier
 modifier le margin 55 (il faut un system de grid)
 implémenter le stockage et la gestion du stockage entre le flux de navigation utilisateur
+
+pour les icones:
+https://pictogrammers.com/library/mdi/icon/account/
+cd frontend/
+npm install @mdi/react @mdi/js
