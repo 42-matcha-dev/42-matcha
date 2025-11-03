@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/index.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:auth": "node --experimental-vm-modules node_modules/jest/bin/jest.js auth-flow"
   },
   "keywords": [],
   "author": "",
@@ -22,11 +25,16 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.9.1",
+    "@types/nodemailer": "^7.0.3",
     "@types/pg": "^8.15.5",
     "@types/uuid": "^11.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"
   }
 }

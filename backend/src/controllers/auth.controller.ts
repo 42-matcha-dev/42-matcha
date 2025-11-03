@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import pool from '../database/init.js';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
+import { authService } from '../services/auth.service.js';
+import type { RegisterSchema } from '../types/auth.types.js';
 
 type Request = express.Request;
 type Response = express.Response;
@@ -47,18 +49,24 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
+const validateRegisterData = (data: any): RegisterSchema => {
+  if (!data.firstName || !data.lastName || !data.gender || !data.lookingFor ||
+      !data.description || !data.location || !data.iconImage || !data.photos) {
+    throw new Error('Missing required fields');
+  }
+  return data as RegisterSchema;
+};
 
-export const verifyEmail = async (req: Request, res: Response) => {
-  const { token } = req.query;
-  const result = await pool.query('SELECT * FROM pending_users WHERE token = $1', [token]);
+export const completeRegistration = async (req: Request, res: Response) => {
+  try {
+    const parsed = validateRegisterData(req.body);
+    const { token } = req.query;
 
-  if (!result.rows.length) return res.status(400).json({ error: 'Invalid or expired token' });
-
-  const { email, password_hash } = result.rows[0];
-  await pool.query('INSERT INTO users (email, password_hash) VALUES ($1, $2)', [email, password_hash]);
-  await pool.query('DELETE FROM pending_users WHERE token = $1', [token]);
-
-  res.status(200).json({ message: 'Account verified' });
+    const result = await authService.completeProfile(token as string, parsed);
+    res.status(201).json({ message: "User profile completed", userId: result.id });
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "Invalid input" });
+  }
 };
 
 export const signin = async (req: Request, res: Response) => {
