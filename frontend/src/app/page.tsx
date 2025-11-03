@@ -3,6 +3,7 @@
 import Header from "./components/Header";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from "./components/Navbar";
 
 export default function Home() {
   const [message, setMessage] = useState('')
@@ -17,7 +18,7 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="flex flex-col h-screen">
+    <main className="flex flex-col h-screen bg-white">
       <Header />
       <h1 className='bg-blue-500 text-white p-4'>{message}</h1>
       <div className="flex flex-col items-center justify-center h-full">
@@ -29,6 +30,7 @@ export default function Home() {
           Sign Up
         </button>
       </div>
+<!--       <Navbar /> -->
     </main>
   );
 }
