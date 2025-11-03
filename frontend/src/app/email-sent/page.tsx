@@ -1,0 +1,15 @@
+import Title from "@/app/components/Title";
+
+export default function EmailSentPage() {
+  return (
+    <div className="flex justify-center items-center min-h-screen w-1/2 h-full bg-white text-black p-4 border">
+      <div className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
+        <Title
+          title="Check Your Email"
+          subTitle="We've sent a verification email. Please check your inbox to continue."
+        />
+      </div>
+    </div>
+  );
+}
+
