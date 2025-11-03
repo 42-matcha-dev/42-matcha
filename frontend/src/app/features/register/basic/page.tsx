@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { z } from "zod";
 import { registerSchema } from "../schema";
 import { useForm } from "react-hook-form";
@@ -7,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Stepper from "@/app/components/Stepper";
 
 const registerBasicSchema = registerSchema.pick({
@@ -19,9 +20,10 @@ const registerBasicSchema = registerSchema.pick({
 
 type registerBasicSchema = z.infer<typeof registerBasicSchema>;
 
-export default function RegisterBasicForm() {
-
+function RegisterBasicFormContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
     const { register, handleSubmit, formState: { errors }} = useForm<registerBasicSchema>({
         resolver: zodResolver(registerBasicSchema),
         mode: "onBlur",
@@ -34,8 +36,10 @@ export default function RegisterBasicForm() {
     });
 
     const onSubmit = (data: registerBasicSchema) => {
-        console.log(data);
-        router.push("/register/specific")
+        // Save form data to sessionStorage
+        sessionStorage.setItem("registerBasic", JSON.stringify(data));
+        const url = token ? `/register/specific?token=${token}` : "/register/specific";
+        router.push(url);
     };
 
   return (
@@ -52,5 +56,13 @@ export default function RegisterBasicForm() {
           <NextButton text="Next"/>
       </form>
     </div>
+  );
+}
+
+export default function RegisterBasicForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterBasicFormContent />
+    </Suspense>
   );
 }

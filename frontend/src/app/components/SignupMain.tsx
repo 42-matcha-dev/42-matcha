@@ -30,9 +30,34 @@ export default function RegisterBasicForm() {
         }
     });
 
-    const onSubmit = (data: registerSignupSchema) => {
-        console.log(data);
-        router.push("../register/basic")
+    const onSubmit = async (data: registerSignupSchema) => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            const response = await fetch(`${apiUrl}/api/auth/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Signup error:', errorData);
+                // TODO: Show error message to user
+                return;
+            }
+
+            const result = await response.json();
+            console.log('Signup successful:', result);
+            router.push("/email-sent");
+        } catch (error) {
+            console.error('Signup request failed:', error);
+            // TODO: Show error message to user
+        }
     };
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { z } from "zod";
 import { registerSchema } from "../schema";
 import { useForm } from "react-hook-form";
@@ -8,7 +9,7 @@ import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import InputFormSelect from "@/app/components/InputFormSelect";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 
@@ -21,23 +22,26 @@ const registerSpecificSchema = registerSchema.pick({
 
 type registerSpecificSchema = z.infer<typeof registerSpecificSchema>;
 
-export default function RegisterSpecificForm() {
-
+function RegisterSpecificFormContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
     const { register, handleSubmit,  formState: { errors } } = useForm<registerSpecificSchema>({
         resolver: zodResolver(registerSpecificSchema),
         mode: "onBlur",
         defaultValues: {
-            gender: "Male",
-            lookingFor: "Male",
+            gender: undefined,
+            lookingFor: undefined,
             description: "",
             curiousAbout: ""
         }
     });
 
     const onSubmit = (data: registerSpecificSchema) => {
-        console.log(data);
-        router.push("/register/images")
+        // Save form data to sessionStorage
+        sessionStorage.setItem("registerSpecific", JSON.stringify(data));
+        const url = token ? `/register/images?token=${token}` : "/register/images";
+        router.push(url);
     };
 
     const handleBack = () => {
@@ -51,13 +55,21 @@ export default function RegisterSpecificForm() {
         className="flex flex-col items-left w-1/2 m-55 gap-15">
           <Title title="Complete Your Profile" subTitle="Tell us more about you."/>
           <Stepper currentStep="1" />
-          <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female"]} {...register("gender")}/>
-          <InputFormSelect label="LookingFor" error={errors.lookingFor} values={["Male", "Female"]} {...register("lookingFor")}/>
+          <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female", "Other"]} {...register("gender")}/>
+          <InputFormSelect label="LookingFor" error={errors.lookingFor} values={["Male", "Female", "Both"]} {...register("lookingFor")}/>
           <InputForm label="Description" type="text" error={errors.description} {...register("description")}/>
           <InputForm label="CuriousAbout" type="text" error={errors.curiousAbout} {...register("curiousAbout")}/>
           <BackButton text="Back" onClick={handleBack}/>
           <NextButton text="Next"/>
       </form>
     </div>
+  );
+}
+
+export default function RegisterSpecificForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterSpecificFormContent />
+    </Suspense>
   );
 }

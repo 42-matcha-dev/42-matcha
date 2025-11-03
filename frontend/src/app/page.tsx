@@ -1,15 +1,16 @@
 "use client";
 
 import Header from "./components/Header";
-import SignupMain from "@/app/components/SignupMain";
 import { useEffect, useState } from 'react';
-import Navbar from "./components/Navbar";
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [message, setMessage] = useState('')
+  const router = useRouter();
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/hello')
+    const api = process.env.NEXT_PUBLIC_API_URL;
+    fetch(`${api}/api/hello`)
       .then(res => res.json())
       .then(data => setMessage(data.message))
       .catch(err => console.error(err));
@@ -18,14 +19,16 @@ export default function Home() {
   return (
     <main className="flex flex-col h-screen bg-white">
       <Header />
-      <Navbar />
-      {/* <h1 className='bg-blue-500 text-white p-4'>{message}</h1>
-      <div className="flex flex-row">
-        <SignupMain />
-        <div className="w-1/2 h-full">
-          <img className="h-full" src="image.jpeg" alt="visuel" />
-        </div>
-      </div> */}
+      <h1 className='bg-blue-500 text-white p-4'>{message}</h1>
+      <div className="flex flex-col items-center justify-center h-full">
+        <h2 className="text-2xl mb-4">Welcome to Matcha</h2>
+        <button
+          onClick={() => router.push('/signup')}
+          className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600"
+        >
+          Sign Up
+        </button>
+      </div>
     </main>
   );
 }
