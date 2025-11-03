@@ -19,7 +19,6 @@ export default function RegisterImagesForm() {
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   // Helper: upload selected files
   const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
@@ -96,8 +95,6 @@ export default function RegisterImagesForm() {
       return;
     }
 
-    setSubmitting(true);
-
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${apiUrl}/api/auth/register?token=${token}`, {
@@ -121,7 +118,6 @@ export default function RegisterImagesForm() {
         const errorData = await response.json();
         console.error("Registration error:", errorData);
         alert(`Registration failed: ${errorData.error || "Unknown error"}`);
-        setSubmitting(false);
         return;
       }
 
@@ -132,12 +128,12 @@ export default function RegisterImagesForm() {
       sessionStorage.removeItem("registerBasic");
       sessionStorage.removeItem("registerSpecific");
 
-      // Redirect to success page or login
-      router.push("/email-sent");
+      // Redirect to home page - they can log in from there
+      // TODO: Create a dedicated login page and redirect there instead
+      router.push("/");
     } catch (error) {
       console.error("Registration request failed:", error);
       alert("Registration failed. Please try again.");
-      setSubmitting(false);
     }
   };
 
@@ -266,7 +262,7 @@ export default function RegisterImagesForm() {
         {/* Nav buttons */}
         <div className="flex flex-col gap-4 justify-between w-full max-w-[400px] mt-8">
           <BackButton text="Back" onClick={handleBack} />
-          <NextButton text="Complete" onClick={handleComplete} disabled={submitting || uploading} />
+          <NextButton text="Complete" onClick={handleComplete} />
         </div>
       </div>
     </div>
