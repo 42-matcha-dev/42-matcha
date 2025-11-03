@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { z } from "zod";
 import { registerSchema } from "../schema";
 import { useForm } from "react-hook-form";
@@ -19,8 +20,7 @@ const registerBasicSchema = registerSchema.pick({
 
 type registerBasicSchema = z.infer<typeof registerBasicSchema>;
 
-export default function RegisterBasicForm() {
-
+function RegisterBasicFormContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
@@ -56,5 +56,13 @@ export default function RegisterBasicForm() {
           <NextButton text="Next"/>
       </form>
     </div>
+  );
+}
+
+export default function RegisterBasicForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterBasicFormContent />
+    </Suspense>
   );
 }

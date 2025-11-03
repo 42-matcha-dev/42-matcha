@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,7 +12,7 @@ type SignedUrlData = {
   path: string;
 };
 
-export default function RegisterImagesForm() {
+function RegisterImagesFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -266,5 +266,13 @@ export default function RegisterImagesForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterImagesForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterImagesFormContent />
+    </Suspense>
   );
 }
