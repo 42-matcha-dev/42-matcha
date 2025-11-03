@@ -54,7 +54,7 @@ describe('Auth Flow Integration Tests', () => {
 
     // Step 3: Test complete registration
     const completeResponse = await fetch(
-      `${API_URL}/api/auth/complete-registration?token=${token}`,
+      `${API_URL}/api/auth/register?token=${token}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -112,7 +112,7 @@ describe('Auth Flow Integration Tests', () => {
 
   test('should reject complete registration with invalid token', async () => {
     const completeResponse = await fetch(
-      `${API_URL}/api/auth/complete-registration?token=invalid-token`,
+      `${API_URL}/api/auth/register?token=invalid-token`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

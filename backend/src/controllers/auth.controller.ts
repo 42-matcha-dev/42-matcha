@@ -34,7 +34,7 @@ export const signup = async (req: Request, res: Response) => {
       },
     });
 
-    const verifyLink = `${process.env.FRONTEND_URL}/verify?token=${token}`;
+    const verifyLink = `${process.env.FRONTEND_URL}/register/basic?token=${token}`;
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
