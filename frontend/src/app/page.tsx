@@ -3,7 +3,6 @@
 import Header from "./components/Header";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from "./components/Navbar";
 
 export default function Home() {
   const [message, setMessage] = useState('')
@@ -30,7 +29,6 @@ export default function Home() {
           Sign Up
         </button>
       </div>
-<!--       <Navbar /> -->
     </main>
   );
 }
