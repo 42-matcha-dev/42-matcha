@@ -1,8 +1,9 @@
 # --- Dev stage ---
 FROM node:20.19.0 AS dev
 WORKDIR /app
-COPY package*.json tsconfig*.json ./
+COPY package*.json ./
 RUN npm ci
+COPY . .
 ENV NODE_ENV=development
 CMD ["npm", "run", "dev"]
 
