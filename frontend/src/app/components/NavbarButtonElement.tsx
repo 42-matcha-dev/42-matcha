@@ -7,11 +7,12 @@ interface NavbarElementProps {
     size: number
     title: string,
     color?: string
+    onClick?: () => void
 };
 
-const NavbarButtonElement = ({ path, size, title, color}: NavbarElementProps) => {
+const NavbarButtonElement = ({ path, size, title, color, onClick}: NavbarElementProps) => {
   return (
-    <button className="w-full flex flex-row hover:bg-gray-300">
+    <button className="w-full flex flex-row hover:bg-gray-300" onClick={onClick}>
         <div className="p-2">
             <Icon className="" path={path} size={size} color={color} />
         </div>
