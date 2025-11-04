@@ -8,6 +8,7 @@ import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
+import { setCookie } from "@/utils/cookie.util";
 
 const loginSchema = registerSchema.pick({
     email: true,
@@ -51,7 +52,10 @@ export default function LoginForm() {
 
             const result = await response.json();
             console.log('Login successful:', result);
-            // TODO: Handle token storage if returned
+            // Store token in cookie
+            if (result.token) {
+                setCookie('token', result.token, 7); // 7 days expiration
+            }
             router.push("/dashboard");
         } catch (error) {
             console.error('Login request failed:', error);
