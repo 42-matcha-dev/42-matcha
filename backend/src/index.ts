@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { initDB } from './database/init.js';
+import { seedTestUsers } from './database/seed.js';
 import authRoutes from './routes/auth.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import userRoutes from './routes/user.routes.js';
@@ -17,7 +18,10 @@ app.get('/api/hello', (_, res) => {
   res.json({ message: 'Hello from backend!' });
 });
 
-initDB().then(() => {
+initDB().then(async () => {
+  // Seed test users if enabled
+  await seedTestUsers();
+
   app.listen(port, () => {
     console.log(`🚀 Server running at http://localhost:${port}`);
   });
