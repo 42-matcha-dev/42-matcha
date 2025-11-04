@@ -69,6 +69,15 @@ export const completeRegistration = async (req: Request, res: Response) => {
   }
 };
 
-export const signin = async (req: Request, res: Response) => {
-  res.json({ message: 'signin route (to implement)' });
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password)
+      return res.status(400).json({ error: 'Missing fields' });
+
+    const { user, token } = await authService.login(email, password);
+    res.status(200).json({ message: 'Login successful', user, token });
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "Invalid input" });
+  }
 };
