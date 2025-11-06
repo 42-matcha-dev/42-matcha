@@ -7,13 +7,13 @@ type Response = express.Response;
 export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      throw new Error('Authentication required');
     }
 
     const profile = await userService.getProfile(req.user.userId);
-    res.status(200).json(profile);
+    return res.status(200).json(profile);
   } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Server error' });
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error' });
   }
 };
 
