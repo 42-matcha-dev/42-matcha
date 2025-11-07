@@ -7,6 +7,12 @@ import Navbar from '@/app/components/Navbar';
 import Header from '@/app/components/Header';
 import { getCookie, deleteCookie } from '@/utils/cookie.util';
 
+interface Tag {
+  id: number;
+  name: string;
+  category: string;
+}
+
 interface UserProfile {
   id: number;
   email: string;
@@ -20,6 +26,7 @@ interface UserProfile {
   location: string;
   icon_url: string;
   photo_urls: string[];
+  tags?: Tag[];
   created_at: string;
   updated_at: string;
 }
@@ -179,6 +186,23 @@ export default function Dashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Biography</label>
                   <p className="text-black text-lg whitespace-pre-wrap">{profile.biography || 'No biography provided.'}</p>
                 </div>
+
+                {/* Tags */}
+                {profile.tags && profile.tags.length > 0 && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Tags</label>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.tags.map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Photos */}
                 {profile.photo_urls && profile.photo_urls.length > 0 && (

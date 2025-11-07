@@ -17,5 +17,17 @@ export const userRepository = {
       );
     }
   },
+
+  findUserTags: async (userId: number) => {
+    const res = await pool.query(
+      `SELECT t.id, t.name, t.category
+       FROM tags t
+       INNER JOIN user_tags ut ON t.id = ut.tag_id
+       WHERE ut.user_id = $1
+       ORDER BY t.category, t.name`,
+      [userId]
+    );
+    return res.rows;
+  },
 };
 
