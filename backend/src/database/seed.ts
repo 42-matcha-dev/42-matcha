@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import pool from './init.js';
+import tagsData from '../data/tags.json' with { type: 'json' };
 
 interface TestUser {
   email: string;
@@ -73,6 +74,68 @@ const testUsers: TestUser[] = [
   },
 ];
 
+export const seedTags = async () => {
+  console.log('🌱 Seeding tags...');
+
+  try {
+    const tagMap = new Map<string, number>(); // name -> id
+
+    for (const [category, tags] of Object.entries(tagsData)) {
+      const tagArray = tags as string[];
+      for (const tagName of tagArray) {
+        // Check if tag already exists
+        const existingTag = await pool.query(
+          'SELECT id FROM tags WHERE name = $1',
+          [tagName]
+        );
+
+        if (existingTag.rows.length > 0) {
+          tagMap.set(tagName, existingTag.rows[0].id);
+          continue;
+        }
+
+        // Insert new tag
+        const result = await pool.query(
+          'INSERT INTO tags (name, category) VALUES ($1, $2) RETURNING id',
+          [tagName, category]
+        );
+        tagMap.set(tagName, result.rows[0].id);
+        console.log(`✅ Created tag: ${tagName} (${category})`);
+      }
+    }
+
+    console.log('✅ Tag seeding completed!');
+    return tagMap;
+  } catch (err: any) {
+    console.error('❌ Error seeding tags:', err.message);
+    throw err;
+  }
+};
+
+export const assignTagsToUser = async (userId: number, tagMap: Map<string, number>) => {
+  try {
+    // Get all tag IDs
+    const allTagIds = Array.from(tagMap.values());
+
+    // Randomly assign 3-6 tags to each user
+    const numTags = Math.floor(Math.random() * 4) + 3; // 3-6 tags
+    const shuffled = [...allTagIds].sort(() => 0.5 - Math.random());
+    const selectedTagIds = shuffled.slice(0, numTags);
+
+    // Insert user_tags associations
+    for (const tagId of selectedTagIds) {
+      await pool.query(
+        'INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2) ON CONFLICT (user_id, tag_id) DO NOTHING',
+        [userId, tagId]
+      );
+    }
+
+    console.log(`✅ Assigned ${selectedTagIds.length} tags to user ${userId}`);
+  } catch (err: any) {
+    console.error(`❌ Error assigning tags to user ${userId}:`, err.message);
+  }
+};
+
 export const seedTestUsers = async () => {
   // Only seed if SEED_TEST_USERS environment variable is set
   if (process.env.SEED_TEST_USERS !== 'true') {
@@ -83,6 +146,9 @@ export const seedTestUsers = async () => {
   console.log('🌱 Seeding test users...');
 
   try {
+    // First, seed tags
+    const tagMap = await seedTags();
+
     for (const userData of testUsers) {
       // Check if user already exists
       const existingUser = await pool.query(
@@ -121,7 +187,11 @@ export const seedTestUsers = async () => {
       ];
 
       const result = await pool.query(query, values);
+      const userId = result.rows[0].id;
       console.log(`✅ Created test user: ${result.rows[0].email} (${result.rows[0].username})`);
+
+      // Assign tags to the user
+      await assignTagsToUser(userId, tagMap);
     }
 
     console.log('✅ Test user seeding completed!');
