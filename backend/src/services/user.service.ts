@@ -5,9 +5,16 @@ export const userService = {
     const user = await userRepository.findUserById(userId);
     if (!user) throw new Error('User not found');
 
+    // Fetch user tags
+    const tags = await userRepository.findUserTags(userId);
+
     // Remove password_hash from response
     const { password_hash, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return { ...userWithoutPassword, tags };
+  },
+
+  assignTags: async (userId: number, tagIds: number[]) => {
+    await userRepository.insertUserTags(userId, tagIds);
   },
 };
 

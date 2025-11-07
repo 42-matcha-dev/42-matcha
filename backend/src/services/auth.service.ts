@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { authRepository } from "../repositories/auth.repository.js";
+import { userService } from "./user.service.js";
 import type { RegisterSchema } from "../types/auth.types.js";
 import { generateToken } from "../utils/jwt.util.js";
 
@@ -27,6 +28,11 @@ export const authService = {
       icon_url: data.iconImage,
       photo_urls: photoUrls,
     });
+
+    // Insert user tags if provided
+    if (data.curiousAbout && data.curiousAbout.length > 0) {
+      await userService.assignTags(user.id, data.curiousAbout);
+    }
 
     await authRepository.deletePending(token);
     return user;

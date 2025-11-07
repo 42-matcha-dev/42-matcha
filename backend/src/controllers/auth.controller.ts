@@ -2,7 +2,7 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import pool from '../database/init.js';
 import bcrypt from 'bcrypt';
-import nodemailer from 'nodemailer';
+import { sendEmail } from '../utils/email.util.js';
 import { authService } from '../services/auth.service.js';
 import type { RegisterSchema } from '../types/auth.types.js';
 
@@ -23,20 +23,8 @@ export const signup = async (req: Request, res: Response) => {
       [email, hashed, token]
     );
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: process.env.EMAIL_USER,
-        clientId: process.env.GMAIL_CLIENT_ID,
-        clientSecret: process.env.GMAIL_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-      },
-    });
-
     const verifyLink = `${process.env.FRONTEND_URL}/register/basic?token=${token}`;
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    await sendEmail({
       to: email,
       subject: 'Verify your Matcha account',
       text: `Click here to verify your account: ${verifyLink}`,

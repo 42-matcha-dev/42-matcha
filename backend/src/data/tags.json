@@ -1,0 +1,7 @@
+{
+    "lifestyle": ["vegan", "vegetarian", "fitness", "yoga", "smoker", "early bird", "night owl", "minimalist"],
+    "interests": ["music", "movies", "art", "travel", "photography", "fashion", "gaming", "reading", "cooking"],
+    "personality": ["introvert", "extrovert", "ambitious", "creative", "empathetic", "funny", "calm", "adventurous"],
+    "technology": ["geek", "programming", "ai", "crypto", "startups", "design", "engineering"],
+    "values": ["family-oriented", "environmentalist", "career-focused", "open-minded", "spiritual", "volunteer", "animal lover"]
+}
