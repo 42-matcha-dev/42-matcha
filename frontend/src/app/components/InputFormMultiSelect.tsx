@@ -22,11 +22,17 @@ const InputFormMultiSelect = ({
   selectedTags,
   onChange,
 }: InputFormMultiSelectProps) => {
+  const MAX_TAGS = 5;
+  const isAtLimit = selectedTags.length >= MAX_TAGS;
+
   const handleTagToggle = (tagId: number) => {
     if (selectedTags.includes(tagId)) {
       onChange(selectedTags.filter((id) => id !== tagId));
     } else {
-      onChange([...selectedTags, tagId]);
+      // Prevent selecting more than MAX_TAGS
+      if (selectedTags.length < MAX_TAGS) {
+        onChange([...selectedTags, tagId]);
+      }
     }
   };
 
@@ -41,7 +47,12 @@ const InputFormMultiSelect = ({
 
   return (
     <div className="flex flex-col gap-2 w-full max-w-md">
-      <label>{label}</label>
+      <div className="flex justify-between items-center">
+        <label>{label}</label>
+        <span className="text-sm text-gray-500">
+          {selectedTags.length}/{MAX_TAGS}
+        </span>
+      </div>
       <div className="border border-gray-300 rounded-md p-3 max-h-60 overflow-y-auto">
         {Object.entries(tagsByCategory).map(([category, categoryTags]) => (
           <div key={category} className="mb-4 last:mb-0">
@@ -49,24 +60,37 @@ const InputFormMultiSelect = ({
               {category}
             </h4>
             <div className="flex flex-wrap gap-2">
-              {categoryTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleTagToggle(tag.id)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                    selectedTags.includes(tag.id)
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
-                  }`}
-                >
-                  {tag.name}
-                </button>
-              ))}
+              {categoryTags.map((tag) => {
+                const isSelected = selectedTags.includes(tag.id);
+                const isDisabled = !isSelected && isAtLimit;
+
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleTagToggle(tag.id)}
+                    disabled={isDisabled}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      isSelected
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : isDisabled
+                        ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
+                    }`}
+                  >
+                    {tag.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
       </div>
+      {isAtLimit && !error && (
+        <div className="text-sm text-gray-600">
+          Maximum de {MAX_TAGS} tags sélectionnés. Désélectionnez un tag pour en choisir un autre.
+        </div>
+      )}
       {error && <div className="text-red-500">{error.message}</div>}
     </div>
   );
