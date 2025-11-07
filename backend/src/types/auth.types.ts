@@ -7,5 +7,6 @@ export type RegisterSchema = {
   location: string;
   iconImage: string;
   photos: string | string[];
+  curiousAbout?: number[];
 };
 

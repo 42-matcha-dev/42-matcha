@@ -28,7 +28,7 @@ export const registerSchema = z.object({
   gender: z.enum(["Male", "Female", "Other"]),
   lookingFor: z.enum(["Male", "Female", "Both"]),
   description: longText(),
-  curiousAbout: longText(),
+  curiousAbout: z.array(z.number()).min(1, { message: "Veuillez sélectionner au moins un tag." }),
   terms: z.boolean().refine(data => data, "Vous devez accepter les conditions"),
   image: imageFile
 });

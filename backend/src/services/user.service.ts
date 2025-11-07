@@ -9,5 +9,9 @@ export const userService = {
     const { password_hash, ...userWithoutPassword } = user;
     return userWithoutPassword;
   },
+
+  assignTags: async (userId: number, tagIds: number[]) => {
+    await userRepository.insertUserTags(userId, tagIds);
+  },
 };
 

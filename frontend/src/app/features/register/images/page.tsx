@@ -111,6 +111,7 @@ function RegisterImagesFormContent() {
           location: basicData.location,
           iconImage: iconUrl,
           photos: photoUrls.filter((url) => url !== undefined && url !== null),
+          curiousAbout: specificData.curiousAbout || [],
         }),
       });
 
