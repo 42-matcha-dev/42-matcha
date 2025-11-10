@@ -12,15 +12,25 @@ type SignedUrlData = {
   path: string;
 };
 
-function RegisterImagesFormContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const [iconUrl, setIconUrl] = useState<string | null>(null);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+interface Props {
+  onBack: () => void;
+  updateData: (data: any) => void;
+  defaultValues: any;
+  onSubmitFinal: () => void;
+}
+
+function RegisterImagesFormContent({
+  onBack,
+  updateData,
+  defaultValues,
+  onSubmitFinal,
+}: Props) {
+  const [iconUrl, setIconUrl] = useState<string | null>(defaultValues.iconUrl || null);
+  const [photoUrls, setPhotoUrls] = useState<string[]>(defaultValues.photoUrls || []);
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  // Helper: upload selected files
   const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
     if (!files || files.length === 0) return;
     setUploading(true);
@@ -44,12 +54,28 @@ function RegisterImagesFormContent() {
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${u.path}`
     );
 
-    if (type === "icon") setIconUrl(uploaded[0]);
-    else if (index !== undefined) {
+    if (type === "icon") {
+      setIconFile(files[0]);
+      setIconUrl(uploaded[0]);
+      updateData({ iconFile: files[0], iconUrl: uploaded[0] });
+    } else if (index !== undefined) {
+      setPhotoFiles((prev) => {
+        const newFiles = [...prev];
+        console.log(newFiles);
+        newFiles[index] = files[0];
+        return newFiles;
+      });
       setPhotoUrls((prev) => {
-        const newPhotos = [...prev];
-        newPhotos[index] = uploaded[0];
-        return newPhotos;
+        const newUrls = [...prev];
+        newUrls[index] = uploaded[0];
+        console.log("urls",newUrls);
+        return newUrls;
+      });
+      console.log(photoFiles);
+      console.log(photoUrls);
+      updateData({
+        photoFiles: photoFiles,
+        photoUrls: photoUrls,
       });
     }
 
@@ -58,89 +84,16 @@ function RegisterImagesFormContent() {
 
   const removePhoto = (index: number) => {
     setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleBack = () => {
-    router.back();
-  };
-
-  const handleComplete = async () => {
-    if (!token) {
-      alert("Missing token. Please start registration from the email link.");
-      return;
-    }
-
-    if (!iconUrl) {
-      alert("Please upload a profile icon.");
-      return;
-    }
-
-    if (photoUrls.length === 0) {
-      alert("Please upload at least one photo.");
-      return;
-    }
-
-    // Get form data from previous steps stored in sessionStorage
-    const basicData = JSON.parse(sessionStorage.getItem("registerBasic") || "{}");
-    const specificData = JSON.parse(sessionStorage.getItem("registerSpecific") || "{}");
-
-    // Validate that we have all required data
-    if (!basicData.firstName || !basicData.lastName || !basicData.location) {
-      alert("Missing basic information. Please complete previous steps.");
-      return;
-    }
-
-    if (!specificData.gender || !specificData.lookingFor || !specificData.description) {
-      alert("Missing profile information. Please complete previous steps.");
-      return;
-    }
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/api/auth/register?token=${token}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: basicData.firstName,
-          lastName: basicData.lastName,
-          gender: specificData.gender.toLowerCase(),
-          lookingFor: specificData.lookingFor.toLowerCase(),
-          description: specificData.description,
-          location: basicData.location,
-          iconImage: iconUrl,
-          photos: photoUrls.filter((url) => url !== undefined && url !== null),
-          curiousAbout: specificData.curiousAbout || [],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Registration error:", errorData);
-        alert(`Registration failed: ${errorData.error || "Unknown error"}`);
-        return;
-      }
-
-      const result = await response.json();
-      console.log("Registration successful:", result);
-
-      // Clear session storage
-      sessionStorage.removeItem("registerBasic");
-      sessionStorage.removeItem("registerSpecific");
-
-      // Redirect to home page - they can log in from there
-      // TODO: Create a dedicated login page and redirect there instead
-      router.push("/");
-    } catch (error) {
-      console.error("Registration request failed:", error);
-      alert("Registration failed. Please try again.");
-    }
+    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
+    updateData({
+      photoFiles: photoFiles.filter((_, i) => i !== index),
+      photoUrls: photoUrls.filter((_, i) => i !== index),
+    });
   };
 
   return (
-    <div className="w-1/2 min-h-screen bg-white text-black p-4 border">
-      <div className="flex flex-col items-center w-full p-8">
+    <div className="w-full bg-white">
+      <div className="flex flex-col items-center w-full p-4">
         <Title title="Complete Your Profile" subTitle="Tell us more about you." />
         <Stepper currentStep="2" />
 
@@ -262,18 +215,18 @@ function RegisterImagesFormContent() {
 
         {/* Nav buttons */}
         <div className="flex flex-col gap-4 justify-between w-full max-w-[400px] mt-8">
-          <BackButton text="Back" onClick={handleBack} />
-          <NextButton text="Complete" onClick={handleComplete} />
+          <BackButton text="Back" onClick={onBack} />
+          <NextButton text="Complete" onClick={onSubmitFinal} />
         </div>
       </div>
     </div>
   );
 }
 
-export default function RegisterImagesForm() {
+export default function RegisterImagesForm(props: Props) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <RegisterImagesFormContent />
+      <RegisterImagesFormContent {...props}/>
     </Suspense>
   );
 }

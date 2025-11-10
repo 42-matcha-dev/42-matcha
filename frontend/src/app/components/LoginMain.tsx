@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { registerSchema } from "../features/register/schema";
+import { registerSchema } from "@/app/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";

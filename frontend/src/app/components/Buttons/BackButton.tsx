@@ -8,7 +8,8 @@ interface BackButtonProps {
 const BackButton = ({ text, onClick }: BackButtonProps) => {
     return (
         <div>
-            <button 
+            <button
+                type="button"
                 className="w-full border bg-white rounded-2xl p-4 text-black hover:bg-gray-300"
                 onClick={onClick}
             >

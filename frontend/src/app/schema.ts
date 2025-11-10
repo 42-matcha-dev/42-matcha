@@ -18,7 +18,7 @@ const imageFile = z
   .refine(file => ["image/jpeg", "image/png"].includes(file.type), "Format non supporté");
 
 export const registerSchema = z.object({
-  email: shortText(),
+  email: z.email(),
   password: shortText(),
   repeatPassword: shortText(),
   firstName: shortText(),
@@ -31,8 +31,12 @@ export const registerSchema = z.object({
   curiousAbout: z.array(z.number())
     .min(1, { message: "Veuillez sélectionner au moins un tag." })
     .max(5, { message: "Vous pouvez sélectionner au maximum 5 tags." }),
-  terms: z.boolean().refine(data => data, "Vous devez accepter les conditions"),
-  image: imageFile
+  // terms: z.boolean().refine(data => data, "Vous devez accepter les conditions"),
+  iconFile: imageFile,
+  photos: z
+    .array(imageFile)
+    .min(1, "Veuillez uploader au moins une photo.")
+    .max(4, "Vous pouvez uploader jusqu’à 4 photos."),
 });
 
 export type RegisterSchema = z.infer<typeof registerSchema>;
