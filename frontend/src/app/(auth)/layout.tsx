@@ -2,12 +2,12 @@
 import Header from "@/app/components/Header";
 import Image from "next/image";
 
-interface AuthLayoutProps {
+export default function AuthLayout({
+  children,
+}: Readonly<{
   children: React.ReactNode;
-  image?: string; // image optionnelle, valeur par défaut
-}
-
-export default function AuthLayout({ children, image = "/image.jpeg" }: AuthLayoutProps) {
+}>) {
+  const image = "/image.jpeg";
   return (
     <main className="flex flex-col h-screen">
       <Header />
