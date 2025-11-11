@@ -21,3 +21,14 @@ pour les icones:
 https://pictogrammers.com/library/mdi/icon/account/
 cd frontend/
 npm install @mdi/react @mdi/js
+
+-----------------------------------------
+
+A faire 07/11/2025:
+
+- voir comment gerer le routage proprement.. parce que ce n'est pas fonctionnel.. on perds les datas..
+- modifier dans registerImageForm.tsx dans page.tsx du register principale pour le submit final.
+- centrer les login/signup/register page sinon on doit scroller... c'est pas professionnel..
+- ajouter le framer-motion module pour un effet professionnel
+- re-ajuster la derniere page image du formulaire  car elle parait tres serre..
+voir pour optimiser les interfaces dans chaque registerPage, peut etre tout regrouper..

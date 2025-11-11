@@ -1,26 +1,51 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
+import { z } from "zod";
+import { registerSchema } from "@/app/schema";
 
 type SignedUrlData = {
   signedUrl: string;
   path: string;
 };
 
-function RegisterImagesFormContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const [iconUrl, setIconUrl] = useState<string | null>(null);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+// Form data type matching the register form (excluding email/password fields)
+// Includes both current (iconImage, photos) and legacy (iconUrl, photoUrls) field names
+type FormData = Partial<Omit<z.infer<typeof registerSchema>, "email" | "password" | "repeatPassword">> & {
+  iconUrl?: string;
+  photoUrls?: string[];
+};
+
+interface Props {
+  onBack: () => void;
+  updateData: (data: Partial<FormData>) => void;
+  defaultValues: Partial<FormData>;
+  onSubmitFinal: () => void;
+}
+
+function RegisterImagesFormContent({
+  onBack,
+  updateData,
+  defaultValues,
+  onSubmitFinal,
+}: Props) {
+  const [iconUrl, setIconUrl] = useState<string | null>(
+    (defaultValues.iconImage as string | undefined) ||
+    (defaultValues.iconUrl as string | undefined) ||
+    null
+  );
+  const [photoUrls, setPhotoUrls] = useState<string[]>(
+    (defaultValues.photos as string[] | undefined) ||
+    (defaultValues.photoUrls as string[] | undefined) ||
+    []
+  );
   const [uploading, setUploading] = useState(false);
 
-  // Helper: upload selected files
   const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
     if (!files || files.length === 0) return;
     setUploading(true);
@@ -44,12 +69,20 @@ function RegisterImagesFormContent() {
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${u.path}`
     );
 
-    if (type === "icon") setIconUrl(uploaded[0]);
-    else if (index !== undefined) {
-      setPhotoUrls((prev) => {
-        const newPhotos = [...prev];
-        newPhotos[index] = uploaded[0];
-        return newPhotos;
+    if (type === "icon") {
+      setIconUrl(uploaded[0]);
+      updateData({ iconImage: uploaded[0] });
+    } else if (index !== undefined) {
+      // Compute new arrays first
+      const newUrls = [...photoUrls];
+      newUrls[index] = uploaded[0];
+
+      // Update state
+      setPhotoUrls(newUrls);
+
+      // Pass computed arrays to updateData
+      updateData({
+        photos: newUrls,
       });
     }
 
@@ -57,90 +90,21 @@ function RegisterImagesFormContent() {
   };
 
   const removePhoto = (index: number) => {
-    setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
-  };
+    // Compute filtered array first
+    const newUrls = photoUrls.filter((_, i) => i !== index);
 
-  const handleBack = () => {
-    router.back();
-  };
+    // Update state
+    setPhotoUrls(newUrls);
 
-  const handleComplete = async () => {
-    if (!token) {
-      alert("Missing token. Please start registration from the email link.");
-      return;
-    }
-
-    if (!iconUrl) {
-      alert("Please upload a profile icon.");
-      return;
-    }
-
-    if (photoUrls.length === 0) {
-      alert("Please upload at least one photo.");
-      return;
-    }
-
-    // Get form data from previous steps stored in sessionStorage
-    const basicData = JSON.parse(sessionStorage.getItem("registerBasic") || "{}");
-    const specificData = JSON.parse(sessionStorage.getItem("registerSpecific") || "{}");
-
-    // Validate that we have all required data
-    if (!basicData.firstName || !basicData.lastName || !basicData.location) {
-      alert("Missing basic information. Please complete previous steps.");
-      return;
-    }
-
-    if (!specificData.gender || !specificData.lookingFor || !specificData.description) {
-      alert("Missing profile information. Please complete previous steps.");
-      return;
-    }
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/api/auth/register?token=${token}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: basicData.firstName,
-          lastName: basicData.lastName,
-          gender: specificData.gender.toLowerCase(),
-          lookingFor: specificData.lookingFor.toLowerCase(),
-          description: specificData.description,
-          location: basicData.location,
-          iconImage: iconUrl,
-          photos: photoUrls.filter((url) => url !== undefined && url !== null),
-          curiousAbout: specificData.curiousAbout || [],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Registration error:", errorData);
-        alert(`Registration failed: ${errorData.error || "Unknown error"}`);
-        return;
-      }
-
-      const result = await response.json();
-      console.log("Registration successful:", result);
-
-      // Clear session storage
-      sessionStorage.removeItem("registerBasic");
-      sessionStorage.removeItem("registerSpecific");
-
-      // Redirect to home page - they can log in from there
-      // TODO: Create a dedicated login page and redirect there instead
-      router.push("/");
-    } catch (error) {
-      console.error("Registration request failed:", error);
-      alert("Registration failed. Please try again.");
-    }
+    // Pass computed array to updateData
+    updateData({
+      photos: newUrls,
+    });
   };
 
   return (
-    <div className="w-1/2 min-h-screen bg-white text-black p-4 border">
-      <div className="flex flex-col items-center w-full p-8">
+    <div className="w-full bg-white">
+      <div className="flex flex-col items-center w-full p-4">
         <Title title="Complete Your Profile" subTitle="Tell us more about you." />
         <Stepper currentStep="2" />
 
@@ -148,10 +112,13 @@ function RegisterImagesFormContent() {
         <div className="flex items-center gap-4 mt-6">
           <label className="cursor-pointer">
             {iconUrl ? (
-              <img
+              <Image
                 src={iconUrl}
                 alt="icon"
-                className="w-[120px] h-[120px] rounded-full object-cover bg-gray-300"
+                width={120}
+                height={120}
+                className="rounded-full object-cover bg-gray-300"
+                unoptimized
               />
             ) : (
               <div className="w-[120px] h-[120px] rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
@@ -187,10 +154,12 @@ function RegisterImagesFormContent() {
             >
               {photoUrls[0] ? (
                 <>
-                  <img
+                  <Image
                     src={photoUrls[0]}
                     alt="main-photo"
-                    className="w-full h-full object-cover block"
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
                   <button
                     className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-6 h-6 text-sm cursor-pointer"
@@ -225,10 +194,12 @@ function RegisterImagesFormContent() {
                 >
                   {photoUrls[i] ? (
                     <>
-                      <img
+                      <Image
                         src={photoUrls[i]}
                         alt={`photo-${i}`}
-                        className="w-full h-full object-cover block"
+                        fill
+                        className="object-cover"
+                        unoptimized
                       />
                       <button
                         className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
@@ -262,18 +233,18 @@ function RegisterImagesFormContent() {
 
         {/* Nav buttons */}
         <div className="flex flex-col gap-4 justify-between w-full max-w-[400px] mt-8">
-          <BackButton text="Back" onClick={handleBack} />
-          <NextButton text="Complete" onClick={handleComplete} />
+          <BackButton text="Back" onClick={onBack} />
+          <NextButton text="Complete" onClick={onSubmitFinal} />
         </div>
       </div>
     </div>
   );
 }
 
-export default function RegisterImagesForm() {
+export default function RegisterImagesForm(props: Props) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <RegisterImagesFormContent />
+      <RegisterImagesFormContent {...props}/>
     </Suspense>
   );
 }

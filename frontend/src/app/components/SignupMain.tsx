@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { registerSchema } from "../features/register/schema";
+import { registerSchema } from "@/app/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
@@ -46,7 +46,7 @@ export default function RegisterBasicForm() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Signup error:', errorData);
+                console.log('Signup error:', errorData);
                 // TODO: Show error message to user
                 return;
             }
@@ -55,7 +55,7 @@ export default function RegisterBasicForm() {
             console.log('Signup successful:', result);
             router.push("/email-sent");
         } catch (error) {
-            console.error('Signup request failed:', error);
+            console.log('Signup request failed:', error);
             // TODO: Show error message to user
         }
     };
