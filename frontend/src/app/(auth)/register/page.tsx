@@ -38,7 +38,7 @@ export default function RegisterFormStepper() {
       console.log("✅ Validation réussie :", parsedData);
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/api/register?token=${token}`, {
+      const response = await fetch(`${apiUrl}/api/auth/register?token=${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsedData),
@@ -99,7 +99,7 @@ export default function RegisterFormStepper() {
     setDirection(-1);
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
-  
+
   const steps = [
     <RegisterBasicForm
       key="basic"

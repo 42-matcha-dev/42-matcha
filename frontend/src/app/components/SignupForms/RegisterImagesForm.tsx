@@ -3,19 +3,27 @@
 import { Suspense, useState } from "react";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
+import { z } from "zod";
+import { registerSchema } from "@/app/schema";
 
 type SignedUrlData = {
   signedUrl: string;
   path: string;
 };
 
+// Form data type matching the register form (excluding email/password fields)
+// Includes both current (iconImage, photos) and legacy (iconUrl, photoUrls) field names
+type FormData = Partial<Omit<z.infer<typeof registerSchema>, "email" | "password" | "repeatPassword">> & {
+  iconUrl?: string;
+  photoUrls?: string[];
+};
+
 interface Props {
   onBack: () => void;
-  updateData: (data: any) => void;
-  defaultValues: any;
+  updateData: (data: Partial<FormData>) => void;
+  defaultValues: Partial<FormData>;
   onSubmitFinal: () => void;
 }
 
@@ -25,10 +33,16 @@ function RegisterImagesFormContent({
   defaultValues,
   onSubmitFinal,
 }: Props) {
-  const [iconUrl, setIconUrl] = useState<string | null>(defaultValues.iconUrl || null);
-  const [photoUrls, setPhotoUrls] = useState<string[]>(defaultValues.photoUrls || []);
-  const [iconFile, setIconFile] = useState<File | null>(null);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [iconUrl, setIconUrl] = useState<string | null>(
+    (defaultValues.iconImage as string | undefined) ||
+    (defaultValues.iconUrl as string | undefined) ||
+    null
+  );
+  const [photoUrls, setPhotoUrls] = useState<string[]>(
+    (defaultValues.photos as string[] | undefined) ||
+    (defaultValues.photoUrls as string[] | undefined) ||
+    []
+  );
   const [uploading, setUploading] = useState(false);
 
   const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
@@ -55,27 +69,19 @@ function RegisterImagesFormContent({
     );
 
     if (type === "icon") {
-      setIconFile(files[0]);
       setIconUrl(uploaded[0]);
-      updateData({ iconFile: files[0], iconUrl: uploaded[0] });
+      updateData({ iconImage: uploaded[0] });
     } else if (index !== undefined) {
-      setPhotoFiles((prev) => {
-        const newFiles = [...prev];
-        console.log(newFiles);
-        newFiles[index] = files[0];
-        return newFiles;
-      });
-      setPhotoUrls((prev) => {
-        const newUrls = [...prev];
-        newUrls[index] = uploaded[0];
-        console.log("urls",newUrls);
-        return newUrls;
-      });
-      console.log(photoFiles);
-      console.log(photoUrls);
+      // Compute new arrays first
+      const newUrls = [...photoUrls];
+      newUrls[index] = uploaded[0];
+
+      // Update state
+      setPhotoUrls(newUrls);
+
+      // Pass computed arrays to updateData
       updateData({
-        photoFiles: photoFiles,
-        photoUrls: photoUrls,
+        photos: newUrls,
       });
     }
 
@@ -83,11 +89,15 @@ function RegisterImagesFormContent({
   };
 
   const removePhoto = (index: number) => {
-    setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
-    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
+    // Compute filtered array first
+    const newUrls = photoUrls.filter((_, i) => i !== index);
+
+    // Update state
+    setPhotoUrls(newUrls);
+
+    // Pass computed array to updateData
     updateData({
-      photoFiles: photoFiles.filter((_, i) => i !== index),
-      photoUrls: photoUrls.filter((_, i) => i !== index),
+      photos: newUrls,
     });
   };
 

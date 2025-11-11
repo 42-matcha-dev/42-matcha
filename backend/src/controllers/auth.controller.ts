@@ -23,7 +23,7 @@ export const signup = async (req: Request, res: Response) => {
       [email, hashed, token]
     );
 
-    const verifyLink = `${process.env.FRONTEND_URL}/register/basic?token=${token}`;
+    const verifyLink = `${process.env.FRONTEND_URL}/register?token=${token}`;
     await sendEmail({
       to: email,
       subject: 'Verify your Matcha account',
