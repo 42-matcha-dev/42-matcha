@@ -10,7 +10,6 @@ import InputForm from "@/app/components/InputForm";
 import InputFormSelect from "@/app/components/InputFormSelect";
 import InputFormMultiSelect from "@/app/components/InputFormMultiSelect";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 
@@ -37,9 +36,6 @@ interface Tag {
 }
 
 function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm<RegisterSpecificSchema>({
@@ -73,7 +69,7 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
       };
       fetchTags();
   }, []);
-  
+
   const onSubmit = (data: RegisterSpecificSchema) => {
     updateData(data);
     console.log("RegisterSpecificForm: ", data);
@@ -83,7 +79,7 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
   useEffect(() => {
     if (defaultValues) {
       Object.entries(defaultValues).forEach(([key, value]) => {
-        setValue(key as keyof RegisterSpecificSchema, value as any);
+        setValue(key as keyof RegisterSpecificSchema, value as RegisterSpecificSchema[keyof RegisterSpecificSchema]);
       });
     }
   }, [defaultValues, setValue]);

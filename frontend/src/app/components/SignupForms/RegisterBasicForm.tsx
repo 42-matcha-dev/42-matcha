@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
-import { useRouter, useSearchParams } from "next/navigation";
 import Stepper from "@/app/components/Stepper";
 
 const registerBasicSchema = registerSchema.pick({
@@ -27,8 +26,6 @@ interface Props {
 }
 
 function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
   const { register, handleSubmit, formState: { errors }, setValue} = useForm<RegisterBasicSchema>({
       resolver: zodResolver(registerBasicSchema),
       mode: "onBlur",
@@ -43,7 +40,7 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   useEffect(() => {
     if (defaultValues) {
       Object.entries(defaultValues).forEach(([key, value]) => {
-        setValue(key as keyof RegisterBasicSchema, value as any);
+        setValue(key as keyof RegisterBasicSchema, value as RegisterBasicSchema[keyof RegisterBasicSchema]);
       });
     }
   }, [defaultValues, setValue]);

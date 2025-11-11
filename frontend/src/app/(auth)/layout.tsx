@@ -1,5 +1,6 @@
 // app/(auth)/layout.tsx
 import Header from "@/app/components/Header";
+import Image from "next/image";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -17,11 +18,12 @@ export default function AuthLayout({ children, image = "/image.jpeg" }: AuthLayo
         </div>
 
         {/* Zone droite = image configurable */}
-        <div className="hidden lg:block w-1/2 h-full">
-          <img
-            className="h-full w-full object-cover"
+        <div className="hidden lg:block w-1/2 h-full relative">
+          <Image
             src={image}
             alt="Visuel"
+            fill
+            className="object-cover"
           />
         </div>
       </div>

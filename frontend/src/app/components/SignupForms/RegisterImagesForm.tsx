@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
 import BackButton from "@/app/components/Buttons/BackButton";
@@ -111,10 +112,13 @@ function RegisterImagesFormContent({
         <div className="flex items-center gap-4 mt-6">
           <label className="cursor-pointer">
             {iconUrl ? (
-              <img
+              <Image
                 src={iconUrl}
                 alt="icon"
-                className="w-[120px] h-[120px] rounded-full object-cover bg-gray-300"
+                width={120}
+                height={120}
+                className="rounded-full object-cover bg-gray-300"
+                unoptimized
               />
             ) : (
               <div className="w-[120px] h-[120px] rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
@@ -150,10 +154,12 @@ function RegisterImagesFormContent({
             >
               {photoUrls[0] ? (
                 <>
-                  <img
+                  <Image
                     src={photoUrls[0]}
                     alt="main-photo"
-                    className="w-full h-full object-cover block"
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
                   <button
                     className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-6 h-6 text-sm cursor-pointer"
@@ -188,10 +194,12 @@ function RegisterImagesFormContent({
                 >
                   {photoUrls[i] ? (
                     <>
-                      <img
+                      <Image
                         src={photoUrls[i]}
                         alt={`photo-${i}`}
-                        className="w-full h-full object-cover block"
+                        fill
+                        className="object-cover"
+                        unoptimized
                       />
                       <button
                         className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
