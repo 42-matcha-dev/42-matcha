@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { registerSchema } from "@/app/schema";
@@ -17,7 +17,7 @@ const safeRegisterSchema = registerSchema.omit({
 
 type FormData = z.infer<typeof safeRegisterSchema>;
 
-export default function RegisterFormStepper() {
+function RegisterFormStepperContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -142,5 +142,13 @@ export default function RegisterFormStepper() {
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function RegisterFormStepper() {
+  return (
+    <Suspense fallback={<div className="relative w-full max-w-2xl mx-auto p-6 min-h-[600px] flex items-center justify-center">Loading...</div>}>
+      <RegisterFormStepperContent />
+    </Suspense>
   );
 }
