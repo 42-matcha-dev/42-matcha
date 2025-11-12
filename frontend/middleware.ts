@@ -2,16 +2,15 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
+const protectedRoutes = ['/dashboard', '/profile', '/chat'];
 const SECRET = process.env.JWT_SECRET!;
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
   const { pathname } = req.nextUrl;
 
-  if (!token) {
-    if (pathname.startsWith('/dashboard'))
-      return NextResponse.redirect(new URL('/login', req.url));
-    return NextResponse.next();
+  if (!token && protectedRoutes.some((p) => pathname.startsWith(p))) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
   try {
@@ -25,5 +24,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'], // protected routes
+  matcher: protectedRoutes.map((r) => `${r}/:path*`),
 };
+
