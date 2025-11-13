@@ -120,7 +120,7 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <main className="flex flex-col h-screen bg-gray-800">
+      <main className="flex flex-col h-screen">
         <Header />
         <div className="flex items-center justify-center h-full">
           <div className="text-lg text-white">Loading profile...</div>
@@ -131,7 +131,7 @@ export default function UserProfilePage() {
 
   if (error) {
     return (
-      <main className="flex flex-col h-screen bg-gray-800">
+      <main className="flex flex-col h-screen">
         <Header />
         <div className="flex items-center justify-center h-full">
           <div className="text-red-500">Error: {error}</div>
@@ -150,31 +150,31 @@ export default function UserProfilePage() {
   const hasPhotos = photos.length > 0;
 
   return (
-    <main className="flex flex-col h-screen bg-gray-800">
+    <main className="flex flex-col h-screen bg-white">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Navbar />
-        <div className="flex-1 overflow-y-auto bg-gray-800">
+        <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto p-8">
-            <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="bg-white rounded-lg p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Side - Profile Information */}
                 <div className="flex flex-col space-y-6">
                   {/* Profile Header */}
                   <div className="flex items-start space-x-6">
-                    {/* Profile Picture */}
+                    {/* Profile Picture - Larger */}
                     {profile.icon_url ? (
                       <Image
                         src={profile.icon_url}
                         alt="Profile"
-                        width={120}
-                        height={120}
+                        width={140}
+                        height={140}
                         unoptimized
-                        className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 flex-shrink-0"
+                        className="w-36 h-36 rounded-full object-cover bg-custom-light flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                        <span className="text-4xl text-gray-500">
+                      <div className="w-36 h-36 rounded-full bg-custom-light flex items-center justify-center flex-shrink-0">
+                        <span className="text-5xl text-custom-medium">
                           {profile.first_name?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
                         </span>
                       </div>
@@ -182,30 +182,32 @@ export default function UserProfilePage() {
 
                     {/* Name and Info */}
                     <div className="flex-1">
-                      <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                      <h1 className="text-3xl font-bold mb-3">
                         {displayName}, {age}
                       </h1>
-
+						<div className="flex items-center mb-4">
                       {/* Location */}
                       {profile.location && (
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <Icon path={mdiMapMarker} size={1} className="mr-1" />
-                          <span>{profile.location}</span>
+                        <div className="flex items-center mr-3">
+                          <Image src="/icons/location.svg" alt="Logo" width={20} height={20} />
+                          <span className="ml-2 text-sm text-custom-medium">{profile.location}</span>
                         </div>
                       )}
 
                       {/* Fame Rating */}
-                      <div className="flex items-center text-gray-600">
-                        <Icon path={mdiDiamond} size={1} className="mr-1" />
-                        <span>{profile.fame_rating || 0}%</span>
+                      <div className="flex items-center">
+					<Image src="/icons/handshake.svg" alt="Logo" width={20} height={20} className="mr-1" />
+                        <span className="ml-2 text-sm text-custom-medium">{profile.fame_rating || 0}%</span>
                       </div>
+						</div>
+
 
                       {/* Action Buttons */}
-                      <div className="flex gap-3 mt-4">
-                        <button className="bg-amber-700 hover:bg-amber-800 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                      <div className="flex gap-3">
+                        <button className="bg-primary hover:bg-[#A6733A] text-white px-6 py-2 rounded-lg font-semibold transition-colors">
                           Like
                         </button>
-                        <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors">
+                        <button className="text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white px-6 py-2 rounded-lg font-semibold transition-colors">
                           Message
                         </button>
                       </div>
@@ -215,8 +217,8 @@ export default function UserProfilePage() {
                   {/* About Section */}
                   {profile.biography && (
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-800 mb-3">About</h2>
-                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      <h2 className="font-semibold text-custom-medium mb-3">About</h2>
+                      <p className="leading-relaxed whitespace-pre-wrap">
                         {profile.biography}
                       </p>
                     </div>
@@ -225,12 +227,12 @@ export default function UserProfilePage() {
                   {/* Tags */}
                   {profile.tags && profile.tags.length > 0 && (
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-800 mb-3">Tags</h2>
+                      {/* <h2 className="font-semibold text-custom-medium mb-3">Tags</h2> */}
                       <div className="flex flex-wrap gap-2">
                         {profile.tags.map((tag) => (
                           <span
                             key={tag.id}
-                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-medium"
+                            className="px-2 py-1 bg-custom-medium text-white rounded-sm text-sm font-medium"
                           >
                             {tag.name}
                           </span>
@@ -240,11 +242,11 @@ export default function UserProfilePage() {
                   )}
                 </div>
 
-                {/* Right Side - Image Slider */}
-                <div className="flex flex-col lg:flex-row gap-4">
+                {/* Right Side - Image Gallery */}
+                <div className="flex gap-4">
                   {/* Main Image */}
                   <div
-                    className="flex-1 bg-gray-200 rounded-lg overflow-hidden relative min-h-[400px] lg:min-h-[500px]"
+                    className="flex-1 bg-custom-light rounded-lg overflow-hidden relative min-h-[400px] lg:min-h-[500px]"
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
@@ -259,13 +261,13 @@ export default function UserProfilePage() {
                         priority
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-custom-medium">
                         <span>No photos available</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Thumbnails - Desktop Only */}
+                  {/* Thumbnails - Vertical Stack on Right */}
                   {hasPhotos && photos.length > 1 && (
                     <div className="hidden lg:flex flex-col gap-2">
                       {photos.map((photo, index) => (
@@ -274,7 +276,7 @@ export default function UserProfilePage() {
                           onClick={() => setSelectedImageIndex(index)}
                           className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                             selectedImageIndex === index
-                              ? 'border-amber-700 ring-2 ring-amber-300'
+                              ? 'border-gray-800'
                               : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
@@ -293,14 +295,14 @@ export default function UserProfilePage() {
 
                   {/* Mobile Navigation Dots */}
                   {hasPhotos && photos.length > 1 && (
-                    <div className="lg:hidden flex justify-center gap-2">
+                    <div className="lg:hidden flex justify-center gap-2 mt-4">
                       {photos.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all ${
                             selectedImageIndex === index
-                              ? 'bg-amber-700 w-8'
+                              ? 'bg-amber-800 w-8'
                               : 'bg-gray-300'
                           }`}
                         />
