@@ -15,13 +15,13 @@ const Navbar = () => {
     };
 
     return (
-        <div className="flex flex-col w-1/8">
-            <NavbarButtonElement path={mdiAccount} size={1.5} title={"Profile"} color={"black"} />
-            <NavbarButtonElement path={mdiMagnify} size={1.5} title={"Search"} color={"black"} />
-            <NavbarButtonElement path={mdiBell} size={1.5} title={"Notifications"} color={"black"} />
-            <NavbarButtonElement path={mdiChat} size={1.5} title={"Messages"} color={"black"} />
-            <NavbarButtonElement path={mdiCog} size={1.5} title={"Settings"} color={"black"} />
-            <NavbarButtonElement path={mdiLogout} size={1.5} title={"Logout"} color={"black"} onClick={handleLogout} />
+        <div className="flex flex-col w-full">
+            <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} />
+            <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} />
+            <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} />
+            <NavbarButtonElement path={mdiChat} size={1.3} title={"Messages"} color={"black"} />
+            <NavbarButtonElement path={mdiCog} size={1.3} title={"Settings"} color={"black"} />
+            <NavbarButtonElement path={mdiLogout} size={1.3} title={"Logout"} color={"black"} onClick={handleLogout} />
         </div>
     )
 }

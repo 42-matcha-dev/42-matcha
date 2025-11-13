@@ -32,3 +32,10 @@ A faire 07/11/2025:
 - ajouter le framer-motion module pour un effet professionnel
 - re-ajuster la derniere page image du formulaire  car elle parait tres serre..
 voir pour optimiser les interfaces dans chaque registerPage, peut etre tout regrouper..
+
+le 11/11/2025
+Ce qu'il faudra merge dans nouvelle branche develop:
+- navbar et navarbuttonElement modifier
+- dossier chat/ en entier
+- toutes les modifs dans le backends a ne surtout pas prendre en compte
+- mainLayout en s'en fiche pour le moment
