@@ -217,7 +217,7 @@ export default function UserProfilePage() {
                   {/* About Section */}
                   {profile.biography && (
                     <div>
-                      <h2 className="font-semibold text-custom-medium mb-3">About</h2>
+                      <h2 className="text-custom-medium mb-3">About</h2>
                       <p className="leading-relaxed whitespace-pre-wrap">
                         {profile.biography}
                       </p>
