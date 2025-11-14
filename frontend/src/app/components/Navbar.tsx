@@ -15,7 +15,7 @@ const Navbar = () => {
     };
 
     return (
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full p-4 border border-black">
             <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} />
             <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} />
             <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} />

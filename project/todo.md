@@ -33,9 +33,5 @@ A faire 07/11/2025:
 - re-ajuster la derniere page image du formulaire  car elle parait tres serre..
 voir pour optimiser les interfaces dans chaque registerPage, peut etre tout regrouper..
 
-le 11/11/2025
-Ce qu'il faudra merge dans nouvelle branche develop:
-- navbar et navarbuttonElement modifier
-- dossier chat/ en entier
-- toutes les modifs dans le backends a ne surtout pas prendre en compte
-- mainLayout en s'en fiche pour le moment
+le 16/11/2025
+Tutoriel entier a faire: https://www.youtube.com/watch?v=Y7wbzq1j9g0

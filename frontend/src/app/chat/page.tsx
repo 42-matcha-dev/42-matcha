@@ -1,24 +1,17 @@
-<<<<<<< Updated upstream
-=======
 
-import Header from "../components/Header"
-import Navbar from "../components/Navbar"
-import Message from "./Message"
+import NavLinks from ".//NavLinks";
+// import Navbar from "../components/Navbar"
+import ChatList from "./ChatList";
+import ChatBox from "./ChatBox";
 
->>>>>>> Stashed changes
 export default function Chat() {
     return (
-        <div className="bg-white h-full">
-            <Header />
-            <div className="w-1/9 h-full border p-4 border-black">
-                <div className="h-1/2">bonjour</div>
-                <Navbar />
+        <div>
+            <div className="bg-white h-[100vh]">
+                <NavLinks />
+                <ChatList />
+                <ChatBox />
             </div>
-            <Message />
         </div>
     )
-<<<<<<< Updated upstream
 };
-=======
-}
->>>>>>> Stashed changes
