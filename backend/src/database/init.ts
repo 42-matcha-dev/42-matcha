@@ -3,6 +3,7 @@ import { createUserTable } from '../models/user.model.js';
 import { createPendingUserTable } from '../models/pending_user.model.js';
 import { createTagTable } from '../models/tag.model.js';
 import { createUserTagsTable } from '../models/user_tags.model.js';
+import { createLikeTable } from '../models/like.model.js';
 
 let pool: any;
 
@@ -31,6 +32,7 @@ export const initDB = async () => {
       await pool.query(createPendingUserTable);
       await pool.query(createTagTable);
       await pool.query(createUserTagsTable);
+      await pool.query(createLikeTable);
       console.log('✅ Database initialized');
       return;
     } catch (err) {

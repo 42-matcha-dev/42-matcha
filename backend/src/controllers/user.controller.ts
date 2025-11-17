@@ -28,7 +28,7 @@ export const getUserById = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
-    const profile = await userService.getProfile(userId);
+    const profile = await userService.getProfile(userId, req.user.userId);
     return res.status(200).json(profile);
   } catch (error) {
     if (error instanceof Error && error.message === 'User not found') {

@@ -29,6 +29,8 @@ interface UserProfile {
   tags?: Tag[];
   created_at: string;
   updated_at: string;
+  isLiked?: boolean;
+  isMatch?: boolean;
 }
 
 export default function UserProfilePage() {
@@ -38,6 +40,7 @@ export default function UserProfilePage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [likeLoading, setLikeLoading] = useState(false);
   const router = useRouter();
   const params = useParams();
   const userId = params?.id as string;
@@ -89,6 +92,58 @@ export default function UserProfilePage() {
 
     fetchProfile();
   }, [userId, router]);
+
+  const handleLike = async () => {
+    if (!userId || !profile || profile.isLiked || likeLoading) return;
+
+    try {
+      setLikeLoading(true);
+      const token = getCookie('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${apiUrl}/api/like/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          deleteCookie('token');
+          router.push('/login');
+          return;
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send like');
+      }
+
+      const result = await response.json();
+
+      // Update profile state with new like status
+      setProfile({
+        ...profile,
+        isLiked: true,
+        isMatch: result.isMatch || false,
+      });
+
+      // Show success message
+      if (result.isMatch) {
+        alert(result.message || 'Match! You can now start conversation');
+      } else {
+        alert(result.message || 'Like was sent successfully');
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to send like');
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   // Touch handlers for mobile swipe
   const minSwipeDistance = 50;
@@ -202,8 +257,24 @@ export default function UserProfilePage() {
 
                       {/* Action Buttons */}
                       <div className="flex gap-3">
-                        <button className="bg-primary hover:bg-[#A6733A] text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                          Like
+                        <button
+                          onClick={handleLike}
+                          disabled={profile.isLiked || likeLoading}
+                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                            profile.isMatch
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : profile.isLiked
+                              ? 'bg-gray-400 text-white cursor-not-allowed'
+                              : 'bg-primary hover:bg-[#A6733A] text-white'
+                          } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {likeLoading
+                            ? 'Sending...'
+                            : profile.isMatch
+                            ? 'Match!'
+                            : profile.isLiked
+                            ? 'Liked'
+                            : 'Like'}
                         </button>
                         <button className="text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white px-6 py-2 rounded-lg font-semibold transition-colors">
                           Message
