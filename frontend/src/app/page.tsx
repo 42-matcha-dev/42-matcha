@@ -1,9 +1,9 @@
 "use client";
 
-import Header from "./components/Header";
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { div } from "framer-motion/client";
+// import Header from "./components/Header";
+// import { useEffect, useState } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { div } from "framer-motion/client";
 import Chat from "./chat/page";
 
 export default function Home() {
