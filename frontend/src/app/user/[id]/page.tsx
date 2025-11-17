@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import Icon from '@mdi/react';
-import { mdiMapMarker, mdiDiamond } from '@mdi/js';
 import Navbar from '@/app/components/Navbar';
 import Header from '@/app/components/Header';
 import { getCookie, deleteCookie } from '@/utils/cookie.util';
