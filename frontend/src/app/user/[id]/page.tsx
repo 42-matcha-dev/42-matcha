@@ -262,7 +262,7 @@ export default function UserProfilePage() {
                           disabled={profile.isLiked || likeLoading}
                           className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
                             profile.isMatch
-                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              ? 'bg-primary text-white'
                               : profile.isLiked
                               ? 'bg-gray-400 text-white cursor-not-allowed'
                               : 'bg-primary hover:bg-[#A6733A] text-white'
@@ -276,7 +276,14 @@ export default function UserProfilePage() {
                             ? 'Liked'
                             : 'Like'}
                         </button>
-                        <button className="text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                        <button
+                          disabled={!profile.isMatch}
+                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                            profile.isMatch
+                              ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
+                              : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
+                          }`}
+                        >
                           Message
                         </button>
                       </div>
