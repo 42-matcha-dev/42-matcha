@@ -5,7 +5,7 @@
 PROJECT_NAME := 42-matcha
 
 # Docker
-DOCKER_COMPOSE := docker-compose
+DOCKER_COMPOSE := docker compose
 DOCKER_COMPOSE_FILE := docker-compose.yml
 
 # Colors

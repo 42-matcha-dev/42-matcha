@@ -64,9 +64,9 @@ installer les node_modules dans frontend/ npm install et backend/ npm install
 pour vérifier apres une installation de paquet via npm:
 
 Nettoyer le conteneur et rebuild
-docker-compose stop frontend
-docker-compose rm -f frontend
-docker-compose up -d --build frontend
+docker compose stop frontend
+docker compose rm -f frontend
+docker compose up -d --build frontend
 
 Vérification rapide à l’intérieur du conteneur
 docker-compose exec frontend bash
