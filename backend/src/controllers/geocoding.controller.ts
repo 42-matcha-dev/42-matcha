@@ -4,6 +4,22 @@ type Response = express.Response;
 
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 
+// Helper function to format address as "City, CountryCode"
+const formatSimpleAddress = (addressData: any): string => {
+  const city = addressData.city || addressData.town || addressData.village || addressData.municipality || '';
+  const countryCode = addressData.country_code?.toUpperCase() || '';
+
+  if (city && countryCode) {
+    return `${city}, ${countryCode}`;
+  }
+
+  // Fallback if we don't have both
+  if (city) return city;
+  if (countryCode) return countryCode;
+
+  return '';
+};
+
 // Forward geocoding: convert address text to coordinates
 export const forwardGeocode = async (req: express.Request, res: Response) => {
   try {
@@ -14,7 +30,7 @@ export const forwardGeocode = async (req: express.Request, res: Response) => {
     }
 
     const response = await fetch(
-      `${NOMINATIM_BASE_URL}/search?format=json&q=${encodeURIComponent(q)}&limit=1`,
+      `${NOMINATIM_BASE_URL}/search?format=json&q=${encodeURIComponent(q)}&limit=1&addressdetails=1`,
       {
         headers: {
           'User-Agent': 'Matcha-Dating-App/1.0'
@@ -36,10 +52,13 @@ export const forwardGeocode = async (req: express.Request, res: Response) => {
         return res.status(500).json({ error: 'Invalid coordinates returned from geocoding service' });
       }
 
+      // Format address as "City, CountryCode"
+      const simpleAddress = formatSimpleAddress(data[0].address || {});
+
       return res.status(200).json({
         latitude: lat,
         longitude: lon,
-        display_name: data[0].display_name
+        display_name: simpleAddress || data[0].display_name
       });
     } else {
       return res.status(404).json({ error: 'Location not found. Please try a more specific address.' });
@@ -68,7 +87,7 @@ export const reverseGeocode = async (req: express.Request, res: Response) => {
     }
 
     const response = await fetch(
-      `${NOMINATIM_BASE_URL}/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+      `${NOMINATIM_BASE_URL}/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
       {
         headers: {
           'User-Agent': 'Matcha-Dating-App/1.0'
@@ -81,15 +100,16 @@ export const reverseGeocode = async (req: express.Request, res: Response) => {
     }
 
     const data = await response.json();
-    const address = data.display_name ||
-      `${data.address?.city || data.address?.town || data.address?.village || ''}, ${data.address?.country || ''}`.trim();
 
-    if (!address) {
+    // Format address as "City, CountryCode"
+    const simpleAddress = formatSimpleAddress(data.address || {});
+
+    if (!simpleAddress) {
       return res.status(404).json({ error: 'Could not determine address from location' });
     }
 
     return res.status(200).json({
-      address,
+      address: simpleAddress,
       latitude,
       longitude
     });
