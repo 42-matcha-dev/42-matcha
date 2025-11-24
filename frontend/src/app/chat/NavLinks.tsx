@@ -4,7 +4,7 @@ import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiCog, mdiLogout } from '@md
 
 const NavLinks = () => {
     return (
-        <section className="sticky lg:static top-0 flex items-center lg:items-start lg:justify-start h-[7vh] lg:h-[100vh] w-[100%] lg:w-[125px] py-8 lg:py-0 bg-[#01AA85]">
+        <section className="sticky lg:static top-0 flex items-center lg:items-start lg:justify-start h-[7vh] lg:h-[100vh] w-[100%] lg:w-[200px] py-8 lg:py-0 bg-[#01AA85]">
             <main className="w-[100vh]">
                 <div>
                     <span>
