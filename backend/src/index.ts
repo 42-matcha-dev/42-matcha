@@ -10,6 +10,7 @@ import uploadRoutes from './routes/upload.routes.js';
 import userRoutes from './routes/user.routes.js';
 import tagRoutes from './routes/tag.routes.js';
 import likeRoutes from './routes/like.routes.js';
+import geocodingRoutes from './routes/geocoding.routes.js';
 
 const app = express();
 const port = process.env.PORT_BACKEND || 4000;
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/like', likeRoutes);
+app.use('/api/geocoding', geocodingRoutes);
 app.use('/api', uploadRoutes);
 
 app.get('/api/hello', (_, res) => {

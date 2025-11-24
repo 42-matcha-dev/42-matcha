@@ -20,6 +20,8 @@ export const registerSchema = z.object({
   lastName: shortText(),
   birthday: z.string(),
   location: shortText(),
+  latitude: z.number(),
+  longitude: z.number(),
   gender: z.enum(["Male", "Female", "Other"]),
   lookingFor: z.enum(["Male", "Female", "Both"]),
   description: longText(),

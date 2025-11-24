@@ -12,6 +12,8 @@ interface TestUser {
   sexual_preferences: 'male' | 'female' | 'both';
   biography: string;
   location: string;
+  latitude: number;
+  longitude: number;
   icon_url?: string;
   photo_urls?: string[];
 }
@@ -27,6 +29,8 @@ const testUsers: TestUser[] = [
     sexual_preferences: 'male',
     biography: 'Love traveling and photography!',
     location: 'Paris, France',
+    latitude: 48.8566,
+    longitude: 2.3522,
   },
   {
     email: 'test2@example.com',
@@ -38,6 +42,8 @@ const testUsers: TestUser[] = [
     sexual_preferences: 'female',
     biography: 'Tech enthusiast and coffee lover.',
     location: 'New York, USA',
+    latitude: 40.7128,
+    longitude: -74.0060,
   },
   {
     email: 'test3@example.com',
@@ -49,6 +55,8 @@ const testUsers: TestUser[] = [
     sexual_preferences: 'both',
     biography: 'Musician and artist. Always up for an adventure!',
     location: 'London, UK',
+    latitude: 51.5074,
+    longitude: -0.1278,
   },
   {
     email: 'test4@example.com',
@@ -60,6 +68,8 @@ const testUsers: TestUser[] = [
     sexual_preferences: 'both',
     biography: 'Fitness enthusiast and nature lover.',
     location: 'Tokyo, Japan',
+    latitude: 35.6762,
+    longitude: 139.6503,
   },
   {
     email: 'test5@example.com',
@@ -71,6 +81,8 @@ const testUsers: TestUser[] = [
     sexual_preferences: 'male',
     biography: 'Bookworm and foodie. Always exploring new restaurants!',
     location: 'Barcelona, Spain',
+    latitude: 41.3851,
+    longitude: 2.1734,
   },
 ];
 
@@ -165,11 +177,13 @@ export const seedTestUsers = async () => {
       const password_hash = await bcrypt.hash(userData.password, 10);
 
       // Insert user
+      // NOTE: Database schema must include latitude and longitude columns for this to work
+      // Add to users table: latitude DOUBLE PRECISION, longitude DOUBLE PRECISION
       const query = `
         INSERT INTO users (
           email, password_hash, username, first_name, last_name,
-          gender, sexual_preferences, biography, location, icon_url, photo_urls
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING id, email, username;
       `;
       const values = [
@@ -182,6 +196,8 @@ export const seedTestUsers = async () => {
         userData.sexual_preferences,
         userData.biography,
         userData.location,
+        userData.latitude,
+        userData.longitude,
         userData.icon_url || null,
         userData.photo_urls || null,
       ];

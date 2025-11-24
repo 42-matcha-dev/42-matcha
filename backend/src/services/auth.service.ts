@@ -25,6 +25,8 @@ export const authService = {
       sexual_preferences: data.lookingFor.toLowerCase(),
       biography: data.description,
       location: data.location,
+      latitude: data.latitude,
+      longitude: data.longitude,
       icon_url: data.iconImage,
       photo_urls: photoUrls,
     });

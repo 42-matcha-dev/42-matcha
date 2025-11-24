@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
   biography TEXT,
   fame_rating INTEGER DEFAULT 0,
   location TEXT,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
   icon_url TEXT,
   photo_urls TEXT[] CHECK (array_length(photo_urls, 1) <= 4),
   created_at TIMESTAMP DEFAULT NOW(),
