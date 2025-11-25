@@ -12,7 +12,7 @@ interface NavbarElementProps {
 
 const NavbarButtonElement = ({ path, size, title, color, onClick}: NavbarElementProps) => {
   return (
-    <button className="w-full flex flex-row items-center hover:bg-blue-300 h-24" onClick={onClick}>
+    <button className="w-full flex flex-row items-center justify-start hover:bg-blue-300 h-15" onClick={onClick}>
       <div className="flex items-center gap-2">
         <div className="p-2">
             <Icon path={path} size={size} color={color} />

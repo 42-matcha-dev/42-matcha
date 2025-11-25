@@ -36,7 +36,7 @@ const chatData = [
         username: "lucasB"
       }
     ],
-    lastMessage: "Ok nickel je te tiens au courant."
+    lastMessage: "Ok nickel je te tiens au courant.bonjour est-ce que tu peux enfin me dire quelle est son prenom stp... c'est urgent"
   },
 
   {

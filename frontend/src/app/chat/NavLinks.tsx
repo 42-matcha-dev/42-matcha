@@ -4,14 +4,16 @@ import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiCog, mdiLogout } from '@md
 
 const NavLinks = () => {
     return (
-        <section className="sticky lg:static top-0 flex items-center lg:items-start lg:justify-start h-[7vh] lg:h-[100vh] w-[100%] lg:w-[200px] py-8 lg:py-0 bg-[#01AA85]">
+        <section className="sticky md:static top-0 flex items-center md:items-start md:justify-start h-[7vh] md:h-[100vh] w-[100%] md:w-[200px] py-8 md:py-0 bg-[#01AA85]">
             <main className="w-[100vh]">
-                <div>
-                    <span>
-                        <img src="/logo_apple.jpg" className="w-[56px] h-[52px] object-contain" alt="" />
-                    </span>
-                </div>
                 <div className="flex flex-col w-[100%] items-center justify-center">
+                    <span className="w-full h-full border border-b-black items-">
+                        <img
+                            src="/logo_apple.jpg"
+                            className="w-[56px] h-[52px] object-contain"
+                            alt=""
+                        />
+                    </span>
                     <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} />
                     <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} />
                     <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} />
