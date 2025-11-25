@@ -15,7 +15,7 @@ export const authRepository = {
     const query = `
       INSERT INTO users (
         email, password_hash, username, first_name, last_name,
-        gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
+        birthdate, gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       RETURNING id;
     `;
@@ -25,6 +25,7 @@ export const authRepository = {
       data.username,
       data.first_name,
       data.last_name,
+      data.birthdate,
       data.gender,
       data.sexual_preferences,
       data.biography,

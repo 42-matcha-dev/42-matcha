@@ -33,6 +33,15 @@ fclean:
 # re: fclean all
 re: clean all
 
+db:
+	@echo "$(GREEN)[+] Connecting to PostgreSQL database...$(NC)"
+	@if [ -f .env ]; then \
+		export $$(grep -v '^#' .env | xargs) && \
+		$(DOCKER_COMPOSE) exec db psql -U $$DB_USER -d $$DB_NAME; \
+	else \
+		echo "$(RED)[!] .env file not found. Please create one with DB_USER and DB_NAME variables.$(NC)"; \
+	fi
+
 help:
 	@echo ""
 	@echo "$(GREEN)Makefile for $(PROJECT_NAME)$(NC)"
@@ -42,7 +51,10 @@ help:
 	@echo "  $(GREEN)make clean$(NC)         → Stop and remove containers only"
 	@echo "  $(GREEN)make fclean$(NC)        → Remove containers, volumes, images"
 	@echo "  $(GREEN)make re$(NC)            → Full rebuild (fclean + all)"
+	@echo "  $(GREEN)make db$(NC)            → Connect to PostgreSQL database (psql)"
 	@echo "  $(GREEN)make help$(NC)          → Show this help message"
 	@echo ""
 
-.PHONY: all up clean fclean re help
+
+
+.PHONY: all up clean fclean re db help

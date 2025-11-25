@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) UNIQUE NOT NULL,
   first_name VARCHAR(50),
   last_name VARCHAR(50),
+  birthdate DATE,
   password_hash TEXT NOT NULL,
   gender gender_enum,
   sexual_preferences preference_enum,

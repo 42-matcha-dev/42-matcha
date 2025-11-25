@@ -8,6 +8,7 @@ interface TestUser {
   username: string;
   first_name: string;
   last_name: string;
+  birthday: string;
   gender: 'male' | 'female' | 'other';
   sexual_preferences: 'male' | 'female' | 'both';
   biography: string;
@@ -25,6 +26,7 @@ const testUsers: TestUser[] = [
     username: 'testuser1',
     first_name: 'Alice',
     last_name: 'Johnson',
+    birthday: '1991-01-01',
     gender: 'female',
     sexual_preferences: 'male',
     biography: 'Love traveling and photography!',
@@ -38,6 +40,7 @@ const testUsers: TestUser[] = [
     username: 'testuser2',
     first_name: 'Bob',
     last_name: 'Smith',
+    birthday: '1992-01-01',
     gender: 'male',
     sexual_preferences: 'female',
     biography: 'Tech enthusiast and coffee lover.',
@@ -51,6 +54,7 @@ const testUsers: TestUser[] = [
     username: 'testuser3',
     first_name: 'Charlie',
     last_name: 'Brown',
+    birthday: '1993-01-01',
     gender: 'male',
     sexual_preferences: 'both',
     biography: 'Musician and artist. Always up for an adventure!',
@@ -64,6 +68,7 @@ const testUsers: TestUser[] = [
     username: 'testuser4',
     first_name: 'Diana',
     last_name: 'Prince',
+    birthday: '1994-01-01',
     gender: 'female',
     sexual_preferences: 'both',
     biography: 'Fitness enthusiast and nature lover.',
@@ -77,6 +82,7 @@ const testUsers: TestUser[] = [
     username: 'testuser5',
     first_name: 'Eve',
     last_name: 'Williams',
+    birthday: '1995-01-01',
     gender: 'female',
     sexual_preferences: 'male',
     biography: 'Bookworm and foodie. Always exploring new restaurants!',
@@ -182,8 +188,8 @@ export const seedTestUsers = async () => {
       const query = `
         INSERT INTO users (
           email, password_hash, username, first_name, last_name,
-          gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          birthdate, gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING id, email, username;
       `;
       const values = [
@@ -192,6 +198,7 @@ export const seedTestUsers = async () => {
         userData.username,
         userData.first_name,
         userData.last_name,
+        userData.birthday,
         userData.gender,
         userData.sexual_preferences,
         userData.biography,
