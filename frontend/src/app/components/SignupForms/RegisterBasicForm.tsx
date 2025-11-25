@@ -32,8 +32,9 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(false);
+  const [lastVerifiedLocation, setLastVerifiedLocation] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, setValue} = useForm<RegisterBasicSchema>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch} = useForm<RegisterBasicSchema>({
       resolver: zodResolver(registerBasicSchema),
       mode: "onBlur",
       defaultValues: {
@@ -46,6 +47,13 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       }
   });
 
+  const currentLocation = watch("location");
+  const currentLatitude = watch("latitude");
+  const currentLongitude = watch("longitude");
+  const currentFirstName = watch("firstName");
+  const currentLastName = watch("lastName");
+  const currentBirthday = watch("birthday");
+
   useEffect(() => {
     if (defaultValues) {
       Object.entries(defaultValues).forEach(([key, value]) => {
@@ -53,6 +61,15 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       });
     }
   }, [defaultValues, setValue]);
+
+  // Sync lastVerifiedLocation when we have valid coordinates and location text
+  useEffect(() => {
+    if (currentLocation && currentLatitude !== 0 && currentLongitude !== 0 && !lastVerifiedLocation) {
+      // If we have valid coordinates but no verified location yet, mark it as verified
+      // This handles the case when form is pre-filled with valid data
+      setLastVerifiedLocation(currentLocation);
+    }
+  }, [currentLocation, currentLatitude, currentLongitude, lastVerifiedLocation]);
 
   // Forward geocode location text to get lat/lon when user manually enters location
   const geocodeLocation = async (locationText: string) => {
@@ -77,12 +94,14 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       const data = await response.json();
 
       if (data.latitude && data.longitude) {
-        setValue("latitude", data.latitude);
-        setValue("longitude", data.longitude);
-        // Optionally update location with the normalized address from geocoding
-        if (data.display_name) {
-          setValue("location", data.display_name);
-        }
+        // Use shouldValidate: false to prevent triggering validation for other fields
+        setValue("latitude", data.latitude, { shouldValidate: false });
+        setValue("longitude", data.longitude, { shouldValidate: false });
+        // Update location with the normalized address from geocoding
+        const verifiedAddress = data.display_name || locationText;
+        setValue("location", verifiedAddress, { shouldValidate: false });
+        // Store the verified location
+        setLastVerifiedLocation(verifiedAddress);
       } else {
         throw new Error("Invalid coordinates returned from geocoding service.");
       }
@@ -125,10 +144,12 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
             throw new Error("Could not determine address from location.");
           }
 
-          // Update form values
-          setValue("location", data.address);
-          setValue("latitude", data.latitude);
-          setValue("longitude", data.longitude);
+          // Update form values with shouldValidate: false to prevent triggering validation for other fields
+          setValue("location", data.address, { shouldValidate: false });
+          setValue("latitude", data.latitude, { shouldValidate: false });
+          setValue("longitude", data.longitude, { shouldValidate: false });
+          // Store the verified location
+          setLastVerifiedLocation(data.address);
           setGpsLoading(false);
         } catch (error) {
           setGpsError(error instanceof Error ? error.message : "Failed to get address from location.");
@@ -159,7 +180,26 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
     );
   };
 
-  const onSubmit = (data: RegisterBasicSchema) => {
+  const onSubmit = async (data: RegisterBasicSchema) => {
+    // Safety check: verify location matches verified location and coordinates are valid
+    if (!lastVerifiedLocation || data.location !== lastVerifiedLocation) {
+      // Location doesn't match verified location, try to geocode it
+      if (data.location && data.location.trim().length >= 3) {
+        await geocodeLocation(data.location);
+        // Don't proceed if geocoding is needed
+        return;
+      } else {
+        setGpsError("Please enter and verify a valid location.");
+        return;
+      }
+    }
+
+    // Validate coordinates are not 0,0
+    if (data.latitude === 0 && data.longitude === 0) {
+      setGpsError("Please verify your location before continuing.");
+      return;
+    }
+
     updateData(data);
     console.log("RegisterBasicForm: ", data);
     onNext();
@@ -187,6 +227,15 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
                   }
                 }
               })}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const locationText = e.currentTarget.value;
+                  if (locationText && locationText.trim().length >= 3) {
+                    geocodeLocation(locationText);
+                  }
+                }
+              }}
             />
             <button
               type="button"
@@ -208,7 +257,24 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
             )}
           </div>
 
-          <NextButton text="Next"/>
+          <NextButton
+            text="Next"
+            disabled={
+              gpsLoading ||
+              geocodingLoading ||
+              !lastVerifiedLocation ||
+              currentLocation !== lastVerifiedLocation ||
+              currentLatitude === 0 ||
+              currentLongitude === 0 ||
+              !currentFirstName ||
+              !currentLastName ||
+              !currentBirthday ||
+              !!errors.firstName ||
+              !!errors.lastName ||
+              !!errors.birthday ||
+              !!errors.location
+            }
+          />
       </form>
   );
 }
