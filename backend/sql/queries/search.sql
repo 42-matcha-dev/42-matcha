@@ -60,7 +60,7 @@ WHERE u.id != 1
 		cos(radians(me.latitude)) * cos(radians(u.latitude)) *
 		cos(radians(u.longitude) - radians(me.longitude)) +
 		sin(radians(me.latitude)) * sin(radians(u.latitude))
-	) BETWEEN 0 AND 1000
+	) BETWEEN 0 AND 100
 	-- Order by distance
 ORDER BY distance ASC
 LIMIT 20

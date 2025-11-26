@@ -93,24 +93,57 @@ const testUsers: TestUser[] = [
   },
 ];
 
+// French cities with matching coordinates
+const frenchCities = [
+  { city: 'Paris', country: 'France', latitude: 48.8566, longitude: 2.3522 },
+  { city: 'Lyon', country: 'France', latitude: 45.7640, longitude: 4.8357 },
+  { city: 'Marseille', country: 'France', latitude: 43.2965, longitude: 5.3698 },
+  { city: 'Toulouse', country: 'France', latitude: 43.6047, longitude: 1.4442 },
+  { city: 'Nice', country: 'France', latitude: 43.7102, longitude: 7.2620 },
+  { city: 'Nantes', country: 'France', latitude: 47.2184, longitude: -1.5536 },
+  { city: 'Strasbourg', country: 'France', latitude: 48.5734, longitude: 7.7521 },
+  { city: 'Montpellier', country: 'France', latitude: 43.6108, longitude: 3.8767 },
+  { city: 'Bordeaux', country: 'France', latitude: 44.8378, longitude: -0.5792 },
+  { city: 'Lille', country: 'France', latitude: 50.6292, longitude: 3.0573 },
+  { city: 'Rennes', country: 'France', latitude: 48.1173, longitude: -1.6778 },
+  { city: 'Reims', country: 'France', latitude: 49.2583, longitude: 4.0317 },
+  { city: 'Le Havre', country: 'France', latitude: 49.4944, longitude: 0.1079 },
+  { city: 'Saint-Étienne', country: 'France', latitude: 45.4397, longitude: 4.3872 },
+  { city: 'Toulon', country: 'France', latitude: 43.1242, longitude: 5.9280 },
+  { city: 'Grenoble', country: 'France', latitude: 45.1885, longitude: 5.7245 },
+  { city: 'Dijon', country: 'France', latitude: 47.3220, longitude: 5.0415 },
+  { city: 'Angers', country: 'France', latitude: 47.4739, longitude: -0.5517 },
+  { city: 'Nîmes', country: 'France', latitude: 43.8367, longitude: 4.3601 },
+  { city: 'Villeurbanne', country: 'France', latitude: 45.7719, longitude: 4.8902 },
+  { city: 'Saint-Denis', country: 'France', latitude: 48.9359, longitude: 2.3574 },
+  { city: 'Le Mans', country: 'France', latitude: 48.0061, longitude: 0.1996 },
+  { city: 'Aix-en-Provence', country: 'France', latitude: 43.5297, longitude: 5.4474 },
+  { city: 'Brest', country: 'France', latitude: 48.3904, longitude: -4.4861 },
+  { city: 'Tours', country: 'France', latitude: 47.3941, longitude: 0.6848 },
+  { city: 'Amiens', country: 'France', latitude: 49.8942, longitude: 2.2957 },
+  { city: 'Limoges', country: 'France', latitude: 45.8354, longitude: 1.2622 },
+  { city: 'Perpignan', country: 'France', latitude: 42.6977, longitude: 2.8954 },
+  { city: 'Metz', country: 'France', latitude: 49.1193, longitude: 6.1757 },
+  { city: 'Besançon', country: 'France', latitude: 47.2378, longitude: 6.0241 },
+];
+
 const generateFakerUser = (): TestUser => {
   const gender = faker.helpers.arrayElement(['male', 'female'] as const);
   const sexualPreferences = faker.helpers.arrayElement(['male', 'female', 'both'] as const);
 
   // Generate birthday between 18-80 years ago
   const minAge = 18;
-  const maxAge = 80;
+  const maxAge = 42;
   const birthYear = new Date().getFullYear() - faker.number.int({ min: minAge, max: maxAge });
   const birthMonth = faker.number.int({ min: 1, max: 12 });
   const birthDay = faker.number.int({ min: 1, max: 28 }); // Use 28 to avoid month-end issues
   const birthday = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
 
-  // Generate location with coordinates
-  const city = faker.location.city();
-  const country = faker.location.country();
-  const location = `${city}, ${country}`;
-  const latitude = faker.location.latitude();
-  const longitude = faker.location.longitude();
+  // Generate location with coordinates (select from French cities)
+  const selectedCity = faker.helpers.arrayElement(frenchCities);
+  const location = `${selectedCity.city}, ${selectedCity.country}`;
+  const latitude = selectedCity.latitude;
+  const longitude = selectedCity.longitude;
 
   // Generate photo URLs (mandatory, 1-4 photos)
   const photoUrls = Array.from({ length: faker.number.int({ min: 1, max: 4 }) }, () => faker.image.avatar());
@@ -213,7 +246,7 @@ export const seedTestUsers = async () => {
 
     // Generate 300 faker users
     console.log('🌱 Generating 300 faker users...');
-    const fakerUsers = Array.from({ length: 300 }, () => generateFakerUser());
+    const fakerUsers = Array.from({ length: 1000 }, () => generateFakerUser());
 
     // Combine existing test users with faker-generated users
     const allUsers = [...testUsers, ...fakerUsers];
