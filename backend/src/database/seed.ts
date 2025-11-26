@@ -9,7 +9,7 @@ interface TestUser {
   first_name: string;
   last_name: string;
   birthday: string;
-  gender: 'male' | 'female' | 'other';
+  gender: 'male' | 'female';
   sexual_preferences: 'male' | 'female' | 'both';
   biography: string;
   location: string;

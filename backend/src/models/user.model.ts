@@ -1,5 +1,5 @@
 export const createUserTable = `
-CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');
+CREATE TYPE gender_enum AS ENUM ('male', 'female');
 CREATE TYPE preference_enum AS ENUM ('male', 'female', 'both');
 
 CREATE TABLE IF NOT EXISTS users (
