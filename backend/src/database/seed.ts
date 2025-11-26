@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { faker } from '@faker-js/faker';
 import pool from './init.js';
 import tagsData from '../data/tags.json' with { type: 'json' };
 
@@ -92,6 +93,49 @@ const testUsers: TestUser[] = [
   },
 ];
 
+const generateFakerUser = (): TestUser => {
+  const gender = faker.helpers.arrayElement(['male', 'female'] as const);
+  const sexualPreferences = faker.helpers.arrayElement(['male', 'female', 'both'] as const);
+
+  // Generate birthday between 18-80 years ago
+  const minAge = 18;
+  const maxAge = 80;
+  const birthYear = new Date().getFullYear() - faker.number.int({ min: minAge, max: maxAge });
+  const birthMonth = faker.number.int({ min: 1, max: 12 });
+  const birthDay = faker.number.int({ min: 1, max: 28 }); // Use 28 to avoid month-end issues
+  const birthday = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
+
+  // Generate location with coordinates
+  const city = faker.location.city();
+  const country = faker.location.country();
+  const location = `${city}, ${country}`;
+  const latitude = faker.location.latitude();
+  const longitude = faker.location.longitude();
+
+  // Generate photo URLs (mandatory, 1-4 photos)
+  const photoUrls = Array.from({ length: faker.number.int({ min: 1, max: 4 }) }, () => faker.image.avatar());
+
+  // Generate icon URL (mandatory)
+  const iconUrl = faker.image.avatar();
+
+  return {
+    email: faker.internet.email(),
+    password: 'password123', // Use same default password as test users
+    username: faker.internet.username(),
+    first_name: faker.person.firstName(),
+    last_name: faker.person.lastName(),
+    birthday,
+    gender,
+    sexual_preferences: sexualPreferences,
+    biography: faker.person.bio(),
+    location,
+    latitude,
+    longitude,
+    icon_url: iconUrl,
+    photo_urls: photoUrls,
+  };
+};
+
 export const seedTags = async () => {
   console.log('🌱 Seeding tags...');
 
@@ -167,7 +211,15 @@ export const seedTestUsers = async () => {
     // First, seed tags
     const tagMap = await seedTags();
 
-    for (const userData of testUsers) {
+    // Generate 300 faker users
+    console.log('🌱 Generating 300 faker users...');
+    const fakerUsers = Array.from({ length: 300 }, () => generateFakerUser());
+
+    // Combine existing test users with faker-generated users
+    const allUsers = [...testUsers, ...fakerUsers];
+    console.log(`📊 Total users to seed: ${allUsers.length} (${testUsers.length} test users + ${fakerUsers.length} faker users)`);
+
+    for (const userData of allUsers) {
       // Check if user already exists
       const existingUser = await pool.query(
         'SELECT id FROM users WHERE email = $1 OR username = $2',
