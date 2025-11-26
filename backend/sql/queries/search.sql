@@ -31,6 +31,13 @@ SELECT
 FROM users u
 JOIN users me ON me.id = 1
 WHERE u.id != 1
+	-- Sexual preferences filter
+	AND (
+		me.sexual_preferences::text = 'both' OR me.sexual_preferences::text = u.gender::text
+	)
+	AND (
+		u.sexual_preferences::text = 'both' OR u.sexual_preferences::text = me.gender::text
+	)
 	-- Exclude disliked users
 	AND u.id NOT IN (
 		SELECT disliked_id FROM dislikes WHERE disliker_id = me.id
@@ -61,7 +68,16 @@ WHERE u.id != 1
 		cos(radians(u.longitude) - radians(me.longitude)) +
 		sin(radians(me.latitude)) * sin(radians(u.latitude))
 	) BETWEEN 0 AND 100
-	-- Order by distance
+	-- Tags filter
+	-- AND (
+	-- 	SELECT COUNT(*)
+	-- 	FROM user_tags ut
+	-- 	WHERE ut.user_id = u.id
+	-- 		AND ut.tag_id = ANY(
+	-- 			'{1,2}'
+	-- 		)
+	-- ) >= 2
+-- Order by distance
 ORDER BY distance ASC
 LIMIT 20
 OFFSET 0; -- Page number * 20
