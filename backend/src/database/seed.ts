@@ -241,6 +241,15 @@ export const seedTestUsers = async () => {
   console.log('🌱 Seeding test users...');
 
   try {
+    // Check if users already exist to avoid re-seeding
+    const userCountResult = await pool.query('SELECT COUNT(*) FROM users');
+    const userCount = parseInt(userCountResult.rows[0].count, 10);
+
+    if (userCount > 1005) {
+      console.log(`✅ Database already seeded with ${userCount} users. Skipping seed.`);
+      return;
+    }
+
     // First, seed tags
     const tagMap = await seedTags();
 

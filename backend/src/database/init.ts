@@ -40,6 +40,7 @@ export const initDB = async () => {
       console.log('✅ Database initialized');
       return;
     } catch (err) {
+      console.error(err); // Add this line to see the actual error
       console.log(`⏳ Waiting for database... (${i + 1}/10)`);
       await new Promise(r => setTimeout(r, 3000));
     }

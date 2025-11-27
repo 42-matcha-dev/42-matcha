@@ -1,6 +1,15 @@
 export const createUserTable = `
-CREATE TYPE gender_enum AS ENUM ('male', 'female');
-CREATE TYPE preference_enum AS ENUM ('male', 'female', 'both');
+DO $$ BEGIN
+    CREATE TYPE gender_enum AS ENUM ('male', 'female');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE preference_enum AS ENUM ('male', 'female', 'both');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
