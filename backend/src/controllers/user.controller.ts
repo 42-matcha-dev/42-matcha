@@ -38,3 +38,71 @@ export const getUserById = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+export const searchUsers = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Helper to parse a number safely
+    const parseNumber = (value: any): number | undefined => {
+      if (value === undefined) return undefined;
+      const num = Number(value);
+      return isNaN(num) ? undefined : num;
+    };
+
+    // Extract params
+    const ageMin = parseNumber(req.query.ageMin);
+    const ageMax = parseNumber(req.query.ageMax);
+    const distanceMax = parseNumber(req.query.distanceMax);
+    const fameMin = parseNumber(req.query.fameMin);
+    const fameMax = parseNumber(req.query.fameMax);
+    const page = parseNumber(req.query.page);
+    const limit = parseNumber(req.query.limit);
+
+    // Validate ranges
+    if (page !== undefined && page < 0) {
+      return res.status(400).json({ error: 'Invalid page parameter' });
+    }
+
+    if (limit !== undefined && limit < 1) {
+      return res.status(400).json({ error: 'Invalid limit parameter' });
+    }
+
+    if (distanceMax !== undefined && distanceMax < 0) {
+      return res.status(400).json({ error: 'Invalid distanceMax parameter' });
+    }
+
+    // Parse tag list (comma-separated)
+    let tagIds: number[] | undefined = undefined;
+    if (typeof req.query.tags === 'string') {
+      tagIds = req.query.tags
+        .split(',')
+        .map(v => Number(v.trim()))
+        .filter(v => !isNaN(v));
+
+      if (tagIds.length === 0) tagIds = undefined;
+    }
+
+    // Call service
+    const searchResults = await userService.searchUsers(req.user.userId, {
+      ageMin,
+      ageMax,
+      distanceMax,
+      fameMin,
+      fameMax,
+      tagIds,
+      page,
+      limit,
+    });
+
+    return res.status(200).json(searchResults);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Server error',
+    });
+  }
+};
+

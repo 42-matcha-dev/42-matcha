@@ -1,10 +1,14 @@
 SELECT
+	u.id,
 	u.username,
+	u.first_name,
+	u.last_name,
 	date_part('year', age(u.birthdate)) AS age,
 	u.gender,
 	u.sexual_preferences,
 	u.location,
-	me.location,
+	u.icon_url,
+	u.photo_urls[1] AS photo_url,
 	6371 * acos(
 		cos(radians(me.latitude)) * cos(radians(u.latitude)) *
 		cos(radians(u.longitude) - radians(me.longitude)) +

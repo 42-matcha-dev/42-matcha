@@ -29,5 +29,54 @@ export const userService = {
   assignTags: async (userId: number, tagIds: number[]) => {
     await userRepository.insertUserTags(userId, tagIds);
   },
+
+  searchUsers: async (
+    currentUserId: number,
+    params: {
+      ageMin?: number;
+      ageMax?: number;
+      distanceMax?: number;
+      fameMin?: number;
+      fameMax?: number;
+      tagIds?: number[];
+      page?: number;
+      limit?: number;
+    }
+  ) => {
+    // Set defaults only for pagination
+    const page = params.page !== undefined ? Math.max(0, params.page) : 0;
+    const limit = params.limit !== undefined ? Math.max(1, Math.min(100, params.limit)) : 20;
+
+    // Validate age range only if both are provided
+    if (params.ageMin !== undefined && params.ageMax !== undefined) {
+      if (params.ageMin > params.ageMax) {
+        throw new Error('ageMin must be less than or equal to ageMax');
+      }
+    }
+
+    // Validate fame range only if both are provided
+    if (params.fameMin !== undefined && params.fameMax !== undefined) {
+      if (params.fameMin > params.fameMax) {
+        throw new Error('fameMin must be less than or equal to fameMax');
+      }
+    }
+
+    // Validate distanceMax if provided
+    if (params.distanceMax !== undefined && params.distanceMax < 0) {
+      throw new Error('distanceMax must be greater than or equal to 0');
+    }
+
+    // Pass through undefined values - filters will be excluded if not provided
+    return await userRepository.searchUsers(currentUserId, {
+      ageMin: params.ageMin,
+      ageMax: params.ageMax,
+      distanceMax: params.distanceMax,
+      fameMin: params.fameMin,
+      fameMax: params.fameMax,
+      tagIds: params.tagIds && params.tagIds.length > 0 ? params.tagIds : undefined,
+      page,
+      limit,
+    });
+  },
 };
 
