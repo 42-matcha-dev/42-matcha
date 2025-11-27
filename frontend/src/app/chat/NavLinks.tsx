@@ -17,13 +17,22 @@ const NavLinks = () => {
     const [open, setOpen] = useState(false);
 
     return (
-        <section className="md:static top-0 flex md:flex-col items-center h-[12vh] md:h-[100vh] w-full md:w-[200px] bg-[#01AA85]">
-            <button
-                className="md:hidden p-6"
-                onClick={() => setOpen(!open)}
-            >
-                <Icon path={open ? mdiClose : mdiMenu} size={1.5} color="black" />
-            </button>
+        <section className="md:static top-0 flex md:flex-col items-center h-[9vh] md:h-[100vh] w-full md:w-[200px] bg-[#01AA85]">
+            <div className="w-[100%] flex flex-row items-center">
+                <button
+                    className="md:hidden p-4"
+                    onClick={() => setOpen(!open)}
+                >
+                    <Icon path={open ? mdiClose : mdiMenu} size={1.5} color="black" />
+                </button>
+                <span className="w-full h-full flex justify-center py-2">
+                    <img
+                        src="/logo_apple.jpg"
+                        className="w-[56px] h-[52px] object-contain"
+                        alt=""
+                    />
+                </span>
+            </div>
             <main
                 className={`
                     absolute md:static top-14 left-0 
@@ -36,13 +45,7 @@ const NavLinks = () => {
             >
                 <div className="flex flex-col w-full items-center justify-center gap-4 py-4 md:py-0">
 
-                    <span className="w-full h-full border-b border-black flex justify-center py-2">
-                        <img
-                            src="/logo_apple.jpg"
-                            className="w-[56px] h-[52px] object-contain"
-                            alt=""
-                        />
-                    </span>
+
 
                     <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} />
                     <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} />

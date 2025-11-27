@@ -6,7 +6,7 @@ import ChatBox from "./ChatBox";
 
 export default function Chat() {
     return (
-        <div className="flex lg:flex-row flex-col items-start bg-black">
+        <div className="flex md:flex-row flex-col items-start bg-black">
             <NavLinks />
             <ChatList />
             <ChatBox />

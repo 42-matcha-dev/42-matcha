@@ -40,3 +40,6 @@ Tutoriel entier a faire: https://www.youtube.com/watch?v=Y7wbzq1j9g0
 faire menu hamburger pour small size (medium et large doit etre pareil, juste en pourcentage)
 en sm du coup il n'y a que la chatlist (les messages ne sont pas visible (hidden))
 et quand on clique sur un boutton, la chatlist disparait et les messages apparaissent avec la conversation selectionner par rapport aux donnees charges.
+
+26/11/2025
+socket pour chat realtime
