@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import InputFormMultiSelect from './InputFormMultiSelect'
 import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 import Icon from '@mdi/react'
@@ -27,13 +27,46 @@ interface SearchFiltersProps {
 
 const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps) => {
   const [showTags, setShowTags] = useState(false)
+  const [localFilters, setLocalFilters] = useState(filters)
 
-  const handleChange = (key: keyof FilterState, value: number | number[] | string | undefined) => {
-    onChange({ ...filters, [key]: value })
+  // Sync local state if filters change externally (e.g. reset button)
+  useEffect(() => {
+    setLocalFilters(filters)
+  }, [filters])
+
+  // Update only local state (no reload yet)
+  const handleLocalChange = (
+    key: keyof FilterState,
+    value: number | number[] | string | undefined
+  ) => {
+    setLocalFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  // Commit changes to parent (triggers reload)
+  const handleCommit = () => {
+    onChange(localFilters)
+  }
+
+  // Handle Enter key to commit
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleCommit()
+      ;(e.target as HTMLInputElement).blur() // Remove focus to reflect "done" state
+    }
+  }
+
+  // Update immediately for Select and Tags (triggers reload)
+  const handleImmediateChange = (
+    key: keyof FilterState,
+    value: number | number[] | string | undefined
+  ) => {
+    const newFilters = { ...localFilters, [key]: value }
+    setLocalFilters(newFilters)
+    onChange(newFilters)
   }
 
   const handleTagChange = (selectedIds: number[]) => {
-    handleChange('tagIds', selectedIds)
+    handleImmediateChange('tagIds', selectedIds)
   }
 
   return (
@@ -47,22 +80,26 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
               type="number"
               placeholder="Min"
               className="w-20 p-2 border rounded-md text-sm"
-              value={filters.ageMin || ''}
+              value={localFilters.ageMin || ''}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
-                handleChange('ageMin', e.target.value ? Number(e.target.value) : undefined)
+                handleLocalChange('ageMin', e.target.value ? Number(e.target.value) : undefined)
               }
+              onBlur={handleCommit}
+              onKeyDown={handleKeyDown}
             />
             <span className="text-gray-400">-</span>
             <input
               type="number"
               placeholder="Max"
               className="w-20 p-2 border rounded-md text-sm"
-              value={filters.ageMax || ''}
+              value={localFilters.ageMax || ''}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
-                handleChange('ageMax', e.target.value ? Number(e.target.value) : undefined)
+                handleLocalChange('ageMax', e.target.value ? Number(e.target.value) : undefined)
               }
+              onBlur={handleCommit}
+              onKeyDown={handleKeyDown}
             />
           </div>
         </div>
@@ -74,11 +111,15 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
             type="number"
             placeholder="Max"
             className="w-24 p-2 border rounded-md text-sm"
-            value={filters.distanceMax || ''}
+            value={localFilters.distanceMax || ''}
             onWheel={(e) => (e.target as HTMLInputElement).blur()}
-            onChange={(e) =>
-              handleChange('distanceMax', e.target.value ? Number(e.target.value) : undefined)
-            }
+            onChange={(e) => {
+              const val = Number(e.target.value)
+              // If val is 0 (or NaN/empty), set to undefined to remove the filter
+              handleLocalChange('distanceMax', val > 0 ? val : undefined)
+            }}
+            onBlur={handleCommit}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
@@ -90,22 +131,26 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
               type="number"
               placeholder="Min"
               className="w-20 p-2 border rounded-md text-sm"
-              value={filters.fameMin || ''}
+              value={localFilters.fameMin || ''}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
-                handleChange('fameMin', e.target.value ? Number(e.target.value) : undefined)
+                handleLocalChange('fameMin', e.target.value ? Number(e.target.value) : undefined)
               }
+              onBlur={handleCommit}
+              onKeyDown={handleKeyDown}
             />
             <span className="text-gray-400">-</span>
             <input
               type="number"
               placeholder="Max"
               className="w-20 p-2 border rounded-md text-sm"
-              value={filters.fameMax || ''}
+              value={localFilters.fameMax || ''}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
-                handleChange('fameMax', e.target.value ? Number(e.target.value) : undefined)
+                handleLocalChange('fameMax', e.target.value ? Number(e.target.value) : undefined)
               }
+              onBlur={handleCommit}
+              onKeyDown={handleKeyDown}
             />
           </div>
         </div>
@@ -115,8 +160,8 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
           <label className="text-xs font-semibold text-gray-500 uppercase">Sort By</label>
           <select
             className="w-40 p-2 border rounded-md text-sm bg-white"
-            value={filters.sortBy}
-            onChange={(e) => handleChange('sortBy', e.target.value)}
+            value={localFilters.sortBy}
+            onChange={(e) => handleImmediateChange('sortBy', e.target.value)}
           >
             <option value="distance-asc">Distance</option>
             <option value="fame-desc">Fame Rating</option>
@@ -134,7 +179,9 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
             className="flex items-center justify-between gap-2 w-40 p-2 border rounded-md text-sm bg-white hover:bg-gray-50 text-left"
           >
             <span className="truncate">
-              {filters.tagIds.length > 0 ? `${filters.tagIds.length} selected` : 'Select Tags'}
+              {localFilters.tagIds.length > 0
+                ? `${localFilters.tagIds.length} selected`
+                : 'Select Tags'}
             </span>
             <Icon path={showTags ? mdiChevronUp : mdiChevronDown} size={0.8} />
           </button>
@@ -147,7 +194,7 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
           <InputFormMultiSelect
             label=""
             tags={availableTags}
-            selectedTags={filters.tagIds}
+            selectedTags={localFilters.tagIds}
             onChange={handleTagChange}
           />
         </div>

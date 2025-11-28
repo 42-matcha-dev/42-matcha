@@ -31,7 +31,7 @@ function SearchContent() {
     return {
       ageMin: params.get('ageMin') ? Number(params.get('ageMin')) : undefined,
       ageMax: params.get('ageMax') ? Number(params.get('ageMax')) : undefined,
-      distanceMax: params.get('distanceMax') ? Number(params.get('distanceMax')) : 30,
+      distanceMax: params.get('distanceMax') ? Number(params.get('distanceMax')) : undefined,
       fameMin: params.get('fameMin') ? Number(params.get('fameMin')) : undefined,
       fameMax: params.get('fameMax') ? Number(params.get('fameMax')) : undefined,
       tagIds: params.get('tags') ? params.get('tags')!.split(',').map(Number) : [],
