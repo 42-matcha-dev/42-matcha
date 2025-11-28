@@ -1,20 +1,20 @@
-import pool from '../database/init.js';
+import pool from '../database/init.js'
 
 export const userRepository = {
   findUserById: async (id: number) => {
-    const res = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
-    return res.rows[0];
+    const res = await pool.query('SELECT * FROM users WHERE id = $1', [id])
+    return res.rows[0]
   },
 
   insertUserTags: async (userId: number, tagIds: number[]) => {
-    if (tagIds.length === 0) return;
+    if (tagIds.length === 0) return
 
     // Insert tags one by one to avoid SQL injection and handle conflicts
     for (const tagId of tagIds) {
       await pool.query(
         'INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2) ON CONFLICT (user_id, tag_id) DO NOTHING',
         [userId, tagId]
-      );
+      )
     }
   },
 
@@ -26,35 +26,26 @@ export const userRepository = {
        WHERE ut.user_id = $1
        ORDER BY t.category, t.name`,
       [userId]
-    );
-    return res.rows;
+    )
+    return res.rows
   },
 
   searchUsers: async (
     currentUserId: number,
     params: {
-      ageMin?: number;
-      ageMax?: number;
-      distanceMax?: number;
-      fameMin?: number;
-      fameMax?: number;
-      tagIds?: number[];
-      page?: number;
-      limit?: number;
+      ageMin?: number
+      ageMax?: number
+      distanceMax?: number
+      fameMin?: number
+      fameMax?: number
+      tagIds?: number[]
+      page?: number
+      limit?: number
     }
   ) => {
-    const {
-      ageMin,
-      ageMax,
-      distanceMax,
-      fameMin,
-      fameMax,
-      tagIds,
-      page = 0,
-      limit = 20,
-    } = params;
+    const { ageMin, ageMax, distanceMax, fameMin, fameMax, tagIds, page = 0, limit = 20 } = params
 
-    const offset = page * limit;
+    const offset = page * limit
 
     // Build the base WHERE conditions
     let whereConditions = `
@@ -78,19 +69,31 @@ export const userRepository = {
       AND u.id NOT IN (
         SELECT blocker_id FROM blocks WHERE blocked_id = $1
       )
-    `;
+    `
 
-    const queryParams: any[] = [currentUserId];
-    let paramIndex = 2;
+    const queryParams: any[] = [currentUserId]
+    let paramIndex = 2
 
-    // Add age filter only if both ageMin and ageMax are provided
+    // Add age filter
     if (ageMin !== undefined && ageMax !== undefined) {
       whereConditions += `
-        -- Age filter
-        AND date_part('year', age(u.birthdate)) BETWEEN $${paramIndex} AND $${paramIndex + 1}
-      `;
-      queryParams.push(ageMin, ageMax);
-      paramIndex += 2;
+    AND date_part('year', age(u.birthdate))
+        BETWEEN $${paramIndex} AND $${paramIndex + 1}
+  `
+      queryParams.push(ageMin, ageMax)
+      paramIndex += 2
+    } else if (ageMin !== undefined) {
+      whereConditions += `
+    AND date_part('year', age(u.birthdate)) >= $${paramIndex}
+  `
+      queryParams.push(ageMin)
+      paramIndex++
+    } else if (ageMax !== undefined) {
+      whereConditions += `
+    AND date_part('year', age(u.birthdate)) <= $${paramIndex}
+  `
+      queryParams.push(ageMax)
+      paramIndex++
     }
 
     // Add tags filter if provided
@@ -103,9 +106,9 @@ export const userRepository = {
           WHERE ut.user_id = u.id
             AND ut.tag_id = ANY($${paramIndex}::int[])
         ) >= $${paramIndex + 1}
-      `;
-      queryParams.push(tagIds, tagIds.length);
-      paramIndex += 2;
+      `
+      queryParams.push(tagIds, tagIds.length)
+      paramIndex += 2
     }
 
     // Add fame rating filter only if both fameMin and fameMax are provided
@@ -121,9 +124,9 @@ export const userRepository = {
               SELECT tag_id FROM user_tags WHERE user_id = $1
             )
         ) BETWEEN $${paramIndex} AND $${paramIndex + 1}
-      `;
-      queryParams.push(fameMin, fameMax);
-      paramIndex += 2;
+      `
+      queryParams.push(fameMin, fameMax)
+      paramIndex += 2
     }
 
     // Add distance filter only if distanceMax is provided
@@ -135,14 +138,14 @@ export const userRepository = {
           cos(radians(u.longitude) - radians(me.longitude)) +
           sin(radians(me.latitude)) * sin(radians(u.latitude))
         ) BETWEEN 0 AND $${paramIndex}
-      `;
-      queryParams.push(distanceMax);
-      paramIndex += 1;
+      `
+      queryParams.push(distanceMax)
+      paramIndex += 1
     }
 
     // Main search query
-    const limitParam = paramIndex;
-    const offsetParam = paramIndex + 1;
+    const limitParam = paramIndex
+    const offsetParam = paramIndex + 1
     const searchQuery = `
       SELECT
         u.id,
@@ -183,8 +186,8 @@ export const userRepository = {
       WHERE ${whereConditions}
       ORDER BY distance ASC
       LIMIT $${limitParam} OFFSET $${offsetParam}
-    `;
-    queryParams.push(limit, offset);
+    `
+    queryParams.push(limit, offset)
 
     // Count query (same conditions but without LIMIT/OFFSET)
     const countQuery = `
@@ -192,19 +195,18 @@ export const userRepository = {
       FROM users u
       JOIN users me ON me.id = $1
       WHERE ${whereConditions}
-    `;
+    `
     // Remove limit and offset from count query params
-    const countParams = queryParams.slice(0, -2);
+    const countParams = queryParams.slice(0, -2)
 
     const [searchResult, countResult] = await Promise.all([
       pool.query(searchQuery, queryParams),
-      pool.query(countQuery, countParams),
-    ]);
+      pool.query(countQuery, countParams)
+    ])
 
     return {
       results: searchResult.rows,
-      totalCount: parseInt(countResult.rows[0].total, 10),
-    };
-  },
-};
-
+      totalCount: parseInt(countResult.rows[0].total, 10)
+    }
+  }
+}
