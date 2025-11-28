@@ -15,6 +15,7 @@ import {
 } from '@mdi/js'
 import Icon from '@mdi/react'
 import { deleteCookie } from '@/utils/cookie.util'
+import Image from 'next/image'
 
 const NavLinks = () => {
   const [open, setOpen] = useState(false)
@@ -32,7 +33,7 @@ const NavLinks = () => {
           <Icon path={open ? mdiClose : mdiMenu} size={1.5} color="black" />
         </button>
         <span className="w-full h-full flex justify-center py-2">
-          <img src="/logo_apple.jpg" className="w-[56px] h-[52px] object-contain" alt="" />
+          <Image src="/logo_apple.jpg" className="object-contain" alt="" width={56} height={52} />
         </span>
       </div>
       <main

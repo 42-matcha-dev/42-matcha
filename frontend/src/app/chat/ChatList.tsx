@@ -1,12 +1,26 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import SearchModal from './SearchModal'
 import { RiMore2Fill } from 'react-icons/ri'
 import chatData from '../data/chat'
 
+type User = {
+  fullName: string
+  lastSeen: {
+    seconds: number
+  }
+}
+
+type Chat = {
+  id: number | string
+  lastMessage: string
+  users: User[]
+}
+
 type MessageListProps = {
-  chat: any
+  chat: Chat
 }
 
 function formatTimestamp(seconds: number) {
@@ -23,10 +37,12 @@ const MessageList = ({ chat }: MessageListProps) => {
   return (
     <button className="flex flex-row justify-between px-5 pb-2 w-full">
       <div className="flex flex-row p-2 items-center gap-2 flex-grow min-w-0">
-        <img
+        <Image
           src="/default-avatar.png"
-          className="flex-shrink-0 border border-black w-[56px] h-[52px] rounded-full"
+          className="flex-shrink-0 border border-black rounded-full"
           alt=""
+          width={56}
+          height={52}
         />
         <span className="flex flex-col items-start min-w-0">
           <h3 className="font-semibold text-[17px] text-black">{chat?.users[0].fullName}</h3>
@@ -41,7 +57,7 @@ const MessageList = ({ chat }: MessageListProps) => {
 }
 
 const ChatList = () => {
-  const [chats, setChats] = useState([])
+  const [chats, setChats] = useState<Chat[]>([])
 
   useEffect(() => {
     setChats(chatData)
@@ -51,10 +67,12 @@ const ChatList = () => {
     <div className="border border-black bg-white h-[100vh] ">
       <div className="flex items-center justify-between p-4 border-b border-b-1 border-[#898989b9]">
         <div className="flex flex-row p-2 gap-2">
-          <img
+          <Image
             src="/default-avatar.png"
-            className="border border-black w-[56px] h-[52px] rounded-full"
+            className="border border-black rounded-full"
             alt=""
+            width={56}
+            height={52}
           />
           <span>
             <h3 className="font-semibold text-[17px] text-black">Etienne Desaintjean</h3>
