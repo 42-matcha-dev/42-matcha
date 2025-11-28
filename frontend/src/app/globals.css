@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -11,11 +11,11 @@
   --font-sans: var(--font-inter), 'Inter', sans-serif;
 
   /* Custom colors */
-  --color-primary: #C18845;
-  --color-secondary: #212E53;
+  --color-primary: #c18845;
+  --color-secondary: #212e53;
 
-  --color-custom-light: #D9D9D9;
-  --color-custom-medium: #8C8C8C;
+  --color-custom-light: #d9d9d9;
+  --color-custom-medium: #8c8c8c;
   --color-custom-heavy: #404040;
 }
 
@@ -32,3 +32,13 @@ body {
   font-family: var(--font-inter), 'Inter', sans-serif;
 }
 
+/* Hide number input arrows */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}

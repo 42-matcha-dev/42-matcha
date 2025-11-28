@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import InputFormMultiSelect from './InputFormMultiSelect'
-import { mdiFilterVariant, mdiChevronDown, mdiChevronUp } from '@mdi/js'
+import { mdiChevronDown, mdiChevronUp } from '@mdi/js'
 import Icon from '@mdi/react'
 
 interface Tag {
@@ -28,7 +28,7 @@ interface SearchFiltersProps {
 const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps) => {
   const [showTags, setShowTags] = useState(false)
 
-  const handleChange = (key: keyof FilterState, value: any) => {
+  const handleChange = (key: keyof FilterState, value: number | number[] | string | undefined) => {
     onChange({ ...filters, [key]: value })
   }
 
@@ -48,6 +48,7 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
               placeholder="Min"
               className="w-20 p-2 border rounded-md text-sm"
               value={filters.ageMin || ''}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
                 handleChange('ageMin', e.target.value ? Number(e.target.value) : undefined)
               }
@@ -58,6 +59,7 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
               placeholder="Max"
               className="w-20 p-2 border rounded-md text-sm"
               value={filters.ageMax || ''}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
                 handleChange('ageMax', e.target.value ? Number(e.target.value) : undefined)
               }
@@ -73,6 +75,7 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
             placeholder="Max"
             className="w-24 p-2 border rounded-md text-sm"
             value={filters.distanceMax || ''}
+            onWheel={(e) => (e.target as HTMLInputElement).blur()}
             onChange={(e) =>
               handleChange('distanceMax', e.target.value ? Number(e.target.value) : undefined)
             }
@@ -88,6 +91,7 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
               placeholder="Min"
               className="w-20 p-2 border rounded-md text-sm"
               value={filters.fameMin || ''}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
                 handleChange('fameMin', e.target.value ? Number(e.target.value) : undefined)
               }
@@ -98,6 +102,7 @@ const SearchFilters = ({ availableTags, filters, onChange }: SearchFiltersProps)
               placeholder="Max"
               className="w-20 p-2 border rounded-md text-sm"
               value={filters.fameMax || ''}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
               onChange={(e) =>
                 handleChange('fameMax', e.target.value ? Number(e.target.value) : undefined)
               }
