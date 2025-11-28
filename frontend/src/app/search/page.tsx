@@ -54,9 +54,30 @@ export default function Search() {
   const [filters, setFilters] = useState<FilterState>(getInitialFilters)
   const [page, setPage] = useState(getInitialPage)
 
+  // NEW: Sync URL -> State
+  // This handles external navigation (like clicking "Search" in navbar to reset)
+  useEffect(() => {
+    const urlFilters = getInitialFilters()
+    const urlPage = getInitialPage()
+
+    setFilters((prev) => {
+      // Deep compare to avoid loops/unnecessary renders
+      if (JSON.stringify(prev) !== JSON.stringify(urlFilters)) {
+        return urlFilters
+      }
+      return prev
+    })
+    setPage((prev) => {
+      if (prev !== urlPage) {
+        return urlPage
+      }
+      return prev
+    })
+  }, [searchParams, getInitialFilters, getInitialPage])
+
   const PAGE_SIZE = 20
 
-  // Sync URL with State
+  // Sync State -> URL
   const updateURL = useCallback(
     (currentFilters: FilterState, currentPage: number) => {
       const params = new URLSearchParams()
@@ -85,7 +106,7 @@ export default function Search() {
     const fetchTags = async () => {
       try {
         const token = getCookie('token')
-        if (!token) return // will be handled by fetchUsers redirect
+        if (!token) return
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tags`, {
           headers: { Authorization: `Bearer ${token}` }
