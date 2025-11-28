@@ -44,9 +44,6 @@ const NavLinks = () => {
                 `}
             >
                 <div className="flex flex-col w-full items-center justify-center gap-4 py-4 md:py-0">
-
-
-
                     <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} />
                     <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} />
                     <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} />

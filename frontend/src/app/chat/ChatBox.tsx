@@ -1,57 +1,92 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState, useRef } from "react";
+import io from "socket.io-client";
 import { RiSendPlaneFill } from "react-icons/ri";
+import MessageBubble from "./MessageBubble";
+
+const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
 const ChatBox = () => {
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState("");
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Écoute les messages entrants
+    useEffect(() => {
+        socket.on("newMessage", (msg) => {
+            setMessages((prev) => [...prev, msg]);
+        });
+
+        return () => {
+            socket.off("newMessage");
+        };
+    }, []);
+
+    // Scroll automatique vers le dernier message
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    const send = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+
+        const msg = {
+            id: Date.now(),
+            author: "Me",
+            username: "me",
+            avatar: "/default-avatar.png",
+            message: input,
+            date: new Date().toISOString(),
+            isMe: true
+        };
+
+        socket.emit("sendMessage", msg);
+        setInput("");
+    };
+
     return (
-        <section className="flex flex-col items-start justify-start hidden lg:block bg-white w-full">
-            <header className="border-b border-yellow-400 w-[100%] h-[70px] p-4">
-                <main className="flex flex-row">
-                    <img
-                        src="/default-avatar.png"
-                        className="flex-shrink-0 border border-black w-11 h-11 rounded-full"
-                        alt=""
-                    />
-                    <span>
-                        <h3 className="font-semibold text-[#2A3D39] text-lg">Etienne Desaintjean</h3>
-                        <p className="font-light text-[#2A3D39] text-sm">@edesaint</p>
-                    </span>
-                </main>
+        <section className="flex flex-col h-screen bg-white w-full">
+            {/* Header */}
+            <header className="border-b border-gray-400 h-[70px] p-4 flex items-center">
+                <img
+                    src="/default-avatar.png"
+                    className="flex-shrink-0 border border-black w-11 h-11 rounded-full"
+                    alt="Avatar"
+                />
+                <div className="ml-4">
+                    <h3 className="font-semibold text-[#2A3D39] text-lg">Etienne Desaintjean</h3>
+                    <p className="font-light text-[#2A3D39] text-sm">@edesaint</p>
+                </div>
             </header>
 
-            <main className="relative flex flex-col w-[100%] justify-between">
-                <div className="flex flex-col space-y-4">
-                    <div className="flex justify-start p-4">
-                        <div className="bg-green-400 p-2 w-[200px] rounded-full">
-                            <h3 className="text-black">Hey buddy</h3>
-                        </div>
-                        <p className="font-light text-[#2A3D39] text-sm">7 Feb 2023</p>
-                    </div>
-                    <div className="flex justify-end p-4">
-                        <img
-                            src="/default-avatar.png"
-                            className="flex-shrink-0 border border-black w-11 h-11 rounded-full"
-                            alt=""
-                        />
-                        <div className="flex flex-col">
-                            <div className="bg-green-400 p-2 w-[200px] rounded-full">
-                                <h3 className="text-black">Hey Bro wasup</h3>
-                            </div>
-                            <p className="font-light text-[#2A3D39] text-sm">7 Feb 2023</p>
-                        </div>
-                    </div>
-                </div>
+            {/* Conversation */}
+            <main className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.map(msg => (
+                    <MessageBubble key={msg.id} message={msg} />
+                ))}
+                <div ref={messagesEndRef} />
             </main>
 
-            <div>
-                <form action="" className="flex flex-row bg-white border border-black h-[45px] w-[100%] px-2 rounded-lg">
-                    <input className="text-black w-full" type="text" placeholder="Ecris ton message..." />
-                    <button className="p-4">
-                        <RiSendPlaneFill color="black"/>
-                    </button>
-                </form>
-            </div>
+            {/* User message */}
+            <form
+                onSubmit={send}
+                className="flex flex-row border border-black mb-2 h-[45px] w-full px-2 rounded-lg"
+            >
+                <input
+                    className="text-black w-full outline-none"
+                    type="text"
+                    placeholder="Écris ton message..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                />
+                <button className="p-4">
+                    <RiSendPlaneFill color="black"/>
+                </button>
+            </form>
         </section>
-    )
-}
+    );
+};
 
 export default ChatBox;
