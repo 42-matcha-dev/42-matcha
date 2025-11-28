@@ -40,7 +40,7 @@ const UserCard = ({ user }: UserCardProps) => {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 w-full flex flex-col cursor-pointer"
+      className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 w-full flex flex-col cursor-pointer"
     >
        {/* Header Info */}
       <div className="flex items-center p-3 gap-3">
@@ -66,13 +66,13 @@ const UserCard = ({ user }: UserCardProps) => {
       </div>
 
       {/* Main Image */}
-      <div className="relative aspect-[3/4] w-full bg-gray-100">
+      <div className="relative aspect-[3/4] w-full bg-gray-100 overflow-hidden">
         {user.photo_url ? (
           <Image
             src={user.photo_url}
             alt={user.username}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
             unoptimized
           />
         ) : (
@@ -99,7 +99,7 @@ const UserCard = ({ user }: UserCardProps) => {
       {/* Footer Actions */}
       <div className="p-3 flex justify-between items-center border-t border-gray-50">
         <div className="flex items-center gap-1 text-gray-600">
-            <Icon path={mdiTagOutline} size={0.7} className="text-gray-400" />
+            <Image src="/icons/handshake.svg" alt="Logo" width={20} height={20}/>
             <span className="text-sm font-medium text-gray-500">{Math.round(user.fame_rating)}%</span>
         </div>
         <button
