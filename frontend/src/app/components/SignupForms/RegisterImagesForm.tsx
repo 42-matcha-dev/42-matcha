@@ -17,8 +17,10 @@ type SignedUrlData = {
 // Form data type matching the register form (excluding email/password fields)
 // Includes both current (iconImage, photos) and legacy (iconUrl, photoUrls) field names
 type FormData = Partial<Omit<z.infer<typeof registerSchema>, "email" | "password" | "repeatPassword">> & {
-  iconUrl?: string;
+  iconUrl?: string | null;
   photoUrls?: string[];
+  iconImage?: string;
+  photos?: string[];
 };
 
 interface Props {

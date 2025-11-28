@@ -15,12 +15,12 @@ const Navbar = () => {
     };
 
     return (
-        <div className="flex flex-col w-full items-center justify-center p-4 gap-4">
-            <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} />
-            <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} />
-            <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} />
-            <NavbarButtonElement path={mdiChat} size={1.3} title={"Messages"} color={"black"} />
-            <NavbarButtonElement path={mdiCog} size={1.3} title={"Settings"} color={"black"} />
+        <div className="flex flex-col w-64">
+            <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} onClick={() => router.push('/dashboard')} />
+            <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} onClick={() => router.push('/search')} />
+            <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} onClick={() => router.push('/notifications')} />
+            <NavbarButtonElement path={mdiChat} size={1.3} title={"Messages"} color={"black"} onClick={() => router.push('/chat')} />
+            <NavbarButtonElement path={mdiCog} size={1.3} title={"Settings"} color={"black"} onClick={() => router.push('/settings')} />
             <NavbarButtonElement path={mdiLogout} size={1.3} title={"Logout"} color={"black"} onClick={handleLogout} />
         </div>
     )

@@ -5,6 +5,8 @@ export type RegisterSchema = {
   lookingFor: string;
   description: string;
   location: string;
+  latitude: number;
+  longitude: number;
   iconImage: string;
   photos: string | string[];
   curiousAbout?: number[];

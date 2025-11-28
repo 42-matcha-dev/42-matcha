@@ -90,7 +90,7 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
       className="flex flex-col items-left w-full m-7 gap-11">
         <Title title="Complete Your Profile" subTitle="Tell us more about you."/>
         <Stepper currentStep="1" />
-        <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female", "Other"]} {...register("gender")}/>
+        <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female"]} {...register("gender")}/>
         <InputFormSelect label="LookingFor" error={errors.lookingFor} values={["Male", "Female", "Both"]} {...register("lookingFor")}/>
         <InputForm label="Description" type="text" error={errors.description} {...register("description")}/>
         {loading ? (

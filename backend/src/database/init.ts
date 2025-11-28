@@ -3,6 +3,9 @@ import { createUserTable } from '../models/user.model.js';
 import { createPendingUserTable } from '../models/pending_user.model.js';
 import { createTagTable } from '../models/tag.model.js';
 import { createUserTagsTable } from '../models/user_tags.model.js';
+import { createLikeTable } from '../models/like.model.js';
+import { createBlockTable } from '../models/block.model.js';
+import { createDislikeTable } from '../models/dislike.model.js';
 
 let pool: any;
 
@@ -31,9 +34,13 @@ export const initDB = async () => {
       await pool.query(createPendingUserTable);
       await pool.query(createTagTable);
       await pool.query(createUserTagsTable);
+      await pool.query(createLikeTable);
+      await pool.query(createBlockTable);
+      await pool.query(createDislikeTable);
       console.log('✅ Database initialized');
       return;
     } catch (err) {
+      console.error(err); // Add this line to see the actual error
       console.log(`⏳ Waiting for database... (${i + 1}/10)`);
       await new Promise(r => setTimeout(r, 3000));
     }

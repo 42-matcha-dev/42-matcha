@@ -56,7 +56,7 @@ export default function LoginForm() {
             if (result.token) {
                 setCookie('token', result.token, 7); // 7 days expiration
             }
-            router.push("/dashboard");
+            router.push("/profile");
         } catch (error) {
             console.error('Login request failed:', error);
             // TODO: Show error message to user
