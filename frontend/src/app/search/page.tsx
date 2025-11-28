@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Navbar from '@/app/components/Navbar'
 import Header from '@/app/components/Header'
@@ -20,7 +20,7 @@ interface SearchResponse {
   totalCount: number
 }
 
-export default function Search() {
+function SearchContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -237,5 +237,19 @@ export default function Search() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function Search() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   )
 }
