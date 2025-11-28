@@ -41,9 +41,22 @@ export const userRepository = {
       tagIds?: number[]
       page?: number
       limit?: number
+      sortBy?: string
+      order?: string
     }
   ) => {
-    const { ageMin, ageMax, distanceMax, fameMin, fameMax, tagIds, page = 0, limit = 20 } = params
+    const {
+      ageMin,
+      ageMax,
+      distanceMax,
+      fameMin,
+      fameMax,
+      tagIds,
+      page = 0,
+      limit = 20,
+      sortBy = 'distance',
+      order = 'asc'
+    } = params
 
     const offset = page * limit
 
@@ -146,6 +159,27 @@ export const userRepository = {
     // Main search query
     const limitParam = paramIndex
     const offsetParam = paramIndex + 1
+
+    // Determine order by clause
+    let orderByClause = 'ORDER BY distance ASC'
+    const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'
+
+    switch (sortBy) {
+      case 'age':
+        orderByClause = `ORDER BY age ${sortOrder}, distance ASC`
+        break
+      case 'fame':
+        orderByClause = `ORDER BY u.fame_rating ${sortOrder}, distance ASC`
+        break
+      case 'tags':
+        orderByClause = `ORDER BY fame_rating ${sortOrder}, distance ASC`
+        break
+      case 'distance':
+      default:
+        orderByClause = `ORDER BY distance ${sortOrder}`
+        break
+    }
+
     const searchQuery = `
       SELECT
         u.id,
@@ -184,7 +218,7 @@ export const userRepository = {
       FROM users u
       JOIN users me ON me.id = $1
       WHERE ${whereConditions}
-      ORDER BY distance ASC
+      ${orderByClause}
       LIMIT $${limitParam} OFFSET $${offsetParam}
     `
     queryParams.push(limit, offset)

@@ -35,7 +35,7 @@ export default function Search() {
       fameMin: params.get('fameMin') ? Number(params.get('fameMin')) : undefined,
       fameMax: params.get('fameMax') ? Number(params.get('fameMax')) : undefined,
       tagIds: params.get('tags') ? params.get('tags')!.split(',').map(Number) : [],
-      sortBy: params.get('sortBy') || 'distance'
+      sortBy: params.get('sortBy') || 'distance-asc'
     }
   }, [searchParams])
 
@@ -139,6 +139,7 @@ export default function Search() {
       if (filters.fameMin !== undefined) params.append('fameMin', filters.fameMin.toString())
       if (filters.fameMax !== undefined) params.append('fameMax', filters.fameMax.toString())
       if (filters.tagIds.length > 0) params.append('tags', filters.tagIds.join(','))
+      if (filters.sortBy) params.append('sortBy', filters.sortBy)
 
       params.append('page', page.toString())
       params.append('limit', PAGE_SIZE.toString())
