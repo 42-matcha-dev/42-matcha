@@ -255,7 +255,7 @@ export const seedTestUsers = async () => {
 
     // Generate 300 faker users
     console.log('🌱 Generating 300 faker users...');
-    const fakerUsers = Array.from({ length: 1000 }, () => generateFakerUser());
+    const fakerUsers = Array.from({ length: Number(process.env.SEED_MORE_USERS) }, () => generateFakerUser());
 
     // Combine existing test users with faker-generated users
     const allUsers = [...testUsers, ...fakerUsers];
