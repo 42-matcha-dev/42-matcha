@@ -15,7 +15,10 @@ router.post('/upload-urls', async (req, res) => {
 		const { data, error } = await supabase.storage
 		  .from('user-photos')
 		  .createSignedUploadUrl(`users/${Date.now()}_${name}`)
-		if (error) return res.status(500).json({ error: error.message })
+		if (error) {
+			console.error("Supabase signed URL error:", error)
+			return res.status(500).json({ error })
+		}
 		urls.push(data)
 	  }
 

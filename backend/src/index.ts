@@ -27,11 +27,6 @@ app.use('/api/like', likeRoutes);
 app.use('/api/geocoding', geocodingRoutes);
 app.use('/api', uploadRoutes);
 
-app.get('/api/hello', (_, res) => {
-  console.log("📨 /api/hello called");
-  res.json({ message: 'Hello from backend!' });
-});
-
 // --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
 

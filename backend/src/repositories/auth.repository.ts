@@ -16,7 +16,7 @@ export const authRepository = {
       INSERT INTO users (
         email, password_hash, username, first_name, last_name,
         birthdate, gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       RETURNING id;
     `;
     const values = [

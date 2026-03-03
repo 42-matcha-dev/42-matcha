@@ -19,8 +19,6 @@ type SignedUrlData = {
 type FormData = Partial<Omit<z.infer<typeof registerSchema>, "email" | "password" | "repeatPassword">> & {
   iconUrl?: string | null;
   photoUrls?: string[];
-  iconImage?: string;
-  photos?: string[];
 };
 
 interface Props {
@@ -37,12 +35,10 @@ function RegisterImagesFormContent({
   onSubmitFinal,
 }: Props) {
   const [iconUrl, setIconUrl] = useState<string | null>(
-    (defaultValues.iconImage as string | undefined) ||
     (defaultValues.iconUrl as string | undefined) ||
     null
   );
   const [photoUrls, setPhotoUrls] = useState<string[]>(
-    (defaultValues.photos as string[] | undefined) ||
     (defaultValues.photoUrls as string[] | undefined) ||
     []
   );
@@ -73,7 +69,7 @@ function RegisterImagesFormContent({
 
     if (type === "icon") {
       setIconUrl(uploaded[0]);
-      updateData({ iconImage: uploaded[0] });
+      updateData({ iconUrl: uploaded[0] });
     } else if (index !== undefined) {
       // Compute new arrays first
       const newUrls = [...photoUrls];
@@ -84,7 +80,7 @@ function RegisterImagesFormContent({
 
       // Pass computed arrays to updateData
       updateData({
-        photos: newUrls,
+        photoUrls: newUrls,
       });
     }
 
@@ -100,7 +96,7 @@ function RegisterImagesFormContent({
 
     // Pass computed array to updateData
     updateData({
-      photos: newUrls,
+      photoUrls: newUrls,
     });
   };
 

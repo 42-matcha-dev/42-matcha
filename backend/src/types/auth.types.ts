@@ -7,8 +7,8 @@ export type RegisterSchema = {
   location: string;
   latitude: number;
   longitude: number;
-  iconImage: string;
-  photos: string | string[];
+  iconUrl: string;
+  photoUrls: string | string[];
   curiousAbout?: number[];
 };
 

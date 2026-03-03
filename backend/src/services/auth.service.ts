@@ -13,7 +13,7 @@ export const authService = {
     if (existing) throw new Error("User already registered");
 
     const username = `${data.firstName.toLowerCase()}_${Date.now()}`;
-    const photoUrls = Array.isArray(data.photos) ? data.photos : data.photos.split(",");
+    const photoUrls = Array.isArray(data.photoUrls) ? data.photoUrls : data.photoUrls.split(",");
 
     const user = await authRepository.insertUser({
       email: pending.email,
@@ -27,7 +27,7 @@ export const authService = {
       location: data.location,
       latitude: data.latitude,
       longitude: data.longitude,
-      icon_url: data.iconImage,
+      icon_url: data.iconUrl,
       photo_urls: photoUrls,
     });
 

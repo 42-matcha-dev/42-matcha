@@ -39,7 +39,7 @@ export const signup = async (req: Request, res: Response) => {
 
 const validateRegisterData = (data: any): RegisterSchema => {
   if (!data.firstName || !data.lastName || !data.gender || !data.lookingFor ||
-      !data.description || !data.location || !data.iconImage || !data.photos) {
+      !data.description || !data.location || !data.iconUrl || !data.photoUrls) {
     throw new Error('Missing required fields');
   }
   return data as RegisterSchema;

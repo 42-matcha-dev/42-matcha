@@ -126,7 +126,6 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-
           // Reverse geocode using backend API
           const apiUrl = process.env.NEXT_PUBLIC_API_URL;
           const response = await fetch(
@@ -139,7 +138,6 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
           }
 
           const data = await response.json();
-
           if (!data.address) {
             throw new Error("Could not determine address from location.");
           }

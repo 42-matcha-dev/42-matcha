@@ -28,7 +28,6 @@ export const registerSchema = z.object({
   curiousAbout: z.array(z.number())
     .min(1, { message: "Veuillez sélectionner au moins un tag." })
     .max(5, { message: "Vous pouvez sélectionner au maximum 5 tags." }),
-  // terms: z.boolean().refine(data => data, "Vous devez accepter les conditions"),
   iconUrl: z.string().url().nullable(),
   photoUrls: z.array(z.string().url()).max(4),
 });
