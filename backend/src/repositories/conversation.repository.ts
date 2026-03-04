@@ -19,4 +19,57 @@ export const conversationRepository = {
     const res = await pool.query(query, [user1_id, user2_id]);
     return res.rows[0];
   },
+
+  getConversationByUserIds: async (user1_id: number, user2_id: number): Promise<ConversationRow | undefined> => {
+    const [u1, u2] = user1_id < user2_id ? [user1_id, user2_id] : [user2_id, user1_id];
+    const query = `
+      SELECT id, user1_id, user2_id, created_at
+      FROM conversations
+      WHERE user1_id = $1 AND user2_id = $2
+      LIMIT 1
+    `;
+    const res = await pool.query(query, [u1, u2]);
+    return res.rows[0];
+  },
+
+  getConversationById: async (id: number): Promise<ConversationRow | undefined> => {
+    const query = `
+      SELECT id, user1_id, user2_id, created_at
+      FROM conversations
+      WHERE id = $1
+      LIMIT 1
+    `;
+    const res = await pool.query(query, [id]);
+    return res.rows[0];
+  },
+
+  getConversationsByUserId: async (userId: number) => {
+    const query = `
+      SELECT
+        c.id AS conversation_id,
+        c.user1_id,
+        c.user2_id,
+        c.created_at,
+        CASE WHEN c.user1_id = $1 THEN c.user2_id ELSE c.user1_id END AS other_user_id,
+        u.username AS other_username,
+        u.first_name AS other_first_name,
+        u.last_name AS other_last_name,
+        u.icon_url AS other_icon_url,
+        last_msg.content AS last_message_content,
+        last_msg.created_at AS last_message_at
+      FROM conversations c
+      JOIN users u ON u.id = (CASE WHEN c.user1_id = $1 THEN c.user2_id ELSE c.user1_id END)
+      LEFT JOIN LATERAL (
+        SELECT content, created_at
+        FROM messages
+        WHERE conversation_id = c.id
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) last_msg ON true
+      WHERE c.user1_id = $1 OR c.user2_id = $1
+      ORDER BY last_msg.created_at DESC NULLS LAST, c.created_at DESC
+    `;
+    const res = await pool.query(query, [userId]);
+    return res.rows;
+  },
 };
