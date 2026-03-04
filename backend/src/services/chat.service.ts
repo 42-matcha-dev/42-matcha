@@ -61,14 +61,13 @@ export const chatService = {
             offset
         );
 
-        // Note: This can move to a separate endpoint
         await messageRepository.markAsRead(conversationId, userId);
 
         return messages;
     },
 
     getOrCreateConversation: async (currentUserId: number, otherUserId: number) => {
-        if (currentUserId == otherUserId) {
+        if (currentUserId === otherUserId) {
             throw new Error('Cannot create conversation with yourself');
         }
 
@@ -82,17 +81,17 @@ export const chatService = {
 
         let conversation = await conversationRepository.getConversationByUserIds(user1, user2);
         if (conversation) {
-            return conversation;
+            return {conversation, created: false};
         }
 
         conversation = await conversationRepository.createConversation(user1, user2);
         if (conversation) {
-            return conversation;
+            return {conversation, created: true};
         }
 
         conversation = await conversationRepository.getConversationByUserIds(user1, user2);
         if (conversation) {
-            return conversation;
+            return {conversation, created: false};
         }
 
         throw new Error('Failed to create or retrieve conversation');
