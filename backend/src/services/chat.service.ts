@@ -72,6 +72,11 @@ export const chatService = {
             throw new Error('Cannot create conversation with yourself');
         }
 
+        const isBlocked = await blockRepository.isBlocked(currentUserId, otherUserId);
+        if (isBlocked) {
+            throw new Error('Cannot start conversation with blocked user');
+        }
+
         const user1 = Math.min(currentUserId, otherUserId);
         const user2 = Math.max(currentUserId, otherUserId);
 
