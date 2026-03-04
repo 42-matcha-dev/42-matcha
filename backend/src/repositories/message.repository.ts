@@ -23,4 +23,21 @@ export const messageRepository = {
         const res = await pool.query(query, [conversationId, senderId, content]);
         return res.rows[0];
     },
+
+    getMessageByConversation: async (
+        conversationId: number,
+        limit?: number,
+        offset?: number,
+    ): Promise<MessageRow[]> => {
+        const query = `
+            SELECT id, conversation_id, sender_id, content, created_at, is_read
+            FROM messages
+            WHERE conversation_id = $1
+            ORDER BY created_at ASC
+            LIMIT $2 OFFSET $3
+        `;
+        const res = await pool.query(query, [conversationId, limit ?? 50, offset ?? 0]);
+        return res.rows;
+    },
+
 };
