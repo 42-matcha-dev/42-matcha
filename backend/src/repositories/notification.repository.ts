@@ -2,6 +2,23 @@ import pool from '../database/init.js';
 import type { NotificationType } from '../types/notification.types.js';
 
 export const notificationRepository = {
+    getNotifications: async (userId: number) => {
+        const query = `
+        SELECT
+            id,
+            type,
+            actor_id,
+            reference_id,
+            is_read,
+            created_at
+        FROM notifications
+        WHERE user_id = $1
+        ORDER BY created_at DESC
+        `;
+        const result = await pool.query(query, [userId]);
+        return result.rows;
+    },
+    
   createNotifiation: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
     const query = `
       INSERT INTO notifications (user_id, actor_id, type, reference_id)

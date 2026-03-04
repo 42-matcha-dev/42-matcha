@@ -2,6 +2,9 @@ import { notificationRepository } from "../repositories/notification.repository.
 import type { NotificationType } from "../types/notification.types.js";
 
 export const notificationService = {
+    getNotifications: async (userId: number) => {
+        return await notificationRepository.getNotifications(userId);
+    },
     createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
         return notificationRepository.createNotifiation(userId, actorId, type, referenceId);
     }

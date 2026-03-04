@@ -23,7 +23,7 @@ export const likeService = {
 
     if (!isMatch) {
       // Send LIKE notification to the liked user
-      await notificationService.createNotification(likedId, likerId, "LIKE")
+      await notificationService.createNotification(likedId, likerId, "LIKE", likerId);
     } else {
       const user1 = Math.min(likerId, likedId);
       const user2 = Math.max(likerId, likedId);
