@@ -12,6 +12,7 @@ import tagRoutes from './routes/tag.routes.js';
 import likeRoutes from './routes/like.routes.js';
 import geocodingRoutes from './routes/geocoding.routes.js';
 import notificationRoutes from './routes/notification.routes.js'
+import conversationRoutes from './routes/conversation.routes.js';
 
 const app = express();
 const port = process.env.PORT_BACKEND || 4000;
@@ -28,6 +29,7 @@ app.use('/api/like', likeRoutes);
 app.use('/api/geocoding', geocodingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api/conversations', conversationRoutes);
 
 // --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
