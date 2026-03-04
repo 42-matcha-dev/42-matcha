@@ -40,4 +40,15 @@ export const messageRepository = {
         return res.rows;
     },
 
+    markAsRead: async (
+        conversationId: number,
+        userId: number,
+    ): Promise<void> => {
+        const query = `
+            UPDATE messages
+            SET is_read = true
+            WHERE conversation_id = $1 AND sender_id != $2
+        `;
+        await pool.query(query, [conversationId, userId]);
+    },
 };
