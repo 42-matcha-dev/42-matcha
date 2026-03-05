@@ -96,5 +96,28 @@ export const chatService = {
 
         throw new Error('Failed to create or retrieve conversation');
 
-    }
+    },
+
+    sendMessage: async (
+        conversationId: number,
+        senderId: number,
+        content: string
+    ) => {
+        const conversation = await conversationRepository.getConversationById(conversationId);
+        if (!conversation) {
+            throw new Error('Conversation not found');
+        }
+
+        const isParticipant =
+            conversation.user1_id === senderId || conversation.user2_id === senderId;
+        if (!isParticipant) {
+            throw new Error('Unauthorized: not a participant in this conversation');
+        }
+
+        const message = await messageRepository.insertMessage(conversationId, senderId, content);
+        if (!message) {
+            throw new Error('Failed to send message');
+        }
+        return message;
+    },
 };
