@@ -6,5 +6,6 @@ const router = Router();
 
 router.get('/', authenticateToken, notificationController.getNotifications);
 router.patch('/:id/read', authenticateToken, notificationController.markAsRead);
+router.get('/unread-count', authenticateToken, notificationController.getUnreadCount);
 
 export default router;

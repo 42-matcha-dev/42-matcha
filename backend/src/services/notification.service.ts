@@ -10,5 +10,8 @@ export const notificationService = {
     },
     markAsRead: async (notificationId: number, userId: number) => {
         return notificationRepository.markAsRead(notificationId, userId);
+    },
+    getUnreadCount: async (userId: number) => {
+        return notificationRepository.getUnreadCount(userId);
     }
 }

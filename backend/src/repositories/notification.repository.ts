@@ -41,5 +41,16 @@ export const notificationRepository = {
 
     const result = await pool.query(query, [notificationId, userId]);
     return result.rows[0];
+  },
+
+  getUnreadCount: async (userId: number) => {
+    const query = `
+      SELECT COUNT(*) AS count
+      FROM notifications
+      WHERE user_id = $1
+      AND is_read = false
+    `;
+    const result = await pool.query(query, [userId]);
+    return Number(result.rows[0].count);
   }
 };

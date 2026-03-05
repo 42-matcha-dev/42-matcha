@@ -36,5 +36,16 @@ export const notificationController = {
             console.error("Failed to mark notification as read:", err);
             res.status(500).json({ error: "Failed to update notification"});
         }
+    },
+
+    getUnreadCount: async (req: AuthenticatedRequest, res: Response) => {
+        try {
+            const userId = req.user!.userId;
+            const count = await notificationService.getUnreadCount(userId)
+            res.json({count});
+        } catch (err) {
+            console.error("Failed to fetch unread notifications:", err);
+            res.status(500).json({ error: "Failed to update notification"});
+        }
     }
 }
