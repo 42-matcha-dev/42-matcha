@@ -23,6 +23,8 @@ export const notificationRepository = {
     const query = `
       INSERT INTO notifications (user_id, actor_id, type, reference_id)
       VALUES ($1, $2, $3, $4)
+      ON CONFLICT (user_id, actor_id, type, reference_id)
+      DO NOTHING
       RETURNING id, user_id, actor_id, type, reference_id, is_read, created_at
     `;
     const res = await pool.query(query, [userId, actorId, type, referenceId]);

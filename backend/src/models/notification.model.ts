@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     CHECK (type IN ('LIKE', 'MATCH', 'VIEW', 'MESSAGE', 'UNLIKE')),
   reference_id INTEGER,
   created_at TIMESTAMP DEFAULT NOW(),
-  is_read BOOLEAN DEFAULT FALSE
+  is_read BOOLEAN DEFAULT FALSE,
+  UNIQUE (user_id, actor_id, type, reference_id)
 );
 `;
