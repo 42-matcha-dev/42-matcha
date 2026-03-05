@@ -43,11 +43,26 @@ export default function NotificationsClient() {
     }, []);
 
     const handleClick = async(n: Notification) => {
-        //read the notification
-        // await fetch(`/api/notifications/${n.id}/read`, {
-        //     method: "PATCH",
-        //     credentials: "include",
-        // });
+        if (!n.is_read) {
+            try {
+                const token = getCookie('token');
+                if (!token) {
+                router.push('/login');
+                return;
+                }
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+                //read the notification
+                await fetch(`${apiUrl}/api/notifications/${n.id}/read`, {
+                    method: "PATCH",
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+            } catch (err) {
+                console.error("Network error while updating notification:", err);
+            }
+        }
 
         switch (n.type) {
             case "MESSAGE":

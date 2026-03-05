@@ -7,5 +7,8 @@ export const notificationService = {
     },
     createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
         return notificationRepository.createNotifiation(userId, actorId, type, referenceId);
+    },
+    markAsRead: async (notificationId: number, userId: number) => {
+        return notificationRepository.markAsRead(notificationId, userId);
     }
 }
