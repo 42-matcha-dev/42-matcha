@@ -71,6 +71,14 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
     }
   }, [currentLocation, currentLatitude, currentLongitude, lastVerifiedLocation]);
 
+  useEffect(() => {
+    if (lastVerifiedLocation && currentLocation !== lastVerifiedLocation) {
+      setLastVerifiedLocation(null);
+      setValue("latitude", 0, { shouldValidate: false});
+      setValue("longitude", 0, { shouldValidate: false});
+    }
+  }, [currentLocation])
+
   // Forward geocode location text to get lat/lon when user manually enters location
   const geocodeLocation = async (locationText: string) => {
     if (!locationText || locationText.trim().length < 3) {
@@ -179,19 +187,6 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   };
 
   const onSubmit = async (data: RegisterBasicSchema) => {
-    // Safety check: verify location matches verified location and coordinates are valid
-    if (!lastVerifiedLocation || data.location !== lastVerifiedLocation) {
-      // Location doesn't match verified location, try to geocode it
-      if (data.location && data.location.trim().length >= 3) {
-        await geocodeLocation(data.location);
-        // Don't proceed if geocoding is needed
-        return;
-      } else {
-        setGpsError("Please enter and verify a valid location.");
-        return;
-      }
-    }
-
     // Validate coordinates are not 0,0
     if (data.latitude === 0 && data.longitude === 0) {
       setGpsError("Please verify your location before continuing.");
@@ -213,28 +208,23 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
           <InputForm label="lastName" type="text" error={errors.lastName}{...register("lastName")}/>
           <InputForm label="birthday" type="date" error={errors.birthday}{...register("birthday")} />
           <div className="flex flex-col gap-2 w-full max-w-md">
-            <InputForm
-              label="location"
-              type="text"
-              error={errors.location}
-              {...register("location", {
-                onBlur: (e) => {
-                  const locationText = e.target.value;
-                  if (locationText && locationText.trim().length >= 3) {
-                    geocodeLocation(locationText);
-                  }
-                }
-              })}
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const locationText = e.currentTarget.value;
-                  if (locationText && locationText.trim().length >= 3) {
-                    geocodeLocation(locationText);
-                  }
-                }
-              }}
-            />
+            <div className="flex flex-row gap-2 w-full">
+              <InputForm
+                label="location"
+                type="text"
+                error={errors.location}
+                {...register("location")}
+              />
+              <button
+                type="button"
+                onClick={() => geocodeLocation(currentLocation)}
+                disabled={!currentLocation || geocodingLoading}
+                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 underline self-start disabled:opacity-50"
+              >
+                {geocodingLoading ? "Verifying location..." : "Verify location"}
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={handleEnableGPS}
@@ -250,6 +240,11 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
               />
               {gpsLoading ? "Getting location..." : geocodingLoading ? "Geocoding location..." : "Enable GPS"}
             </button>
+            {lastVerifiedLocation && (
+              <div className="text-green-600 text-sm">
+                ✓ Verified: {lastVerifiedLocation}
+              </div>
+            )}
             {gpsError && (
               <div className="text-red-500 text-sm">{gpsError}</div>
             )}
