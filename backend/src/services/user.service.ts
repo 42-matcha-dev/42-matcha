@@ -1,5 +1,6 @@
 import { userRepository } from '../repositories/user.repository.js'
 import { likeRepository } from '../repositories/like.repository.js'
+import { notificationService } from './notification.service.js'
 
 export const userService = {
   getProfile: async (userId: number, currentUserId?: number) => {
@@ -21,6 +22,8 @@ export const userService = {
       if (isLiked) {
         isMatch = await likeRepository.checkMutualLike(currentUserId, userId)
       }
+      // Send notification to the viewed user
+      await notificationService.createNotification(userId, currentUserId, "VIEW", currentUserId)
     }
 
     return { ...userWithoutPassword, tags, isLiked, isMatch }
