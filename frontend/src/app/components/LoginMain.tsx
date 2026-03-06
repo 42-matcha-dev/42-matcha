@@ -9,6 +9,7 @@ import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
 import { setCookie } from "@/utils/cookie.util";
+import { toast } from "sonner";
 
 const loginSchema = registerSchema.pick({
     email: true,
@@ -32,34 +33,34 @@ export default function LoginForm() {
     const onSubmit = async (data: LoginSchema) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
             const response = await fetch(`${apiUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                }),
+                body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Login error:', errorData);
-                // TODO: Show error message to user
+                let message = "Login failed"
+                try {
+                    const errorData = await response.json();
+                    message = errorData.error ?? message;
+                } catch {}
+                toast.error(message)
                 return;
             }
 
             const result = await response.json();
-            console.log('Login successful:', result);
+            toast.success('Login successful')
             // Store token in cookie
             if (result.token) {
                 setCookie('token', result.token, 7); // 7 days expiration
             }
             router.push("/profile");
         } catch (error) {
-            console.error('Login request failed:', error);
-            // TODO: Show error message to user
+            toast.error('Network error. Please try again.');
         }
     };
 
