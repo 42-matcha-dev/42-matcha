@@ -9,7 +9,7 @@ interface InputFormProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 
 const InputFormSelect = ({label, error, values, ...props}: InputFormProps) => {
   return (
-    <div className="flex flex-col gap-2 w-full max-w-md">
+    <div className="flex flex-col gap-2 w-full">
       <label>{label}</label>
         { values ? (
           <select
