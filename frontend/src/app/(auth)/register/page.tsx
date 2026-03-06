@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import RegisterBasicForm from "@/app/components/SignupForms/RegisterBasicForm";
 import RegisterSpecificForm from "@/app/components/SignupForms/RegisterSpecificForm";
 import RegisterImagesForm from "@/app/components/SignupForms/RegisterImagesForm";
+import { toast } from "sonner";
 
 const safeRegisterSchema = registerSchema.omit({
   email: true,
@@ -46,27 +47,23 @@ function RegisterFormStepperContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log("Registration failed:", errorData);
-        alert(errorData.message || "Registration failed.");
+        let msg = errorData.error || "Registration failed."
+        toast.error(msg);
         return;
       }
 
-      const result = await response.json();
-      console.log("Registration successful:", result);
+      // const result = await response.json();
+      toast.success("Registration successful!");
 
       sessionStorage.removeItem("registerBasic");
       sessionStorage.removeItem("registerSpecific");
 
-      router.push("/");
+      router.push("/login");
     } catch (err) {
       if (err instanceof z.ZodError) {
-        alert("Formulaire invalide.");
-        console.log(formData);
-        console.log("Erreur: ", err);
-        // alert(err.errors[0]?.message || "Formulaire invalide.");
+        toast.error("Form is incomplete")
       } else {
-        console.error(err);
-        alert((err as Error).message || "Erreur inconnue");
+        toast.error((err as Error).message || "Something went wrong... Please try again later")
       }
     }
   };
