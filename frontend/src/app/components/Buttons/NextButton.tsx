@@ -13,7 +13,7 @@ const NextButton = ({text, onClick, type = "submit", disabled = false}: NextButt
             type={type}
             onClick={onClick}
             disabled={disabled}
-            className="w-full text-white font-semibold border bg-secondary rounded-xl p-4 hover:bg-secondary-hover active:bg-secondary-active disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-secondary-hover"
+            className="w-full text-white font-semibold border bg-secondary rounded-xl p-4 hover:bg-secondary-hover active:bg-secondary-active disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-secondary"
         >
             {text}
         </button>

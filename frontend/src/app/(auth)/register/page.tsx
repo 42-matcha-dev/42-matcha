@@ -124,7 +124,7 @@ function RegisterFormStepperContent() {
   ];
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto p-6  min-h-[600px]">
+    <div className="relative w-full max-w-md mx-auto min-h-[600px]">
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
           key={currentStep}
@@ -147,7 +147,7 @@ function RegisterFormStepperContent() {
 
 export default function RegisterFormStepper() {
   return (
-    <Suspense fallback={<div className="relative w-full max-w-2xl mx-auto p-6 min-h-[600px] flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="relative w-full max-w-md mx-auto min-h-[600px] flex items-center justify-center">Loading...</div>}>
       <RegisterFormStepperContent />
     </Suspense>
   );

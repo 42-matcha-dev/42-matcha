@@ -13,7 +13,7 @@ export default function AuthLayout({
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Zone gauche = contenu spécifique */}
-        <div className="flex justify-center items-center w-full lg:w-1/2 bg-white text-black">
+        <div className="flex px-8 lg:px-16 mt-32 lg:mt-0 justify-center items-center w-full lg:w-1/2 bg-white text-black">
           {children}
         </div>
 
