@@ -213,7 +213,7 @@ export const assignTagsToUser = async (userId: number, tagMap: Map<string, numbe
     const allTagIds = Array.from(tagMap.values());
 
     // Randomly assign 3-6 tags to each user
-    const numTags = Math.floor(Math.random() * 4) + 3; // 3-6 tags
+    const numTags = Math.floor(Math.random() * 4) + 2; // 2-5 tags
     const shuffled = [...allTagIds].sort(() => 0.5 - Math.random());
     const selectedTagIds = shuffled.slice(0, numTags);
 
