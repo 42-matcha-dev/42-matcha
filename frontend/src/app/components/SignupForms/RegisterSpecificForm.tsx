@@ -87,7 +87,7 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col items-left w-full m-7 gap-11">
+      className="flex flex-col items-left w-full m-7 gap-12">
         <Title title="Complete Your Profile" subTitle="Tell us more about you."/>
         <Stepper currentStep="1" />
         <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female"]} {...register("gender")}/>
@@ -104,8 +104,10 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
               onChange={(selectedIds) => setValue("curiousAbout", selectedIds)}
             />
           )}
-        <BackButton text="Back" onClick={onBack}/>
-        <NextButton text="Next"/>
+        <div className="flex flex-col gap-4 justify-between w-full">
+          <BackButton text="Back" onClick={onBack}/>
+          <NextButton text="Next"/>
+        </div>
     </form>
   );
 }
