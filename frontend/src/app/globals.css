@@ -13,6 +13,8 @@
   /* Custom colors */
   --color-primary: #c18845;
   --color-secondary: #212e53;
+  --color-secondary-hover: #2B3C6D;
+  --color-secondary-active: #18233F;
 
   --color-custom-light: #d9d9d9;
   --color-custom-medium: #8c8c8c;

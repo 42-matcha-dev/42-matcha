@@ -9,11 +9,11 @@ export default function AuthLayout({
 }>) {
   const image = "/image.jpeg";
   return (
-    <main className="flex flex-col h-screen">
+    <main className="flex flex-col h-screen relative">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Zone gauche = contenu spécifique */}
-        <div className="flex justify-center items-center w-full lg:w-1/2 bg-white text-black p-4">
+        <div className="flex justify-center items-center w-full lg:w-1/2 bg-white text-black">
           {children}
         </div>
 
