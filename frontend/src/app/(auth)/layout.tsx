@@ -9,7 +9,7 @@ export default function AuthLayout({
 }>) {
   const image = "/image.jpeg";
   return (
-    <main className="flex flex-col h-screen relative">
+    <main className="absolute top-0 w-screen">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Zone gauche = contenu spécifique */}
@@ -18,7 +18,7 @@ export default function AuthLayout({
         </div>
 
         {/* Zone droite = image configurable */}
-        <div className="hidden lg:block w-1/2 h-full relative">
+        <div className="hidden lg:block w-1/2 h-screen relative">
           <Image
             src={image}
             alt="Visuel"

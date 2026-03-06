@@ -4,7 +4,7 @@ import Header from '@/app/components/Header';
 
 export default function Page() {
     return (
-        <main className="flex flex-col h-screen bg-white">
+        <main className="flex flex-col bg-white">
             <Header />
             <div className="flex flex-1 overflow-hidden">
                 <Navbar />
