@@ -65,10 +65,10 @@ export default function LoginForm() {
     };
 
   return (
-    <div className="flex justify-center items-center min-h-screen w-1/2 h-full bg-white text-black p-4">
+    <div className="flex justify-center lg:items-center min-h-screen h-full w-full bg-white text-black">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
+        className="flex flex-1 flex-col max-w-md items-center gap-12">
           <Title title="Welcome back" subTitle="Sign in to your Matcha account."/>
           <InputForm label="Email" type="text" error={errors.email} {...register("email")}/>
           <InputForm label="Password" type="password" error={errors.password} {...register("password")}/>
