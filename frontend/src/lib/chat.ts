@@ -83,7 +83,7 @@ export async function sendMessage(conversationId: number, content: string): Prom
         const err = await res.json().catch(() => ({}));
         if (res.status === 404) throw new Error('Conversation not found');
         if (res.status === 403) throw new Error('Unauthorized: not a participant in this conversation');
-        throw new Error(err.error || 'Failed to fetch messages');
+        throw new Error(err.error || 'Failed to send message');
     }
     return res.json();
 }
