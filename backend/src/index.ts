@@ -13,6 +13,7 @@ import likeRoutes from './routes/like.routes.js';
 import geocodingRoutes from './routes/geocoding.routes.js';
 import notificationRoutes from './routes/notification.routes.js'
 import conversationRoutes from './routes/conversation.routes.js';
+import { setupChatSocket } from './socket/chat.handlers.js';
 
 const app = express();
 const port = process.env.PORT_BACKEND || 4000;
@@ -41,18 +42,7 @@ const io = new SocketServer(server, {
   }
 });
 
-io.on("connection", (socket) => {
-  console.log("🔌 User connected:", socket.id);
-
-  socket.on("sendMessage", (msg) => {
-    console.log("📩 Message reçu:", msg);
-    io.emit("newMessage", msg);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
-  });
-});
+setupChatSocket(io);
 
 // --- START DB THEN SERVER ---
 console.log("🟡 Initializing database...");
