@@ -5,7 +5,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import SearchModal from './SearchModal'
 import { RiMore2Fill } from 'react-icons/ri'
-import { fetchConversations, type Conversation } from '@/lib/chat'
+import { fetchConversations, type Conversation, type Message } from '@/lib/chat'
+import { getSocket } from '@/lib/socket'
 import { getCookie, deleteCookie} from '@/utils/cookie.util'
 
 
@@ -45,7 +46,7 @@ const MessageList = ({ conversation }: MessageListProps) => {
           src={otherUser.icon_url || '/default-avatar.png'}
           className="flex-shrink-0 border border-black rounded-full"
           alt=""
-          width={56}
+          width={52}
           height={52}
         />
         <span className="flex flex-col items-start min-w-0">
@@ -92,6 +93,31 @@ const ChatList = () => {
     }
     load()
   }, [router])
+
+  useEffect(() => {
+    const socket = getSocket()
+    const onNewMessage = (msg: Message) => {
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c.id === msg.conversation_id)
+        if (idx === -1) return prev
+        const conv = prev[idx]
+        const updated: Conversation = {
+          ...conv,
+          lastMessage: {
+            content: msg.content,
+            created_at: typeof msg.created_at === 'string' ? msg.created_at : (msg.created_at as Date).toISOString(),
+          },
+        }
+        const rest = prev.filter((_, i) => i !== idx)
+        return [updated, ...rest]
+      })
+    }
+    socket.on('newMessage', onNewMessage)
+    return () => {
+      socket.off('newMessage', onNewMessage)
+    }
+  }, [])
+
   return (
     <div className="border border-black bg-white h-[100vh]">
       <div className="flex items-center justify-between p-4 border-b border-b-1 border-[#898989b9]">
