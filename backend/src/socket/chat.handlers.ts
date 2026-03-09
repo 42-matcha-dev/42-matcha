@@ -18,9 +18,18 @@ export function setupChatSocket(io: Server): void {
         }
     });
 
-    io.on("connection", (socket: Socket) => {
+    io.on("connection", async (socket: Socket) => {
         const userId = socket.data.userId;
         console.log("🔌 User connected:", socket.id, "userId:", userId);
+
+        try {
+            const conversations = await chatService.getConversations(userId)
+            for (const conv of conversations) {
+                socket.join(`conversation:${conv.id}`)
+            }
+        } catch (err) {
+            console.error('Failed to auto-join conversations:', err);
+        }
 
         socket.on("joinConversation", async (payload: { conversationId: number }, cb) => {
             try {
@@ -29,8 +38,8 @@ export function setupChatSocket(io: Server): void {
                 cb?.({ error: 'Invalid conversationId' });
                 return;
                 }
-                const conversation = await chatService.getConversations(userId);
-                const conv = conversation.find((c: { id: number }) => c.id === conversationId);
+                const conversations = await chatService.getConversations(userId);
+                const conv = conversations.find((c: { id: number }) => c.id === conversationId);
                 if (!conv) {
                 cb?.({ error: 'Conversation not found or unauthorized' });
                 return;
