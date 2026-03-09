@@ -52,7 +52,7 @@ const NavLinks = () => {
             size={1.3}
             title={'Profile'}
             color={'black'}
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/profile')}
           />
           <NavbarButtonElement
             path={mdiMagnify}
