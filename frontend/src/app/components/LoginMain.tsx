@@ -9,6 +9,7 @@ import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
 import { setCookie } from "@/utils/cookie.util";
+import { toast } from "sonner";
 
 const loginSchema = registerSchema.pick({
     email: true,
@@ -32,46 +33,46 @@ export default function LoginForm() {
     const onSubmit = async (data: LoginSchema) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
             const response = await fetch(`${apiUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                }),
+                body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Login error:', errorData);
-                // TODO: Show error message to user
+                let message = "Login failed"
+                try {
+                    const errorData = await response.json();
+                    message = errorData.error ?? message;
+                } catch {}
+                toast.error(message)
                 return;
             }
 
             const result = await response.json();
-            console.log('Login successful:', result);
+            toast.success('Login successful')
             // Store token in cookie
             if (result.token) {
                 setCookie('token', result.token, 7); // 7 days expiration
             }
             router.push("/profile");
         } catch (error) {
-            console.error('Login request failed:', error);
-            // TODO: Show error message to user
+            toast.error('Network error. Please try again.');
         }
     };
 
   return (
-    <div className="flex justify-center items-center min-h-screen w-1/2 h-full bg-white text-black p-4 border">
+    <div className="flex justify-center lg:items-center min-h-screen h-full w-full bg-white text-black">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
+        className="flex flex-1 flex-col max-w-md items-center gap-12">
           <Title title="Welcome back" subTitle="Sign in to your Matcha account."/>
           <InputForm label="Email" type="text" error={errors.email} {...register("email")}/>
           <InputForm label="Password" type="password" error={errors.password} {...register("password")}/>
-          <NextButton text="Sign in"/>
+          <NextButton text="Log in"/>
       </form>
     </div>
   );

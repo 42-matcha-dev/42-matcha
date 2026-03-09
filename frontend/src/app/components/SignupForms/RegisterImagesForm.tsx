@@ -102,12 +102,12 @@ function RegisterImagesFormContent({
 
   return (
     <div className="w-full bg-white">
-      <div className="flex flex-col items-center w-full p-4">
+      <div className="flex flex-col items-center w-full gap-12">
         <Title title="Complete Your Profile" subTitle="Tell us more about you." />
         <Stepper currentStep="2" />
 
         {/* Profile Icon */}
-        <div className="flex items-center gap-4 mt-6">
+        <div className="flex items-center gap-4">
           <label className="cursor-pointer">
             {iconUrl ? (
               <Image
@@ -142,7 +142,7 @@ function RegisterImagesFormContent({
         </div>
 
         {/* Photos Upload */}
-        <div className="mt-8 text-left w-full max-w-[420px]">
+        <div className="text-left w-full max-w-[420px]">
           <h2 className="text-base font-bold mb-3">Upload Photos (4 maximum)</h2>
 
           <div className="grid grid-cols-[3fr_1fr] gap-4 items-stretch">
@@ -230,7 +230,7 @@ function RegisterImagesFormContent({
         </div>
 
         {/* Nav buttons */}
-        <div className="flex flex-col gap-4 justify-between w-full max-w-[400px] mt-8">
+        <div className="flex flex-col gap-4 justify-between w-full max-w-[400px]">
           <BackButton text="Back" onClick={onBack} />
           <NextButton text="Complete" onClick={onSubmitFinal} />
         </div>

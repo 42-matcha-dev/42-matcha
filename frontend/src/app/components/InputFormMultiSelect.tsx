@@ -46,7 +46,7 @@ const InputFormMultiSelect = ({
   }, {} as Record<string, Tag[]>);
 
   return (
-    <div className="flex flex-col gap-2 w-full max-w-md">
+    <div className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <label>{label}</label>
         <span className="text-sm text-gray-500">
@@ -72,10 +72,10 @@ const InputFormMultiSelect = ({
                     disabled={isDisabled}
                     className={`px-3 py-1 rounded-full text-sm border transition-colors ${
                       isSelected
-                        ? "bg-blue-500 text-white border-blue-500"
+                        ? "bg-secondary text-white border-secondary"
                         : isDisabled
                         ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-secondary-hover"
                     }`}
                   >
                     {tag.name}

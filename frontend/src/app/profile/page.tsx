@@ -79,7 +79,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <main className="flex flex-col h-screen bg-white">
+      <main className="flex flex-col bg-white">
         <Header />
         <div className="flex items-center justify-center h-full">
           <div className="text-lg">Loading profile...</div>
@@ -90,7 +90,7 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <main className="flex flex-col h-screen bg-white">
+      <main className="flex flex-col bg-white">
         <Header />
         <div className="flex items-center justify-center h-full">
           <div className="text-red-500">Error: {error}</div>
@@ -104,7 +104,7 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="flex flex-col h-screen bg-white">
+    <main className="flex flex-col bg-white">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Navbar />

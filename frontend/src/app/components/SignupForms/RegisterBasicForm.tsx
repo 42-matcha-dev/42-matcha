@@ -12,12 +12,12 @@ import Stepper from "@/app/components/Stepper";
 import Image from "next/image";
 
 const registerBasicSchema = registerSchema.pick({
-    firstName: true,
-    lastName: true,
-    birthday: true,
-    location: true,
-    latitude: true,
-    longitude: true
+  firstName: true,
+  lastName: true,
+  birthday: true,
+  location: true,
+  latitude: true,
+  longitude: true
 });
 
 type RegisterBasicSchema = z.infer<typeof registerBasicSchema>;
@@ -34,17 +34,17 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   const [geocodingLoading, setGeocodingLoading] = useState(false);
   const [lastVerifiedLocation, setLastVerifiedLocation] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch} = useForm<RegisterBasicSchema>({
-      resolver: zodResolver(registerBasicSchema),
-      mode: "onBlur",
-      defaultValues: {
-          firstName: defaultValues.firstName || "",
-          lastName: defaultValues.lastName || "",
-          birthday: defaultValues.birthday || "",
-          location: defaultValues.location || "",
-          latitude: defaultValues.latitude || 0,
-          longitude: defaultValues.longitude || 0
-      }
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<RegisterBasicSchema>({
+    resolver: zodResolver(registerBasicSchema),
+    mode: "onBlur",
+    defaultValues: {
+      firstName: defaultValues.firstName || "",
+      lastName: defaultValues.lastName || "",
+      birthday: defaultValues.birthday || "",
+      location: defaultValues.location || "",
+      latitude: defaultValues.latitude || 0,
+      longitude: defaultValues.longitude || 0
+    }
   });
 
   const currentLocation = watch("location");
@@ -70,6 +70,14 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       setLastVerifiedLocation(currentLocation);
     }
   }, [currentLocation, currentLatitude, currentLongitude, lastVerifiedLocation]);
+
+  useEffect(() => {
+    if (lastVerifiedLocation && currentLocation !== lastVerifiedLocation) {
+      setLastVerifiedLocation(null);
+      setValue("latitude", 0, { shouldValidate: false });
+      setValue("longitude", 0, { shouldValidate: false });
+    }
+  }, [currentLocation])
 
   // Forward geocode location text to get lat/lon when user manually enters location
   const geocodeLocation = async (locationText: string) => {
@@ -179,19 +187,6 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   };
 
   const onSubmit = async (data: RegisterBasicSchema) => {
-    // Safety check: verify location matches verified location and coordinates are valid
-    if (!lastVerifiedLocation || data.location !== lastVerifiedLocation) {
-      // Location doesn't match verified location, try to geocode it
-      if (data.location && data.location.trim().length >= 3) {
-        await geocodeLocation(data.location);
-        // Don't proceed if geocoding is needed
-        return;
-      } else {
-        setGpsError("Please enter and verify a valid location.");
-        return;
-      }
-    }
-
     // Validate coordinates are not 0,0
     if (data.latitude === 0 && data.longitude === 0) {
       setGpsError("Please verify your location before continuing.");
@@ -204,83 +199,89 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   };
 
   return (
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-left w-full m-7 gap-11">
-          <Title title="Complete Your Profile" subTitle="Tell us more about you."/>
-          <Stepper currentStep="0" />
-          <InputForm label="firstName" type="text" error={errors.firstName} {...register("firstName")}/>
-          <InputForm label="lastName" type="text" error={errors.lastName}{...register("lastName")}/>
-          <InputForm label="birthday" type="date" error={errors.birthday}{...register("birthday")} />
-          <div className="flex flex-col gap-2 w-full max-w-md">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col w-full gap-12">
+      <Title title="Complete Your Profile" subTitle="Tell us more about you." />
+      <Stepper currentStep="0" />
+      <InputForm label="firstName" type="text" error={errors.firstName} {...register("firstName")} />
+      <InputForm label="lastName" type="text" error={errors.lastName}{...register("lastName")} />
+      <InputForm label="birthday" type="date" error={errors.birthday}{...register("birthday")} />
+      <div className="flex flex-col gap-2 w-full">
+        <div className="flex items-center gap-2 w-full">
+          <div className="flex-1">
             <InputForm
               label="location"
               type="text"
               error={errors.location}
-              {...register("location", {
-                onBlur: (e) => {
-                  const locationText = e.target.value;
-                  if (locationText && locationText.trim().length >= 3) {
-                    geocodeLocation(locationText);
-                  }
-                }
-              })}
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const locationText = e.currentTarget.value;
-                  if (locationText && locationText.trim().length >= 3) {
-                    geocodeLocation(locationText);
-                  }
-                }
-              }}
+              {...register("location")}
             />
-            <button
-              type="button"
-              onClick={handleEnableGPS}
-              disabled={gpsLoading || geocodingLoading}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 underline self-start disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Image
-                src="/icons/location.svg"
-                alt="Location icon"
-                width={16}
-                height={16}
-                className="inline"
-              />
-              {gpsLoading ? "Getting location..." : geocodingLoading ? "Geocoding location..." : "Enable GPS"}
-            </button>
-            {gpsError && (
-              <div className="text-red-500 text-sm">{gpsError}</div>
-            )}
           </div>
 
-          <NextButton
-            text="Next"
-            disabled={
-              gpsLoading ||
-              geocodingLoading ||
-              !lastVerifiedLocation ||
-              currentLocation !== lastVerifiedLocation ||
-              currentLatitude === 0 ||
-              currentLongitude === 0 ||
-              !currentFirstName ||
-              !currentLastName ||
-              !currentBirthday ||
-              !!errors.firstName ||
-              !!errors.lastName ||
-              !!errors.birthday ||
-              !!errors.location
-            }
+          <button
+            type="button"
+            onClick={() => geocodeLocation(currentLocation)}
+            disabled={!currentLocation || geocodingLoading}
+            className="px-4 py-2 rounded-lg border border-secondary text-secondary text-sm
+              hover:bg-secondary hover:text-white
+              active:bg-[#18233F] active:text-white
+              disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {geocodingLoading ? "Checking..." : "Verify"}
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleEnableGPS}
+          disabled={gpsLoading || geocodingLoading}
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 underline self-start disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Image
+            src="/icons/location.svg"
+            alt="Location icon"
+            width={16}
+            height={16}
+            className="inline"
           />
-      </form>
+          {gpsLoading ? "Getting location..." : geocodingLoading ? "Geocoding location..." : "Enable GPS"}
+        </button>
+        {lastVerifiedLocation && (
+          <div className="text-green-600 text-sm">
+            ✓ Verified: {lastVerifiedLocation}
+          </div>
+        )}
+        {gpsError && (
+          <div className="text-red-500 text-sm">{gpsError}</div>
+        )}
+      </div>
+
+      <NextButton
+        text="Next"
+        disabled={
+          gpsLoading ||
+          geocodingLoading ||
+          !lastVerifiedLocation ||
+          currentLocation !== lastVerifiedLocation ||
+          currentLatitude === 0 ||
+          currentLongitude === 0 ||
+          !currentFirstName ||
+          !currentLastName ||
+          !currentBirthday ||
+          !!errors.firstName ||
+          !!errors.lastName ||
+          !!errors.birthday ||
+          !!errors.location
+        }
+      />
+    </form>
   );
 }
 
 export default function RegisterBasicForm(props: Props) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <RegisterBasicFormContent {...props}/>
+      <RegisterBasicFormContent {...props} />
     </Suspense>
   );
 }

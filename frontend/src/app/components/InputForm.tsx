@@ -18,9 +18,9 @@ interface InputFormProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 
 const InputForm = ({label, type, error, ...props}: InputFormProps) => {
   return (
-    <div className="flex flex-col gap-2 w-full max-w-md">
+    <div className="flex flex-col gap-2 w-full">
         <input
-            className="border-b border-gray-300 rounded-md p-2 w-full focus:outline-none "
+            className="border-b border-gray-300 p-2 w-full focus:outline-none "
             type={type}
             name={label.toLowerCase()}
             placeholder={label}

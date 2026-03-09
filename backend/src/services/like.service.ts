@@ -1,5 +1,6 @@
 import { likeRepository } from '../repositories/like.repository.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
+import { notificationService } from './notification.service.js';
 
 export const likeService = {
   likeUser: async (likerId: number, likedId: number) => {
@@ -20,13 +21,17 @@ export const likeService = {
     // Check for mutual like (match)
     const isMatch = await likeRepository.checkMutualLike(likerId, likedId);
 
-    if (isMatch) {
+    if (!isMatch) {
+      // Send LIKE notification to the liked user
+      await notificationService.createNotification(likedId, likerId, "LIKE", likerId);
+    } else {
       const user1 = Math.min(likerId, likedId);
       const user2 = Math.max(likerId, likedId);
 
-      await conversationRepository.createConversation(user1, user2);
-      // send notification here
-      // await notificationService.createMatchNotification(user1, user2);
+      const conversation = await conversationRepository.createConversation(user1, user2);
+      // Notify both users of the match
+      await notificationService.createNotification(likerId, likedId, "MATCH", conversation.id);
+      await notificationService.createNotification(likedId, likerId, "MATCH", conversation.id);
     }
 
 
