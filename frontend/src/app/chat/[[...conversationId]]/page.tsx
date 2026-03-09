@@ -16,11 +16,11 @@ export default function ChatPage() {
     const isValidId = conversationId !== null && !isNaN(conversationId)
 
     return (
-      <main className="flex flex-col bg-white">
+      <main className="flex flex-col h-screen bg-white">
         <Header />
         <div className="flex flex-1 overflow-hidden">
           <Navbar />
-          <div className="flex flex-1 overflow overflow-hidden">
+          <div className="flex flex-1 overflow-hidden">
             <div className={`flex-1 ${isValidId ? 'hidden md:block' : ''}`}>
               <ChatList />
             </div>
