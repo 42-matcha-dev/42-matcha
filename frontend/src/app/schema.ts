@@ -33,3 +33,11 @@ export const registerSchema = z.object({
 });
 
 export type RegisterSchema = z.infer<typeof registerSchema>;
+export const profileEditSchema =
+  registerSchema.omit({
+    password: true,
+    repeatPassword: true,
+  });
+
+export const profilePatchSchema =
+  profileEditSchema.partial();
