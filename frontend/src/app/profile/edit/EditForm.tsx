@@ -69,8 +69,8 @@ export default function EditForm() {
         initialUrl={watch("iconUrl")}
         onChange={(url) => setValue("iconUrl", url)}
       />
-      <PhotoGridUploader 
-        initialUrls={watch("photoUrls")}
+      <PhotoGridUploader
+        photoUrls={watch("photoUrls") ?? ["", "", "", ""]}
         onChange={(urls) => setValue("photoUrls", urls)}
       />
       <NextButton text="Submit" type="submit"/>

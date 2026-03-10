@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 
 type SignedUrlData = {
@@ -9,16 +9,11 @@ type SignedUrlData = {
 }
 
 interface Props {
-  initialUrls: string[] | null
+  photoUrls: string[]
   onChange: (urls: string[]) => void
 }
-export default function PhotoGridUploader({ initialUrls, onChange }: Props) {
-  const [photoUrls, setPhotoUrls] = useState<string[]>(initialUrls ?? [])
+export default function PhotoGridUploader({ photoUrls, onChange }: Props) {
   const [uploading, setUploading] = useState(false)
-
-  useEffect(() => {
-    setPhotoUrls(initialUrls ?? [])
-  }, [initialUrls])
 
   const uploadFiles = async (files: FileList, index: number) => {
     const file = files?.[0]
@@ -46,8 +41,6 @@ export default function PhotoGridUploader({ initialUrls, onChange }: Props) {
 
       const newUrls = [...photoUrls]
       newUrls[index] = publicUrl
-
-      setPhotoUrls(newUrls)
       onChange(newUrls)
     } finally {
       setUploading(false)
@@ -56,7 +49,6 @@ export default function PhotoGridUploader({ initialUrls, onChange }: Props) {
 
   const removePhoto = (index: number) => {
     const newUrls = photoUrls.filter((_, i) => i !== index);
-    setPhotoUrls(newUrls);
     onChange(newUrls);
   }
 
