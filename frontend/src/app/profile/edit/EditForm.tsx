@@ -31,7 +31,7 @@ type UserProfile = {
   gender: 'male' | 'female'
   lookingFor: 'male' | 'female' | 'both'
   description: string
-  curiousAbout: number[]
+  tags: Tag[]
   iconUrl: string | null
   photoUrls: string[]
 }
@@ -67,14 +67,14 @@ export default function EditForm() {
         reset({
           firstName: user.firstName,
           lastName: user.lastName,
-          birthday: user.birthday,
+          birthday: user.birthday?.split("T")[0],
           location: user.location,
           latitude: user.latitude,
           longitude: user.longitude,
           gender: user.gender,
           lookingFor: user.lookingFor,
           description: user.description,
-          curiousAbout: user.curiousAbout,
+          curiousAbout: user.tags.map((tag: Tag) => tag.id) ?? [],
           iconUrl: user.iconUrl,
           photoUrls: user.photoUrls
         })
