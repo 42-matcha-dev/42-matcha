@@ -34,6 +34,8 @@ const testUsers: TestUser[] = [
     location: 'Paris, France',
     latitude: 48.8566,
     longitude: 2.3522,
+    icon_url: "https://i.pravatar.cc/300?img=5",
+    photo_urls: ["https://i.pravatar.cc/300?img=5"]
   },
   {
     email: 'test2@example.com',
@@ -48,6 +50,8 @@ const testUsers: TestUser[] = [
     location: 'New York, USA',
     latitude: 40.7128,
     longitude: -74.0060,
+    icon_url: "https://i.pravatar.cc/300?img=12",
+    photo_urls: ["https://i.pravatar.cc/300?img=12"]
   },
   {
     email: 'test3@example.com',
@@ -62,6 +66,8 @@ const testUsers: TestUser[] = [
     location: 'London, UK',
     latitude: 51.5074,
     longitude: -0.1278,
+    icon_url: "https://i.pravatar.cc/300?img=6",
+    photo_urls: ["https://i.pravatar.cc/300?img=6"]
   },
   {
     email: 'test4@example.com',
@@ -76,6 +82,8 @@ const testUsers: TestUser[] = [
     location: 'Tokyo, Japan',
     latitude: 35.6762,
     longitude: 139.6503,
+    icon_url: "https://i.pravatar.cc/300?img=9",
+    photo_urls: ["https://i.pravatar.cc/300?img=9"]
   },
   {
     email: 'test5@example.com',
@@ -90,6 +98,8 @@ const testUsers: TestUser[] = [
     location: 'Barcelona, Spain',
     latitude: 41.3851,
     longitude: 2.1734,
+    icon_url: "https://i.pravatar.cc/300?img=10",
+    photo_urls: ["https://i.pravatar.cc/300?img=10"]
   },
 ];
 
