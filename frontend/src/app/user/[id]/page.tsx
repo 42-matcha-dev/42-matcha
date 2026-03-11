@@ -63,7 +63,7 @@ export default function UserProfilePage() {
         }
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        const response = await fetch(`${apiUrl}/api/user/${userId}`, {
+        const response = await fetch(`${apiUrl}/api/users/${userId}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

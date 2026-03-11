@@ -4,7 +4,7 @@ import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-router.get('/profile', authenticateToken, getProfile);
+router.get('/me', authenticateToken, getProfile);
 router.get('/search', authenticateToken, searchUsers);
 router.get('/:id', authenticateToken, getUserById);
 

@@ -47,7 +47,7 @@ export default function Dashboard() {
         }
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        const response = await fetch(`${apiUrl}/api/user/profile`, {
+        const response = await fetch(`${apiUrl}/api/user/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
