@@ -1,9 +1,49 @@
 import pool from '../database/init.js'
 
+type UserRow = {
+  id: number
+  email: string
+  username: string
+  first_name: string
+  last_name: string
+  birthdate: string
+  gender: "male" | "female"
+  sexual_preferences: "male" | "female" | "both"
+  biography: string
+  fame_rating: number
+  location: string
+  latitude: number
+  longitude: number
+  icon_url: string | null
+  photo_urls: string[] | null
+}
+
+function mapUser(row: UserRow) {
+  return {
+    id: row.id,
+    email: row.email,
+    username: row.username,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    birthday: row.birthdate,
+    gender: row.gender,
+    lookingFor: row.sexual_preferences,
+    description: row.biography,
+    fameRating: row.fame_rating,
+    location: row.location,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    iconUrl: row.icon_url,
+    photoUrls: row.photo_urls
+  }
+}
+
 export const userRepository = {
   findUserById: async (id: number) => {
     const res = await pool.query('SELECT * FROM users WHERE id = $1', [id])
-    return res.rows[0]
+    const row = res.rows[0]
+    if (!row) return null
+    return mapUser(row)
   },
 
   insertUserTags: async (userId: number, tagIds: number[]) => {
