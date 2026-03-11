@@ -21,21 +21,7 @@ const Navbar = () => {
         const token = getCookie("token");
         if (!token) return;
 
-        const socket =getSocket();
-        const onUnreadMessageCount = (data: { count: number }) => {
-            setMessageCount(data.count);
-        };
-        socket.on('unreadMessageCount', onUnreadMessageCount);
-        return () => {
-            socket.off('unreadMessageCount', onUnreadMessageCount);
-        };
-    }, []);
-
-    useEffect(() => {
         const fetchUnread = async () => {
-            const token = getCookie("token");
-            if (!token) return;
-
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
             const res = await fetch(`${apiUrl}/api/notifications/unread-count`, {
                 method: 'GET',
@@ -44,14 +30,26 @@ const Navbar = () => {
                     'Content-Type': 'application/json',
                 },
             });
-
             if (!res.ok) return;
-
             const data = await res.json();
-            console.log("data:",data.count)
             setNotificationCount(data.count);
         };
         fetchUnread();
+
+        const socket = getSocket();
+        const onUnreadMessageCount = (data: { count: number }) => {
+            setMessageCount(data.count);
+        };
+        socket.on('unreadMessageCount', onUnreadMessageCount);
+
+        const onUnreadNotificationCount = (data: { count: number }) => {
+            setNotificationCount(data.count);
+        };
+        socket.on('unreadNotificationCount', onUnreadNotificationCount);
+        return () => {
+            socket.off('unreadMessageCount', onUnreadMessageCount);
+            socket.off('unreadNotificationCount', onUnreadNotificationCount);
+        };
     }, [])
 
     return (
