@@ -5,15 +5,31 @@ import { useRouter } from "next/navigation";
 import NavbarButtonElement from "./NavbarButtonElement";
 import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiCog, mdiLogout } from '@mdi/js';
 import { getCookie, deleteCookie } from "@/utils/cookie.util";
+import { getSocket } from "@/lib/socket";
 
 const Navbar = () => {
     const [notificationCount, setNotificationCount] = useState(0);
+    const [messageCount, setMessageCount] = useState(0);
     const router = useRouter();
 
     const handleLogout = () => {
         deleteCookie('token');
         router.push('/login');
     };
+
+    useEffect(() => {
+        const token = getCookie("token");
+        if (!token) return;
+
+        const socket =getSocket();
+        const onUnreadMessageCount = (data: { count: number }) => {
+            setMessageCount(data.count);
+        };
+        socket.on('unreadMessageCount', onUnreadMessageCount);
+        return () => {
+            socket.off('unreadMessageCount', onUnreadMessageCount);
+        };
+    }, []);
 
     useEffect(() => {
         const fetchUnread = async () => {
@@ -43,7 +59,7 @@ const Navbar = () => {
             <NavbarButtonElement path={mdiAccount} size={1.3} title={"Profile"} color={"black"} onClick={() => router.push('/profile')} />
             <NavbarButtonElement path={mdiMagnify} size={1.3} title={"Search"} color={"black"} onClick={() => router.push('/search')} />
             <NavbarButtonElement path={mdiBell} size={1.3} title={"Notifications"} color={"black"} badgeCount={notificationCount} onClick={() => router.push('/notifications')} />
-            <NavbarButtonElement path={mdiChat} size={1.3} title={"Messages"} color={"black"} onClick={() => router.push('/chat')} />
+            <NavbarButtonElement path={mdiChat} size={1.3} title={"Messages"} color={"black"} badgeCount={messageCount} onClick={() => router.push('/chat')} />
             <NavbarButtonElement path={mdiCog} size={1.3} title={"Settings"} color={"black"} onClick={() => router.push('/settings')} />
             <NavbarButtonElement path={mdiLogout} size={1.3} title={"Logout"} color={"black"} onClick={handleLogout} />
         </div>
