@@ -20,14 +20,32 @@ type MessageBubbleFormat = {
   isMe: boolean
 }
 
-function mapToBubbleFormat(msg: Message, currentUserId: number, otherUser: Conversation['otherUser']): MessageBubbleFormat {
-  const isMe = msg.sender_id === currentUserId
-  const fullName = [otherUser.first_name, otherUser.last_name].filter(Boolean).join(' ') || 'Unknown'
+type ParticipantIdentity = {
+  id: number
+  username: string
+  first_name: string | null
+  last_name: string | null
+  icon_url: string | null
+}
+
+function toFullName(first: string | null, last: string | null, fallback: string): string {
+  return [first, last].filter(Boolean).join(' ') || fallback || 'Unknown'
+}
+
+
+function mapToBubbleFormat(
+  msg: Message,
+  currentUser: ParticipantIdentity,
+  otherUser: Conversation['otherUser']
+): MessageBubbleFormat {
+  const isMe = Number(msg.sender_id) === Number(currentUser.id)
+  const sender = isMe ? currentUser : otherUser
+  const fullName = toFullName(sender.first_name, sender.last_name, sender.username)
   return {
     id: msg.id,
-    author: isMe ? 'Me' : fullName,
-    username: otherUser.username,
-    avatar: otherUser.icon_url || '/default-avatar.png',
+    author: fullName,
+    username: sender.username,
+    avatar: sender.icon_url || '/default-avatar.png',
     message: msg.content,
     date: msg.created_at,
     isMe,
@@ -42,7 +60,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
   const router = useRouter()
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<MessageBubbleFormat[]>([])
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
+  const [currentUser, setCurrentUser] = useState<ParticipantIdentity | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [input, setInput] = useState('')
@@ -79,13 +97,24 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
           throw new Error('Failed to load profile')
         }
         const profile = await profileRes.json()
-        setCurrentUserId(profile.id)
+        const profileId = Number(profile.id)
+        if (Number.isNaN(profileId)) {
+          throw new Error('Invalid profile id')
+        }
+        const normalizedCurrentUser: ParticipantIdentity = {
+          id: profileId,
+          username: profile.username ?? '',
+          first_name: profile.first_name ?? null,
+          last_name: profile.last_name ?? null,
+          icon_url: profile.icon_url ?? null,
+        }
+        setCurrentUser(normalizedCurrentUser)
         if (!conv) {
           setError('Conversation not found')
           return
         }
         setConversation(conv)
-        const bubbles = msgs.map((m) => mapToBubbleFormat(m, profile.id, conv.otherUser))
+        const bubbles = msgs.map((m) => mapToBubbleFormat(m, normalizedCurrentUser, conv.otherUser))
         setMessages(bubbles)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to load conversation'
@@ -102,30 +131,42 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
   }, [conversationId, router])
 
   useEffect(() => {
-    if (loading || error || !currentUserId || !conversation) return
+    if (loading || error || !currentUser || !conversation) return
 
     const socket = getSocket()
-    socket.emit('joinConversation', { conversationId }, (res: { ok?: boolean; error?: string }) => {
+    const markConversationRead = () => {
+      socket.emit(
+        'markConversationRead',
+        { conversationId: Number(conversationId) },
+        (res: { ok?: boolean; error?: string }) => {
+          if (res?.error) console.error('Mark read error:', res.error)
+        }
+      )
+    }
+    socket.emit('joinConversation', { conversationId: Number(conversationId) }, (res: { ok?: boolean; error?: string }) => {
       if (res?.error) console.error('Socket join error:', res.error)
     })
 
     const onNewMessage = (msg: Message) => {
       setMessages((prev) => {
         if (prev.some((m) => m.id === msg.id)) return prev
-        return [...prev, mapToBubbleFormat(msg, currentUserId, conversation.otherUser)]
+        return [...prev, mapToBubbleFormat(msg, currentUser, conversation.otherUser)]
       })
+      if (Number(msg.sender_id) !== Number(currentUser.id)) {
+        markConversationRead()
+      }
     }
     socket.on('newMessage', onNewMessage)
     return () => {
       socket.off('newMessage', onNewMessage)
       socket.emit('leaveConversation', { conversationId })
     }
-  }, [conversationId, currentUserId, conversation, loading, error])
+  }, [conversationId, currentUser, conversation, loading, error])
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = input.trim()
-    if (!trimmed || !currentUserId || !conversation) return
+    if (!trimmed || !currentUser || !conversation) return
 
     const socket = getSocket()
     socket.emit('sendMessage', { conversationId, content: trimmed }, (res: { ok?: boolean; message?: Message; error?: string }) => {
@@ -134,8 +175,8 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         return
       }
       if (res?.message) {
-        const bubble = mapToBubbleFormat(res.message, currentUserId, conversation.otherUser)
-        setMessages((prev) => [...prev, bubble])
+        const bubble = mapToBubbleFormat(res.message, currentUser, conversation.otherUser)
+        setMessages((prev) => (prev.some((m) => m.id === bubble.id) ? prev : [...prev, bubble]))
       }
       setInput('')
     })
@@ -181,7 +222,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         </button>
         <Image
           src={otherUser?.icon_url || '/default-avatar.png'}
-          className="flex-shrink-0 border border-black rounded-full"
+          className="w-11 h-11 min-w-11 min-h-11 flex-shrink-0 border border-black rounded-full object-cover aspect-square"
           alt=""
           width={44}
           height={44}
