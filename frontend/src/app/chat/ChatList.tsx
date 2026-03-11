@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
-import { RiMore2Fill, RiChatNewLine, RiChat3Line } from 'react-icons/ri'
+import { RiChatNewLine, RiChat3Line } from 'react-icons/ri'
 import { fetchConversations, type Conversation } from '@/lib/chat'
 import { getSocket } from '@/lib/socket'
 import { getCookie, deleteCookie} from '@/utils/cookie.util'
@@ -179,31 +179,7 @@ const ChatList = () => {
   }, [upsertConversation])
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-white border-r border-gray-200">
-      {/* Golden-brown top bar */}
-      <div className="h-1 bg-amber-800 flex-shrink-0" />
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div className="flex flex-row p-2 gap-2">
-          <Image
-            src="/default-avatar.png"
-            className="w-12 h-12 min-w-12 rounded-full object-cover border border-gray-200 aspect-square"
-            alt=""
-            width={48}
-            height={48}
-          />
-          <span>
-            <h3 className="font-semibold text-[17px] text-black">Messages</h3>
-            <p className="font-light text-gray-500 text-sm">Your conversations</p>
-          </span>
-        </div>
-        <button
-          type="button"
-          className="bg-[#D9F2ED] w-[35px] h-[35px] p-2 flex items-center justify-center rounded-lg hover:bg-amber-100 transition-colors"
-          aria-label="More options"
-        >
-          <RiMore2Fill className="w-[18px] h-[18px] text-[#01AA85]" />
-        </button>
-      </div>
+    <div className="flex flex-col h-full min-h-0 bg-white w-full">
       <main className="flex-1 overflow-y-auto min-h-0">
         {loading && (
           <p className="p-4 text-gray-500">Loading...</p>

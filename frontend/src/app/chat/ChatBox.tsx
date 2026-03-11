@@ -190,14 +190,14 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
     : ''
   if (loading) {
     return (
-      <section className="flex flex-col h-screen bg-white w-full items-center justify-center">
+      <section className="flex flex-col h-full bg-white w-full items-center justify-center">
         <p className="text-gray-500">Loading...</p>
       </section>
     )
   }
   if (error) {
     return (
-      <section className="flex flex-col h-screen bg-white w-full items-center justify-center p-4">
+      <section className="flex flex-col h-full bg-white w-full items-center justify-center p-4">
         <p className="text-red-500 mb-4">{error}</p>
         <button
           type="button"
@@ -210,7 +210,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
     )
   }
   return (
-    <section className="flex flex-col h-screen bg-white w-full">
+    <section className="flex flex-col h-full bg-white w-full">
       <header className="border-b border-gray-400 h-[70px] p-4 flex items-center gap-2">
         <button
           type="button"

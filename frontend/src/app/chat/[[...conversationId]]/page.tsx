@@ -17,13 +17,13 @@ export default function ChatPage() {
 
     return (
       <main className="flex flex-col min-h-screen md:h-screen bg-white">
-        {/* Golden-brown accent bar */}
-        <div className="h-1 bg-amber-800 flex-shrink-0" />
         <Header />
         <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="border-r border-gray-200 flex-shrink-0">
           <Navbar />
+        </div>
           <div className="flex flex-1 flex-col md:flex-row overflow-hidden min-h-0">
-            <div className={`flex-1 min-w-0 ${isValidId ? 'hidden md:flex md:max-w-[400px]' : 'flex'}`}>
+            <div className={`flex-1 min-w-0 border-r border-gray-200 flex-col ${isValidId ? 'hidden md:flex md:max-w-[400px]' : 'flex'}`}>
               <ChatList />
             </div>
             <div className={`flex-1 min-w-0 flex min-h-0 ${!isValidId ? 'hidden md:flex md:items-center md:justify-center' : ''}`}>
