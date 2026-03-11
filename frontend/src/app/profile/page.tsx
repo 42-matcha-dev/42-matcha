@@ -21,7 +21,7 @@ interface UserProfile {
   lastName: string;
   gender: string;
   lookingFor: string;
-  biography: string;
+  description: string;
   fameRating: number;
   location: string;
   iconUrl: string;
@@ -184,7 +184,7 @@ export default function Dashboard() {
                 {/* Biography */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Biography</label>
-                  <p className="text-black text-lg whitespace-pre-wrap">{profile.biography || 'No biography provided.'}</p>
+                  <p className="text-black text-lg whitespace-pre-wrap">{profile.description || 'No biography provided.'}</p>
                 </div>
 
                 {/* Tags */}
