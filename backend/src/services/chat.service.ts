@@ -14,28 +14,40 @@ type ConversationListRow = {
     other_icon_url: string | null;
     last_message_content: string | null;
     last_message_at: Date | null;
+    unread_count: number;
   };
+
+const mapConversationSummary = (row: ConversationListRow) => ({
+    id: row.conversation_id,
+    otherUser: {
+        id: row.other_user_id,
+        username: row.other_username,
+        first_name: row.other_first_name,
+        last_name: row.other_last_name,
+        icon_url: row.other_icon_url,
+    },
+    lastMessage: row.last_message_content
+      ? {
+            content: row.last_message_content,
+            created_at: row.last_message_at,
+        }
+      : null,
+    created_at: row.created_at,
+    unread_count: row.unread_count ?? 0,
+});
 
 export const chatService = {
     getConversations: async (userId: number) => {
         const rows = await conversationRepository.getConversationsByUserId(userId);
-        return rows.map((row: ConversationListRow) => ({
-            id: row.conversation_id,
-            otherUser: {
-                id: row.other_user_id,
-                username: row.other_username,
-                first_name: row.other_first_name,
-                last_name: row.other_last_name,
-                icon_url: row.other_icon_url,
-            },
-            lastMessage: row.last_message_content
-              ? {
-                    content: row.last_message_content,
-                    created_at: row.last_message_at,
-                }
-              : null,
-            created_at: row.created_at
-        }));
+        return rows.map((row: ConversationListRow) => mapConversationSummary(row));
+    },
+
+    getConversationSummary: async (conversationId: number, userId: number) => {
+        const row = await conversationRepository.getConversationSummaryByIdForUser(userId, conversationId);
+        if (!row) {
+            throw new Error('Conversation not found or unauthorized');
+        }
+        return mapConversationSummary(row as ConversationListRow);
     },
 
     getMessages: async (
@@ -64,6 +76,20 @@ export const chatService = {
         await messageRepository.markAsRead(conversationId, userId);
 
         return messages;
+    },
+
+    markConversationRead: async (conversationId: number, userId: number) => {
+        const conversation = await conversationRepository.getConversationById(conversationId);
+        if (!conversation) {
+            throw new Error('Conversation not found');
+        }
+        const isParticipant =
+            conversation.user1_id === userId || conversation.user2_id === userId;
+        if (!isParticipant) {
+            throw new Error('Unauthorized: not a participant in this conversation');
+        }
+        await messageRepository.markAsRead(conversationId, userId);
+        return chatService.getConversationSummary(conversationId, userId);
     },
 
     getOrCreateConversation: async (currentUserId: number, otherUserId: number) => {
