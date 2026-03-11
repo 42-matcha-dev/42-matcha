@@ -115,4 +115,17 @@ export const conversationRepository = {
     const res = await pool.query(query, [userId, conversationId]);
     return res.rows[0];
   },
+
+  getTotalUnreadCount: async (userId: number): Promise<number> => {
+    const query = `
+      SELECT COUNT(*)::int AS total
+      FROM messages m
+      JOIN conversations c ON c.id = m.conversation_id
+      WHERE (c.user1_id = $1 OR c.user2_id = $1)
+        AND m.sender_id != $1
+        AND m.is_read = false
+    `;
+    const res = await pool.query(query, [userId]);
+    return res.rows[0]?.total ?? 0;
+  },
 };
