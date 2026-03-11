@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import { profileEditSchema, profilePatchSchema } from '@/app/schema'
 import { useForm } from 'react-hook-form'
@@ -14,6 +15,8 @@ import AvatarUploader from '@/app/components/AvatarUploader'
 import PhotoGridUploader from '@/app/components/PhotoGridUploader'
 import { toast } from 'sonner'
 import { apiFetch } from '@/utils/apiClient'
+import { getCookie, deleteCookie } from '@/utils/cookie.util'
+
 
 interface Tag {
   id: number
@@ -39,6 +42,7 @@ type UserProfile = {
 type ProfileEditSchema = z.infer<typeof profileEditSchema>
 
 export default function EditForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -90,6 +94,40 @@ export default function EditForm() {
 
   const onSubmit = async (data: ProfileEditSchema) => {
     console.log('submit', data)
+      try {
+        const token = getCookie('token');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${apiUrl}/api/users/me`, {
+          method: 'PATCH',
+          body: JSON.stringify(data),
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            deleteCookie('token');
+            router.push('/login');
+            return;
+          }
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch profile');
+        }
+
+        const res = await response.json();
+
+        toast.success("profile updated");
+      } catch (err) {
+        toast.error("Error updating profile")
+        // setError(err instanceof Error ? err.message : 'An error occurred');
+      }
   }
 
   return (

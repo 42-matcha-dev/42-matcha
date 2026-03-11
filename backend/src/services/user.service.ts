@@ -1,6 +1,7 @@
 import { userRepository } from '../repositories/user.repository.js'
 import { likeRepository } from '../repositories/like.repository.js'
 import { notificationService } from './notification.service.js'
+import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
 
 export const userService = {
   getProfile: async (userId: number, currentUserId?: number) => {
@@ -27,6 +28,10 @@ export const userService = {
     }
 
     return { ...userWithoutPassword, tags, isLiked, isMatch }
+  },
+
+  updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {
+    return userRepository.updateUserProfile(userId, data);
   },
 
   assignTags: async (userId: number, tagIds: number[]) => {
