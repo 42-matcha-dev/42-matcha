@@ -28,7 +28,13 @@ export const likeService = {
       const user1 = Math.min(likerId, likedId);
       const user2 = Math.max(likerId, likedId);
 
-      const conversation = await conversationRepository.createConversation(user1, user2);
+      let conversation = await conversationRepository.createConversation(user1, user2);
+      if (!conversation) {
+        conversation = await conversationRepository.getConversationByUserIds(user1, user2);
+      }
+      if (!conversation) {
+        throw new Error('Failed to create or retrieve conversation for match');
+      }
       // Notify both users of the match
       await notificationService.createNotification(likerId, likedId, "MATCH", conversation.id);
       await notificationService.createNotification(likedId, likerId, "MATCH", conversation.id);
