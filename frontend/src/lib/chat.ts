@@ -11,6 +11,7 @@ export type Conversation = {
     };
     lastMessage: { content: string; created_at: string } | null;
     created_at: string;
+    unread_count?: number;
 };
 
 export type Message = {
@@ -45,8 +46,17 @@ export async function fetchConversations(): Promise<Conversation[]> {
 }
 
 export async function fetchConversation(conversationId: number): Promise<Conversation | null> {
-    const conversations = await fetchConversations();
-    return conversations.find((c) => c.id === conversationId) ?? null;
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/conversations/${conversationId}`,
+        { headers: getAuthHeaders() }
+    );
+    if (res.status === 401) throw new Error('Unauthorized');
+    if (res.status === 404) return null;
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to fetch conversation');
+    }
+    return res.json();
 }
 
 export async function fetchMessages(conversationId: number): Promise<Message[]> {
