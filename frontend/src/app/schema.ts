@@ -37,6 +37,7 @@ export const profileEditSchema =
   registerSchema.omit({
     password: true,
     repeatPassword: true,
+    email: true
   });
 
 export const profilePatchSchema =
