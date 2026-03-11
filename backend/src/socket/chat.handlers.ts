@@ -24,6 +24,15 @@ export function setupChatSocket(io: Server): void {
         console.log("🔌 User connected:", socket.id, "userId:", userId);
         socket.join(`user:${userId}`);
 
+        const emitUnreadCount = async (targetUserId: number) => {
+            try {
+                const total = await conversationRepository.getTotalUnreadCount(targetUserId);
+                io.to(`user:${targetUserId}`).emit('unreadMessageCount', { count: total });
+            } catch (err) {
+                console.error('Failed to emit unreadMessageCount:', err);
+            }
+        };
+
         const emitConversationUpdated = async (conversationId: number) => {
             const conversation = await conversationRepository.getConversationById(conversationId);
             if (!conversation) return;
@@ -32,6 +41,7 @@ export function setupChatSocket(io: Server): void {
                 try {
                     const summary = await chatService.getConversationSummary(conversationId, participantId);
                     io.to(`user:${participantId}`).emit('conversationUpdated', summary);
+                    await emitUnreadCount(participantId);
                 } catch (err) {
                     console.error('Failed to emit conversationUpdated:', err);
                 }
@@ -43,6 +53,7 @@ export function setupChatSocket(io: Server): void {
             for (const conv of conversations) {
                 socket.join(`conversation:${conv.id}`)
             }
+            await emitUnreadCount(userId);
         } catch (err) {
             console.error('Failed to auto-join conversations:', err);
         }
@@ -63,6 +74,7 @@ export function setupChatSocket(io: Server): void {
                 const summary = await chatService.markConversationRead(conversationId, userId);
                 socket.join(`conversation:${conversationId}`);
                 io.to(`user:${userId}`).emit('conversationUpdated', summary);
+                await emitUnreadCount(userId);
                 cb?.({ ok: true, conversation: summary });
             } catch (err) {
                 cb?.({ error: err instanceof Error ? err.message : 'Failed to join' });
@@ -82,6 +94,7 @@ export function setupChatSocket(io: Server): void {
                 }
                 const summary = await chatService.markConversationRead(conversationId, userId);
                 io.to(`user:${userId}`).emit('conversationUpdated', summary);
+                await emitUnreadCount(userId);
                 cb?.({ ok: true });
             } catch (err) {
                 cb?.({ error: err instanceof Error ? err.message : 'Failed to mark as read' });
