@@ -23,16 +23,22 @@ const Navbar = () => {
 
         const fetchUnread = async () => {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const res = await fetch(`${apiUrl}/api/notifications/unread-count`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            setNotificationCount(data.count);
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            };
+            const [notifRes, msgRes] = await Promise.all([
+                fetch(`${apiUrl}/api/notifications/unread-count`, { headers }),
+                fetch(`${apiUrl}/api/conversations/unread-count`, { headers }),
+            ]);
+            if (notifRes.ok) {
+                const data = await notifRes.json();
+                setNotificationCount(data.count);
+            }
+            if (msgRes.ok) {
+                const data = await msgRes.json();
+                setMessageCount(data.count);
+            }
         };
         fetchUnread();
 

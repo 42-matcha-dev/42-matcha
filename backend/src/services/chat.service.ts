@@ -146,4 +146,8 @@ export const chatService = {
         }
         return message;
     },
+
+    getTotalUnreadCount: async (userId: number): Promise<number> => {
+        return conversationRepository.getTotalUnreadCount(userId);
+    },
 };

@@ -138,3 +138,15 @@ export const getConversation = async (req: AuthenticatedRequest, res: Response) 
         return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error' });
     }
 };
+
+export const getUnreadCount = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        if (!req.user) {
+            throw new Error('Authentication required');
+        }
+        const total = await chatService.getTotalUnreadCount(req.user.userId);
+        return res.status(200).json({ count: total });
+    } catch (error) {
+        return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error' });
+    }
+};
