@@ -22,8 +22,8 @@ export const registerSchema = z.object({
   location: shortText(),
   latitude: z.number(),
   longitude: z.number(),
-  gender: z.enum(["Male", "Female"]),
-  lookingFor: z.enum(["Male", "Female", "Both"]),
+  gender: z.enum(["male", "female"]),
+  lookingFor: z.enum(["male", "female", "both"]),
   description: longText(),
   curiousAbout: z.array(z.number())
     .min(1, { message: "Veuillez sélectionner au moins un tag." })

@@ -12,6 +12,29 @@ import NextButton from '@/app/components/Buttons/NextButton'
 import TagSelector from '@/app/components/TagSelector'
 import AvatarUploader from '@/app/components/AvatarUploader'
 import PhotoGridUploader from '@/app/components/PhotoGridUploader'
+import { toast } from 'sonner'
+import { apiFetch } from '@/utils/apiClient'
+
+interface Tag {
+  id: number
+  name: string
+  category: string
+}
+
+type UserProfile = {
+  firstName: string
+  lastName: string
+  birthday: string
+  location: string
+  latitude: number
+  longitude: number
+  gender: 'male' | 'female'
+  lookingFor: 'male' | 'female' | 'both'
+  description: string
+  curiousAbout: number[]
+  iconUrl: string | null
+  photoUrls: string[]
+}
 
 type ProfileEditSchema = z.infer<typeof profileEditSchema>
 
@@ -21,28 +44,56 @@ export default function EditForm() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch
+    watch,
+    reset
   } = useForm<ProfileEditSchema>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
       // set default values here
-      firstName: "",
-      lastName: "",
-      location: "",
+      firstName: '',
+      lastName: '',
+      location: '',
       latitude: 0,
       longitude: 0
     }
   })
-  const selectedTags = watch("curiousAbout") || [];
+  const selectedTags = watch('curiousAbout') || []
 
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const user: UserProfile = await apiFetch('/api/users/me')
+
+        reset({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          birthday: user.birthday,
+          location: user.location,
+          latitude: user.latitude,
+          longitude: user.longitude,
+          gender: user.gender,
+          lookingFor: user.lookingFor,
+          description: user.description,
+          curiousAbout: user.curiousAbout,
+          iconUrl: user.iconUrl,
+          photoUrls: user.photoUrls
+        })
+
+        console.log('user', user)
+      } catch (err) {
+        const errMsg = err ?? ''
+        toast.error('Error fetching tags ', errMsg)
+      }
+    }
+    loadProfile()
+  }, [reset])
 
   const onSubmit = async (data: ProfileEditSchema) => {
-    console.log("submit", data);
+    console.log('submit', data)
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <InputForm
         label="firstName"
         type="text"
@@ -50,8 +101,8 @@ export default function EditForm() {
         {...register('firstName')}
       />
       <InputForm label="lastName" type="text" error={errors.lastName} {...register('lastName')} />
-      <InputForm label="birthday" type="date" error={errors.birthday}{...register("birthday")} />
-      <LocationField
+      <InputForm label="birthday" type="date" error={errors.birthday} {...register('birthday')} />
+      {/* <LocationField
         location={watch('location')}
         latitude={watch('latitude')}
         longitude={watch('longitude')}
@@ -60,20 +111,43 @@ export default function EditForm() {
           setValue('latitude', lat)
           setValue('longitude', lon)
         }}
+      /> */}
+      <InputFormSelect
+        label="Gender"
+        error={errors.gender}
+        options={[
+          { label: 'Male', value: 'male' },
+          { label: 'Female', value: 'female' }
+        ]}
+        {...register('gender')}
       />
-      <InputFormSelect label="Gender" error={errors.gender} values={["Male", "Female"]} {...register("gender")}/>
-      <InputFormSelect label="LookingFor" error={errors.lookingFor} values={["Male", "Female", "Both"]} {...register("lookingFor")}/>
-      <InputForm label="Description" type="text" error={errors.description} {...register("description")}/>
-      <TagSelector selectedTags={selectedTags} error={errors.curiousAbout} onChange={(selectedIds) => setValue("curiousAbout", selectedIds)}/>
-      <AvatarUploader
-        initialUrl={watch("iconUrl")}
-        onChange={(url) => setValue("iconUrl", url)}
+      <InputFormSelect
+        label="LookingFor"
+        error={errors.lookingFor}
+        options={[
+          { label: 'Male', value: 'male' },
+          { label: 'Female', value: 'female' },
+          { label: 'Both', value: 'both' }
+        ]}
+        {...register('lookingFor')}
       />
+      <InputForm
+        label="Description"
+        type="text"
+        error={errors.description}
+        {...register('description')}
+      />
+      <TagSelector
+        selectedTags={selectedTags}
+        error={errors.curiousAbout}
+        onChange={(selectedIds) => setValue('curiousAbout', selectedIds)}
+      />
+      <AvatarUploader initialUrl={watch('iconUrl')} onChange={(url) => setValue('iconUrl', url)} />
       <PhotoGridUploader
-        photoUrls={watch("photoUrls") ?? ["", "", "", ""]}
-        onChange={(urls) => setValue("photoUrls", urls)}
+        photoUrls={watch('photoUrls') ?? ['', '', '', '']}
+        onChange={(urls) => setValue('photoUrls', urls)}
       />
-      <NextButton text="Submit" type="submit"/>
+      <NextButton text="Submit" type="submit" />
     </form>
   )
 }
