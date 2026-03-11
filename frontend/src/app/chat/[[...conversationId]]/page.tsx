@@ -16,19 +16,21 @@ export default function ChatPage() {
     const isValidId = conversationId !== null && !isNaN(conversationId)
 
     return (
-      <main className="flex flex-col h-screen bg-white">
+      <main className="flex flex-col min-h-screen md:h-screen bg-white">
+        {/* Golden-brown accent bar */}
+        <div className="h-1 bg-amber-800 flex-shrink-0" />
         <Header />
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden min-h-0">
           <Navbar />
-          <div className="flex flex-1 overflow-hidden">
-            <div className={`flex-1 ${isValidId ? 'hidden md:block' : ''}`}>
+          <div className="flex flex-1 flex-col md:flex-row overflow-hidden min-h-0">
+            <div className={`flex-1 min-w-0 ${isValidId ? 'hidden md:flex md:max-w-[400px]' : 'flex'}`}>
               <ChatList />
             </div>
-            <div className={`flex-1 ${!isValidId ? 'hidden md:flex md:items-center md:justify-center' : ''}`}>
+            <div className={`flex-1 min-w-0 flex min-h-0 ${!isValidId ? 'hidden md:flex md:items-center md:justify-center' : ''}`}>
               {isValidId ? (
                 <ChatBox conversationId={conversationId!} />
               ) : (
-                <div className="flex flex-col h-full w-full items-center justify-center text-gray-500 p-4">
+                <div className="flex flex-col h-full w-full items-center justify-center text-gray-500 p-4 md:p-8">
                   <p className="text-center">Select a conversation to start messaging</p>
                 </div>
               )}
