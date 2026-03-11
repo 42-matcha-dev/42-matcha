@@ -33,8 +33,10 @@ export default function LocationField({
     setError(null);
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
       const res = await fetch(
-        `/api/geocoding/forward?q=${encodeURIComponent(location)}`
+        `${apiUrl}/api/geocoding/forward?q=${encodeURIComponent(location)}`
       );
 
       const data = await res.json();

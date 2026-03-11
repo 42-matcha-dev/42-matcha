@@ -67,7 +67,7 @@ export default function EditForm() {
         reset({
           firstName: user.firstName,
           lastName: user.lastName,
-          birthday: user.birthday?.split("T")[0],
+          birthday: user.birthday?.split('T')[0],
           location: user.location,
           latitude: user.latitude,
           longitude: user.longitude,
@@ -102,7 +102,7 @@ export default function EditForm() {
       />
       <InputForm label="lastName" type="text" error={errors.lastName} {...register('lastName')} />
       <InputForm label="birthday" type="date" error={errors.birthday} {...register('birthday')} />
-      {/* <LocationField
+      <LocationField
         location={watch('location')}
         latitude={watch('latitude')}
         longitude={watch('longitude')}
@@ -111,7 +111,7 @@ export default function EditForm() {
           setValue('latitude', lat)
           setValue('longitude', lon)
         }}
-      /> */}
+      />
       <InputFormSelect
         label="Gender"
         error={errors.gender}
