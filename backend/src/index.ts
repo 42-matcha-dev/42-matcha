@@ -14,6 +14,7 @@ import geocodingRoutes from './routes/geocoding.routes.js';
 import notificationRoutes from './routes/notification.routes.js'
 import conversationRoutes from './routes/conversation.routes.js';
 import { setupChatSocket } from './socket/chat.handlers.js';
+import { setupNotificationSocket } from './socket/notification.handlers.js';
 
 const app = express();
 const port = process.env.PORT_BACKEND || 4000;
@@ -43,6 +44,7 @@ const io = new SocketServer(server, {
 });
 
 setupChatSocket(io);
+setupNotificationSocket(io);
 
 // --- START DB THEN SERVER ---
 console.log("🟡 Initializing database...");

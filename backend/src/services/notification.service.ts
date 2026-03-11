@@ -1,4 +1,5 @@
 import { notificationRepository } from "../repositories/notification.repository.js";
+import { notificationEmitter } from "../events/notification.emitter.js";
 import type { NotificationType } from "../types/notification.types.js";
 
 export const notificationService = {
@@ -6,7 +7,11 @@ export const notificationService = {
         return await notificationRepository.getNotifications(userId);
     },
     createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
-        return notificationRepository.createNotifiation(userId, actorId, type, referenceId);
+        const notification = await notificationRepository.createNotifiation(userId, actorId, type, referenceId);
+        if (notification) {
+            notificationEmitter.emit('notification:created', { userId });
+        }
+        return notification;
     },
     markAsRead: async (notificationId: number, userId: number) => {
         return notificationRepository.markAsRead(notificationId, userId);
