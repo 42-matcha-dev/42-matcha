@@ -81,5 +81,32 @@ export const likeService = {
     const likedBy = await likeRepository.getLikedBy(userId);
     return likedBy;
   },
+
+  unlikeUser: async (likerId: number, likedId: number) => {
+    if (likerId === likedId) {
+      throw new Error('Cannot unlike yourself');
+    }
+
+    const likeExists = await likeRepository.checkLikeExists(likerId, likedId);
+    if (!likeExists) {
+      throw new Error('Like does not exist');
+    }
+
+    const wasMatch = await likeRepository.checkMutualLike(likerId, likedId);
+
+    await likeRepository.removeLike(likerId, likedId);
+
+    await notificationService.deleteByActorAndType(likedId, likerId, "LIKE");
+
+    if (wasMatch) {
+      await notificationService.deleteByActorAndType(likerId, likedId, "MATCH");
+      await notificationService.deleteByActorAndType(likedId, likerId, "MATCH");
+    }
+
+    return {
+      success: true,
+      message: wasMatch ? 'Match broken' : 'Like removed successfully',
+    };
+  },
 };
 
