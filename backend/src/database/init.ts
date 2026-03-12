@@ -8,6 +8,7 @@ import { createBlockTable } from '../models/block.model.js';
 import { createConversationTable } from '../models/converstation.model.js';
 import { createMessageTable } from '../models/messages.model.js';
 import { createNotificationTable } from '../models/notification.model.js';
+import { createReportTable } from '../models/report.model.js';
 
 let pool: any;
 
@@ -41,6 +42,7 @@ export const initDB = async () => {
       await pool.query(createConversationTable);
       await pool.query(createMessageTable);
       await pool.query(createNotificationTable);
+      await pool.query(createReportTable);
       console.log('✅ Database initialized');
       return;
     } catch (err) {
