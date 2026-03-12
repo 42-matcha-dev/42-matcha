@@ -70,8 +70,8 @@ export default function LoginForm() {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-1 flex-col max-w-md items-center gap-12">
           <Title title="Welcome back" subTitle="Sign in to your Matcha account."/>
-          <InputForm label="Email" type="text" error={errors.email} {...register("email")}/>
-          <InputForm label="Password" type="password" error={errors.password} {...register("password")}/>
+          <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
+          <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
           <NextButton text="Log in"/>
       </form>
     </div>

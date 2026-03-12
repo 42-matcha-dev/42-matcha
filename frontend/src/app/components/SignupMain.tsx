@@ -66,9 +66,9 @@ export default function RegisterBasicForm() {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
           <Title title="Create your account" subTitle="Join Matcha – start by entering your email."/>
-          <InputForm label="Email" type="text" error={errors.email} {...register("email")}/>
-          <InputForm label="Password" type="password" error={errors.password} {...register("password")}/>
-          <InputForm label="RepeatPassword" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
+          <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
+          <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
+          <InputForm placeholder="RepeatPassword" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
           <NextButton text="Next"/>
       </form>
     </div>
