@@ -161,11 +161,12 @@ export default function EditForm() {
         location={watch('location')}
         latitude={watch('latitude')}
         longitude={watch('longitude')}
-        error={errors.location}
+        error={errors.locationVerified ?? errors.location}
         onChange={(loc, lat, lon) => {
           setValue('location', loc)
           setValue('latitude', lat)
           setValue('longitude', lon)
+          setValue('locationVerified', lat !== 0 && lon !== 0)
         }}
       />
 
