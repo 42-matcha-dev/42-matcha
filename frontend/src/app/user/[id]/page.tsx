@@ -17,18 +17,18 @@ interface UserProfile {
   id: number;
   email: string;
   username: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   gender: string;
-  sexual_preferences: string;
+  sexualPreferences: string;
   biography: string;
-  fame_rating: number;
+  fameRating: number;
   location: string;
-  icon_url: string;
-  photo_urls: string[];
+  iconUrl: string;
+  photoUrls: string[];
   tags?: Tag[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   isLiked?: boolean;
   isMatch?: boolean;
 }
@@ -45,7 +45,7 @@ export default function UserProfilePage() {
   const params = useParams();
   const userId = params?.id as string;
 
-  // Calculate age from created_at (or could be a separate field)
+  // Calculate age from createdAt (or could be a separate field)
   const calculateAge = (): number => {
     // For now, return a placeholder age. In production, you'd calculate from birthdate
     return 24; // Placeholder
@@ -158,12 +158,12 @@ export default function UserProfilePage() {
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd || !profile?.photo_urls) return;
+    if (!touchStart || !touchEnd || !profile?.photoUrls) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe && selectedImageIndex < profile.photo_urls.length - 1) {
+    if (isLeftSwipe && selectedImageIndex < profile.photoUrls.length - 1) {
       setSelectedImageIndex(selectedImageIndex + 1);
     }
     if (isRightSwipe && selectedImageIndex > 0) {
@@ -197,9 +197,9 @@ export default function UserProfilePage() {
     return null;
   }
 
-  const displayName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username;
+  const displayName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.username;
   const age = calculateAge();
-  const photos = profile.photo_urls || [];
+  const photos = profile.photoUrls || [];
   const hasPhotos = photos.length > 0;
 
   return (
@@ -216,9 +216,9 @@ export default function UserProfilePage() {
                   {/* Profile Header */}
                   <div className="flex items-start space-x-6">
                     {/* Profile Picture - Larger */}
-                    {profile.icon_url ? (
+                    {profile.iconUrl ? (
                       <Image
-                        src={profile.icon_url}
+                        src={profile.iconUrl}
                         alt="Profile"
                         width={140}
                         height={140}
@@ -228,7 +228,7 @@ export default function UserProfilePage() {
                     ) : (
                       <div className="w-36 h-36 rounded-full bg-custom-light flex items-center justify-center flex-shrink-0">
                         <span className="text-5xl text-custom-medium">
-                          {profile.first_name?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
+                          {profile.firstName?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
                         </span>
                       </div>
                     )}
@@ -250,7 +250,7 @@ export default function UserProfilePage() {
                       {/* Fame Rating */}
                       <div className="flex items-center">
 					<Image src="/icons/handshake.svg" alt="Logo" width={20} height={20} className="mr-1" />
-                        <span className="ml-2 text-sm text-custom-medium">{profile.fame_rating || 0}%</span>
+                        <span className="ml-2 text-sm text-custom-medium">{profile.fameRating || 0}%</span>
                       </div>
 						</div>
 
