@@ -22,12 +22,16 @@ export const registerSchema = z.object({
   location: shortText(),
   latitude: z.number(),
   longitude: z.number(),
-  gender: z.enum(["male", "female"]),
-  lookingFor: z.enum(["male", "female", "both"]),
+  gender: z.enum(["male", "female"], {
+    message: "Please select an option."
+  }),
+  lookingFor: z.enum(["male", "female", "both"], {
+    message: "Please select an option."
+  }),
   description: longText(),
   curiousAbout: z.array(z.number())
-    .min(1, { message: "Veuillez sélectionner au moins un tag." })
-    .max(5, { message: "Vous pouvez sélectionner au maximum 5 tags." }),
+    .min(1, { message: "Please select at least one tag." })
+    .max(5, { message: "You can select up to 5 tags." }),
   iconUrl: z.string().url().nullable(),
   photoUrls: z.array(z.string().url()).max(4),
 });
