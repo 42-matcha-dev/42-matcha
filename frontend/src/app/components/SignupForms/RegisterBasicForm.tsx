@@ -204,14 +204,14 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       className="flex flex-col w-full gap-12">
       <Title title="Complete Your Profile" subTitle="Tell us more about you." />
       <Stepper currentStep="0" />
-      <InputForm label="firstName" type="text" error={errors.firstName} {...register("firstName")} />
-      <InputForm label="lastName" type="text" error={errors.lastName}{...register("lastName")} />
-      <InputForm label="birthday" type="date" error={errors.birthday}{...register("birthday")} />
+      <InputForm placeholder="First name" type="text" error={errors.firstName} {...register("firstName")} />
+      <InputForm placeholder="Last name" type="text" error={errors.lastName}{...register("lastName")} />
+      <InputForm placeholder="Birthday" type="date" error={errors.birthday}{...register("birthday")} />
       <div className="flex flex-col gap-2 w-full">
         <div className="flex items-center gap-2 w-full">
           <div className="flex-1">
             <InputForm
-              label="location"
+              label="Location"
               type="text"
               error={errors.location}
               {...register("location")}

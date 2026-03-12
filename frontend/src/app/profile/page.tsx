@@ -17,15 +17,15 @@ interface UserProfile {
   id: number;
   email: string;
   username: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   gender: string;
-  sexual_preferences: string;
-  biography: string;
-  fame_rating: number;
+  lookingFor: string;
+  description: string;
+  fameRating: number;
   location: string;
-  icon_url: string;
-  photo_urls: string[];
+  iconUrl: string;
+  photoUrls: string[];
   tags?: Tag[];
   created_at: string;
   updated_at: string;
@@ -47,7 +47,7 @@ export default function Dashboard() {
         }
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        const response = await fetch(`${apiUrl}/api/user/profile`, {
+        const response = await fetch(`${apiUrl}/api/users/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -118,10 +118,10 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Profile Image */}
                 <div className="md:col-span-2">
-                  {profile.icon_url ? (
+                  {profile.iconUrl ? (
                     <div className="flex justify-center mb-6">
                       <Image
-                        src={profile.icon_url}
+                        src={profile.iconUrl}
                         alt="Profile"
                         width={128}
                         height={128}
@@ -133,7 +133,7 @@ export default function Dashboard() {
                     <div className="flex justify-center mb-6">
                       <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
                         <span className="text-4xl text-gray-500">
-                          {profile.first_name?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
+                          {profile.firstName?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
                         </span>
                       </div>
                     </div>
@@ -143,12 +143,12 @@ export default function Dashboard() {
                 {/* Basic Information */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                  <p className="text-black text-lg">{profile.first_name || 'N/A'}</p>
+                  <p className="text-black text-lg">{profile.firstName || 'N/A'}</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <p className="text-black text-lg">{profile.last_name || 'N/A'}</p>
+                  <p className="text-black text-lg">{profile.lastName || 'N/A'}</p>
                 </div>
 
                 <div>
@@ -168,7 +168,7 @@ export default function Dashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Looking For</label>
-                  <p className="text-black text-lg capitalize">{profile.sexual_preferences || 'N/A'}</p>
+                  <p className="text-black text-lg capitalize">{profile.lookingFor || 'N/A'}</p>
                 </div>
 
                 <div>
@@ -178,13 +178,13 @@ export default function Dashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Fame Rating</label>
-                  <p className="text-black text-lg">{profile.fame_rating}</p>
+                  <p className="text-black text-lg">{profile.fameRating}</p>
                 </div>
 
                 {/* Biography */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Biography</label>
-                  <p className="text-black text-lg whitespace-pre-wrap">{profile.biography || 'No biography provided.'}</p>
+                  <p className="text-black text-lg whitespace-pre-wrap">{profile.description || 'No biography provided.'}</p>
                 </div>
 
                 {/* Tags */}
@@ -205,11 +205,11 @@ export default function Dashboard() {
                 )}
 
                 {/* Photos */}
-                {profile.photo_urls && profile.photo_urls.length > 0 && (
+                {profile.photoUrls && profile.photoUrls.length > 0 && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-3">Photos</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {profile.photo_urls.map((photo, index) => (
+                      {profile.photoUrls.map((photo, index) => (
                         <Image
                           key={index}
                           src={photo}

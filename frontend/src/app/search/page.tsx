@@ -145,7 +145,7 @@ function SearchContent() {
       params.append('limit', PAGE_SIZE.toString())
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/user/search?${params.toString()}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/search?${params.toString()}`,
         {
           method: 'GET',
           headers: {
