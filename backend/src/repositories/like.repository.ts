@@ -40,6 +40,16 @@ export const likeRepository = {
     return res.rows.length > 0;
   },
 
+  removeLike: async (likerId: number, likedId: number) => {
+    const query = `
+      DELETE FROM likes
+      WHERE liker_id = $1 AND liked_id = $2
+      RETURNING liker_id, liked_id
+    `;
+    const res = await pool.query(query, [likerId, likedId]);
+    return res.rows[0];
+  },
+
   getUserLikes: async (userId: number) => {
     const query = `
       SELECT liked_id, created_at
