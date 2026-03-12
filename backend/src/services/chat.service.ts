@@ -1,6 +1,6 @@
 import { conversationRepository } from "../repositories/conversation.repository.js";
 import { messageRepository } from "../repositories/message.repository.js";
-import { blockRepository } from "../repositories/block.repository.js";
+import { canChat } from "./canChat.service.js";
 
 type ConversationListRow = {
     conversation_id: number;
@@ -16,6 +16,8 @@ type ConversationListRow = {
     last_message_at: Date | null;
     unread_count: number;
   };
+
+type ConversationSummary = ReturnType<typeof mapConversationSummary>;
 
 const mapConversationSummary = (row: ConversationListRow) => ({
     id: row.conversation_id,
@@ -39,7 +41,14 @@ const mapConversationSummary = (row: ConversationListRow) => ({
 export const chatService = {
     getConversations: async (userId: number) => {
         const rows = await conversationRepository.getConversationsByUserId(userId);
-        return rows.map((row: ConversationListRow) => mapConversationSummary(row));
+        const summaries: ConversationSummary[] = rows.map((row: ConversationListRow) => mapConversationSummary(row));
+        const results = await Promise.all(
+            summaries.map(async (s) => {
+                const { allowed } = await canChat(userId, s.otherUser.id);
+                return allowed ? s : null;
+            })
+        );
+        return results.filter((s): s is NonNullable<typeof s> => s !== null);
     },
 
     getConversationSummary: async (conversationId: number, userId: number) => {
@@ -97,9 +106,9 @@ export const chatService = {
             throw new Error('Cannot create conversation with yourself');
         }
 
-        const isBlocked = await blockRepository.isBlocked(currentUserId, otherUserId);
-        if (isBlocked) {
-            throw new Error('Cannot start conversation with blocked user');
+        const chatCheck = await canChat(currentUserId, otherUserId);
+        if (!chatCheck.allowed) {
+            throw new Error('Cannot chat with this user');
         }
 
         const user1 = Math.min(currentUserId, otherUserId);
@@ -138,6 +147,14 @@ export const chatService = {
             conversation.user1_id === senderId || conversation.user2_id === senderId;
         if (!isParticipant) {
             throw new Error('Unauthorized: not a participant in this conversation');
+        }
+
+        const otherUserId = conversation.user1_id === senderId
+            ? conversation.user2_id
+            : conversation.user1_id;
+        const chatCheck = await canChat(senderId, otherUserId);
+        if (!chatCheck.allowed) {
+            throw new Error('Cannot chat with this user');
         }
 
         const message = await messageRepository.insertMessage(conversationId, senderId, content);
