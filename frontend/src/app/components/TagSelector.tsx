@@ -47,7 +47,7 @@ export default function TagSelector({ selectedTags, error, onChange }: TagSelect
         <div>Loading tags...</div>
       ) : (
         <InputFormMultiSelect
-          label="CuriousAbout"
+          label="Your interests"
           error={error}
           tags={tags}
           selectedTags={selectedTags}

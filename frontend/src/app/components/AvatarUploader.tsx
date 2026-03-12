@@ -75,7 +75,7 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
         className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
         onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
       >
-        Upload Your Icon
+        Upload Icon
       </button>
     </div>
   )

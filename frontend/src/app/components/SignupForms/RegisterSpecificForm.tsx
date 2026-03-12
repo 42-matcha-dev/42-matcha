@@ -107,7 +107,7 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
         {...register('gender')}
       />
       <InputFormSelect
-        label="LookingFor"
+        label="Looking For"
         error={errors.lookingFor}
         options={[
           { label: 'Male', value: 'male' },
@@ -117,7 +117,7 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
         {...register('lookingFor')}
       />
       <InputForm
-        label="Description"
+        placeholder="Description"
         type="text"
         error={errors.description}
         {...register('description')}

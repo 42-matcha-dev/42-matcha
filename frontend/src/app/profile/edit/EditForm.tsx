@@ -128,61 +128,91 @@ export default function EditForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <InputForm
-        label="firstName"
-        type="text"
-        error={errors.firstName}
-        {...register('firstName')}
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto flex flex-col gap-8 py-10">
+      <h1 className="text-3xl font-bold text-black">Edit Profile</h1>
+
+      {/* Photos */}
+      <PhotoGridUploader
+        photoUrls={watch('photoUrls') ?? ['', '', '', '']}
+        onChange={(urls) => setValue('photoUrls', urls)}
       />
-      <InputForm label="lastName" type="text" error={errors.lastName} {...register('lastName')} />
-      <InputForm label="birthday" type="date" error={errors.birthday} {...register('birthday')} />
+
+      {/* Basic info */}
+      <div className="flex flex-col gap-4">
+        <InputForm
+          label="First name"
+          type="text"
+          error={errors.firstName}
+          {...register('firstName')}
+        />
+
+        <InputForm
+          label="Last name"
+          type="text"
+          error={errors.lastName}
+          {...register('lastName')}
+        />
+
+        <InputForm label="Birthday" type="date" error={errors.birthday} {...register('birthday')} />
+      </div>
+
+      {/* Location */}
       <LocationField
         location={watch('location')}
         latitude={watch('latitude')}
         longitude={watch('longitude')}
+        error={errors.location}
         onChange={(loc, lat, lon) => {
           setValue('location', loc)
           setValue('latitude', lat)
           setValue('longitude', lon)
         }}
       />
-      <InputFormSelect
-        label="Gender"
-        error={errors.gender}
-        options={[
-          { label: 'Male', value: 'male' },
-          { label: 'Female', value: 'female' }
-        ]}
-        {...register('gender')}
-      />
-      <InputFormSelect
-        label="LookingFor"
-        error={errors.lookingFor}
-        options={[
-          { label: 'Male', value: 'male' },
-          { label: 'Female', value: 'female' },
-          { label: 'Both', value: 'both' }
-        ]}
-        {...register('lookingFor')}
-      />
+
+      {/* Preferences */}
+      <div className="grid grid-cols-2 gap-4">
+        <InputFormSelect
+          label="Gender"
+          error={errors.gender}
+          options={[
+            { label: 'Male', value: 'male' },
+            { label: 'Female', value: 'female' }
+          ]}
+          {...register('gender')}
+        />
+
+        <InputFormSelect
+          label="Looking for"
+          error={errors.lookingFor}
+          options={[
+            { label: 'Male', value: 'male' },
+            { label: 'Female', value: 'female' },
+            { label: 'Both', value: 'both' }
+          ]}
+          {...register('lookingFor')}
+        />
+      </div>
+
+      {/* Bio */}
       <InputForm
         label="Description"
         type="text"
         error={errors.description}
         {...register('description')}
       />
+
+      {/* Tags */}
       <TagSelector
         selectedTags={selectedTags}
         error={errors.curiousAbout}
         onChange={(selectedIds) => setValue('curiousAbout', selectedIds)}
       />
+
+      {/* Avatar */}
       <AvatarUploader initialUrl={watch('iconUrl')} onChange={(url) => setValue('iconUrl', url)} />
-      <PhotoGridUploader
-        photoUrls={watch('photoUrls') ?? ['', '', '', '']}
-        onChange={(urls) => setValue('photoUrls', urls)}
-      />
-      <NextButton text="Submit" type="submit" />
+
+      {/* Submit */}
+      <NextButton text="Save Profile" type="submit" />
     </form>
   )
 }

@@ -12,7 +12,7 @@ interface Props {
   photoUrls: string[]
   onChange: (urls: string[]) => void
 }
-export default function PhotoGridUploader({ photoUrls, onChange }: Props) {
+export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
   const [uploading, setUploading] = useState(false)
 
   const uploadFiles = async (files: FileList, index: number) => {
@@ -53,7 +53,7 @@ export default function PhotoGridUploader({ photoUrls, onChange }: Props) {
   }
 
   return (
-    <div className="text-left w-full max-w-[420px]">
+    <div className="text-left w-full">
       <h2 className="text-base font-bold mb-3">Upload Photos (4 maximum)</h2>
 
       <div className="grid grid-cols-[3fr_1fr] gap-4 items-stretch">
