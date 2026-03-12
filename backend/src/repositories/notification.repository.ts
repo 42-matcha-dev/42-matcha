@@ -19,7 +19,7 @@ export const notificationRepository = {
     return result.rows;
   },
     
-  createNotifiation: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
+  createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
     const query = `
       INSERT INTO notifications (user_id, actor_id, type, reference_id)
       VALUES ($1, $2, $3, $4)
@@ -61,5 +61,13 @@ export const notificationRepository = {
     `;
     const result = await pool.query(query, [userId]);
     return Number(result.rows[0].count);
-  }
+  },
+
+  deleteByActorAndType: async (userId: number, actorId: number, type: NotificationType) => {
+    const query = `
+      DELETE FROM notifications
+      WHERE user_id = $1 AND actor_id = $2 AND type = $3
+    `;
+    await pool.query(query, [userId, actorId, type]);
+  },
 };
