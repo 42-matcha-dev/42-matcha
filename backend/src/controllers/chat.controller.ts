@@ -73,7 +73,7 @@ export const createConversation = async (req: AuthenticatedRequest, res: Respons
             if (error.message === 'Cannot create conversation with yourself') {
                 return res.status(400).json({ error: error.message });
             }
-            if (error.message === 'Cannot start conversation with blocked user') {
+            if (error.message === 'Cannot chat with this user') {
                 return res.status(403).json({ error: error.message });
             }
             if (error.message === 'Failed to create or retrieve conversation') {
@@ -111,6 +111,9 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
                 return res.status(404).json({ error: error.message });
             }
             if (error.message === 'Unauthorized: not a participant in this conversation') {
+                return res.status(403).json({ error: error.message });
+            }
+            if (error.message === 'Cannot chat with this user') {
                 return res.status(403).json({ error: error.message });
             }
         }
