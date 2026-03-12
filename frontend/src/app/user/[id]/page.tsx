@@ -1,175 +1,175 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
-import Navbar from '@/app/components/Navbar';
-import Header from '@/app/components/Header';
-import { getCookie, deleteCookie } from '@/utils/cookie.util';
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
+import Navbar from '@/app/components/Navbar'
+import Header from '@/app/components/Header'
+import { getCookie, deleteCookie } from '@/utils/cookie.util'
 
 interface Tag {
-  id: number;
-  name: string;
-  category: string;
+  id: number
+  name: string
+  category: string
 }
 
 interface UserProfile {
-  id: number;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  sexualPreferences: string;
-  biography: string;
-  fameRating: number;
-  location: string;
-  iconUrl: string;
-  photoUrls: string[];
-  tags?: Tag[];
-  createdAt: string;
-  updatedAt: string;
-  isLiked?: boolean;
-  isMatch?: boolean;
+  id: number
+  email: string
+  username: string
+  firstName: string
+  lastName: string
+  gender: string
+  sexualPreferences: string
+  biography: string
+  fameRating: number
+  location: string
+  iconUrl: string
+  photoUrls: string[]
+  tags?: Tag[]
+  createdAt: string
+  updatedAt: string
+  isLiked?: boolean
+  isMatch?: boolean
 }
 
 export default function UserProfilePage() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [likeLoading, setLikeLoading] = useState(false);
-  const router = useRouter();
-  const params = useParams();
-  const userId = params?.id as string;
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const [likeLoading, setLikeLoading] = useState(false)
+  const router = useRouter()
+  const params = useParams()
+  const userId = params?.id as string
 
   // Calculate age from createdAt (or could be a separate field)
   const calculateAge = (): number => {
     // For now, return a placeholder age. In production, you'd calculate from birthdate
-    return 24; // Placeholder
-  };
+    return 24 // Placeholder
+  }
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!userId) return;
+      if (!userId) return
 
       try {
-        const token = getCookie('token');
+        const token = getCookie('token')
         if (!token) {
-          router.push('/login');
-          return;
+          router.push('/login')
+          return
         }
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL
         const response = await fetch(`${apiUrl}/api/users/${userId}`, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
 
         if (!response.ok) {
           if (response.status === 401) {
-            deleteCookie('token');
-            router.push('/login');
-            return;
+            deleteCookie('token')
+            router.push('/login')
+            return
           }
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch profile');
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to fetch profile')
         }
 
-        const data = await response.json();
-        setProfile(data);
+        const data = await response.json()
+        setProfile(data)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProfile();
-  }, [userId, router]);
+    fetchProfile()
+  }, [userId, router])
 
   const handleLike = async () => {
-    if (!userId || !profile || profile.isLiked || likeLoading) return;
+    if (!userId || !profile || profile.isLiked || likeLoading) return
 
     try {
-      setLikeLoading(true);
-      const token = getCookie('token');
+      setLikeLoading(true)
+      const token = getCookie('token')
       if (!token) {
-        router.push('/login');
-        return;
+        router.push('/login')
+        return
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const response = await fetch(`${apiUrl}/api/like/${userId}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
 
       if (!response.ok) {
         if (response.status === 401) {
-          deleteCookie('token');
-          router.push('/login');
-          return;
+          deleteCookie('token')
+          router.push('/login')
+          return
         }
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send like');
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send like')
       }
 
-      const result = await response.json();
+      const result = await response.json()
 
       // Update profile state with new like status
       setProfile({
         ...profile,
         isLiked: true,
-        isMatch: result.isMatch || false,
-      });
+        isMatch: result.isMatch || false
+      })
 
       // Show success message
       if (result.isMatch) {
-        alert(result.message || 'Match! You can now start conversation');
+        alert(result.message || 'Match! You can now start conversation')
       } else {
-        alert(result.message || 'Like was sent successfully');
+        alert(result.message || 'Like was sent successfully')
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to send like');
+      alert(err instanceof Error ? err.message : 'Failed to send like')
     } finally {
-      setLikeLoading(false);
+      setLikeLoading(false)
     }
-  };
+  }
 
   // Touch handlers for mobile swipe
-  const minSwipeDistance = 50;
+  const minSwipeDistance = 50
 
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd || !profile?.photoUrls) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    if (!touchStart || !touchEnd || !profile?.photoUrls) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
 
     if (isLeftSwipe && selectedImageIndex < profile.photoUrls.length - 1) {
-      setSelectedImageIndex(selectedImageIndex + 1);
+      setSelectedImageIndex(selectedImageIndex + 1)
     }
     if (isRightSwipe && selectedImageIndex > 0) {
-      setSelectedImageIndex(selectedImageIndex - 1);
+      setSelectedImageIndex(selectedImageIndex - 1)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -179,7 +179,7 @@ export default function UserProfilePage() {
           <div className="text-lg text-white">Loading profile...</div>
         </div>
       </main>
-    );
+    )
   }
 
   if (error) {
@@ -190,17 +190,18 @@ export default function UserProfilePage() {
           <div className="text-red-500">Error: {error}</div>
         </div>
       </main>
-    );
+    )
   }
 
   if (!profile) {
-    return null;
+    return null
   }
 
-  const displayName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.username;
-  const age = calculateAge();
-  const photos = profile.photoUrls || [];
-  const hasPhotos = photos.length > 0;
+  const displayName =
+    `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.username
+  const age = calculateAge()
+  const photos = profile.photoUrls || []
+  const hasPhotos = photos.length > 0
 
   return (
     <main className="flex flex-col h-screen bg-white">
@@ -238,22 +239,31 @@ export default function UserProfilePage() {
                       <h1 className="text-3xl font-bold mb-3">
                         {displayName}, {age}
                       </h1>
-						<div className="flex items-center mb-4">
-                      {/* Location */}
-                      {profile.location && (
-                        <div className="flex items-center mr-3">
-                          <Image src="/icons/location.svg" alt="Logo" width={20} height={20} />
-                          <span className="ml-2 text-sm text-custom-medium">{profile.location}</span>
+                      <div className="flex items-center mb-4">
+                        {/* Location */}
+                        {profile.location && (
+                          <div className="flex items-center mr-3">
+                            <Image src="/icons/location.svg" alt="Logo" width={20} height={20} />
+                            <span className="ml-2 text-sm text-custom-medium">
+                              {profile.location}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Fame Rating */}
+                        <div className="flex items-center">
+                          <Image
+                            src="/icons/handshake.svg"
+                            alt="Logo"
+                            width={20}
+                            height={20}
+                            className="mr-1"
+                          />
+                          <span className="ml-2 text-sm text-custom-medium">
+                            {profile.fameRating || 0}%
+                          </span>
                         </div>
-                      )}
-
-                      {/* Fame Rating */}
-                      <div className="flex items-center">
-					<Image src="/icons/handshake.svg" alt="Logo" width={20} height={20} className="mr-1" />
-                        <span className="ml-2 text-sm text-custom-medium">{profile.fameRating || 0}%</span>
                       </div>
-						</div>
-
 
                       {/* Action Buttons */}
                       <div className="flex gap-3">
@@ -264,17 +274,17 @@ export default function UserProfilePage() {
                             profile.isMatch
                               ? 'bg-primary text-white'
                               : profile.isLiked
-                              ? 'bg-gray-400 text-white cursor-not-allowed'
-                              : 'bg-primary hover:bg-[#A6733A] text-white'
+                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                : 'bg-primary hover:bg-[#A6733A] text-white'
                           } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           {likeLoading
                             ? 'Sending...'
                             : profile.isMatch
-                            ? 'Match!'
-                            : profile.isLiked
-                            ? 'Liked'
-                            : 'Like'}
+                              ? 'Match!'
+                              : profile.isLiked
+                                ? 'Liked'
+                                : 'Like'}
                         </button>
                         <button
                           disabled={!profile.isMatch}
@@ -294,9 +304,7 @@ export default function UserProfilePage() {
                   {profile.biography && (
                     <div>
                       <h2 className="text-custom-medium mb-3">About</h2>
-                      <p className="leading-relaxed whitespace-pre-wrap">
-                        {profile.biography}
-                      </p>
+                      <p className="leading-relaxed whitespace-pre-wrap">{profile.biography}</p>
                     </div>
                   )}
 
@@ -377,9 +385,7 @@ export default function UserProfilePage() {
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all ${
-                            selectedImageIndex === index
-                              ? 'bg-amber-800 w-8'
-                              : 'bg-gray-300'
+                            selectedImageIndex === index ? 'bg-amber-800 w-8' : 'bg-gray-300'
                           }`}
                         />
                       ))}
@@ -392,6 +398,5 @@ export default function UserProfilePage() {
         </div>
       </div>
     </main>
-  );
+  )
 }
-
