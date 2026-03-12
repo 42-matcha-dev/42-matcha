@@ -128,7 +128,7 @@ export default function EditForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto flex flex-col gap-8 py-10">
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl mx-auto flex flex-col gap-8 pb-16">
       <h1 className="text-3xl font-bold text-black">Edit Profile</h1>
 
       {/* Photos */}
