@@ -23,6 +23,8 @@ interface UserProfile {
   sexualPreferences: string
   biography: string
   fameRating: number
+  distance: number
+  canLike: boolean
   location: string
   iconUrl: string
   photoUrls: string[]
@@ -266,7 +268,7 @@ export default function UserProfilePage() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-3">
+                      <div className={`${!profile.canLike ? 'invisible' : ''} flex gap-3`}>
                         <button
                           onClick={handleLike}
                           disabled={profile.isLiked || likeLoading}
