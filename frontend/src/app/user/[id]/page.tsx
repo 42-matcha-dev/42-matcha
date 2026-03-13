@@ -21,7 +21,7 @@ interface UserProfile {
   firstName: string
   lastName: string
   gender: string
-  sexualPreferences: string
+  lookingFor: string
   biography: string
   fameRating: number
   distance: number
@@ -53,6 +53,27 @@ export default function UserProfilePage() {
   const calculateAge = (): number => {
     // For now, return a placeholder age. In production, you'd calculate from birthdate
     return 24 // Placeholder
+  }
+
+  function capitalize(value: string) {
+    if (!value) return ''
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  }
+
+  function getSexuality(gender: string, lookingFor: string) {
+    if (!gender || !lookingFor) return null
+
+    if (lookingFor === 'both') return 'Bisexual'
+    if (gender === lookingFor) return gender === 'male' ? 'Gay' : 'Lesbian'
+
+    return 'Straight'
+  }
+
+  function formatDistance(value: number) {
+    if (value == null) return null
+    if (value > 500) return '500+'
+
+    return value.toFixed(1)
   }
 
   useEffect(() => {
@@ -275,6 +296,11 @@ export default function UserProfilePage() {
                             {profile.fameRating || 0}%
                           </span>
                         </div>
+                      </div>
+                      <div className="flex items-center mb-4">
+                        <span className="text-sm text-custom-medium">
+                          {profile.gender} • {profile.lookingFor} • {profile.distance} km
+                        </span>
                       </div>
 
                       {/* Action Buttons */}
