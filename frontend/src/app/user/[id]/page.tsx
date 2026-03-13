@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Navbar from '@/app/components/Navbar'
 import Header from '@/app/components/Header'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
+import { toast } from 'sonner'
 
 interface Tag {
   id: number
@@ -31,8 +32,8 @@ interface UserProfile {
   tags?: Tag[]
   createdAt: string
   updatedAt: string
-  isLiked?: boolean
-  isMatch?: boolean
+  isLiked: boolean
+  isMatch: boolean
 }
 
 export default function UserProfilePage() {
@@ -96,7 +97,7 @@ export default function UserProfilePage() {
   }, [userId, router])
 
   const handleLike = async () => {
-    if (!userId || !profile || profile.isLiked || likeLoading) return
+    if (!userId || !profile || likeLoading) return
 
     try {
       setLikeLoading(true)
@@ -136,12 +137,15 @@ export default function UserProfilePage() {
 
       // Show success message
       if (result.isMatch) {
-        alert(result.message || 'Match! You can now start conversation')
+        const msg = result.message || 'Match! You can now start conversation'
+        toast.success(msg)
       } else {
-        alert(result.message || 'Like was sent successfully')
+        const msg = result.message || 'Like was sent successfully'
+        toast.success(msg)
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to send like')
+      const msg = err instanceof Error ? err.message : 'Failed to send like'
+      toast.error(msg)
     } finally {
       setLikeLoading(false)
     }
@@ -271,10 +275,10 @@ export default function UserProfilePage() {
                       <div className={`${!profile.canLike ? 'invisible' : ''} flex gap-3`}>
                         <button
                           onClick={handleLike}
-                          disabled={profile.isLiked || likeLoading}
+                          disabled={likeLoading}
                           className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
                             profile.isLiked
-                                ? 'bg-gray-400 text-white cursor-not-allowed'
+                                ? 'bg-gray-400 text-white'
                                 : 'bg-primary hover:bg-[#A6733A] text-white'
                           } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
