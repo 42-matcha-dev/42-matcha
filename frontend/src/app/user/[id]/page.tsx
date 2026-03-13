@@ -131,13 +131,12 @@ export default function UserProfilePage() {
       const result = await response.json()
 
       // Update profile state with new like status
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev!,
         isLiked: !prev!.isLiked,
         isMatch: result.isMatch ?? false,
         conversationId: result.conversationId
-        })
-      )
+      }))
 
       // Show success message
       if (result.isMatch) {
@@ -285,15 +284,11 @@ export default function UserProfilePage() {
                           disabled={likeLoading}
                           className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
                             profile.isLiked
-                                ? 'bg-gray-400 text-white'
-                                : 'bg-primary hover:bg-[#A6733A] text-white'
+                              ? 'bg-gray-400 text-white'
+                              : 'bg-primary hover:bg-[#A6733A] text-white'
                           } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          {likeLoading
-                            ? 'Sending...'
-                              : profile.isLiked
-                                ? 'Unlike'
-                                : 'Like'}
+                          {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
                         </button>
                         <button
                           disabled={!profile.isMatch}
@@ -337,7 +332,7 @@ export default function UserProfilePage() {
                 </div>
 
                 {/* Right Side - Image Gallery */}
-                <div className="flex gap-4">
+                <div className="hidden lg:flex gap-4">
                   {/* Main Image */}
                   <div
                     className="flex-1 bg-custom-light rounded-lg overflow-hidden relative min-h-[400px] lg:min-h-[500px]"
@@ -386,19 +381,28 @@ export default function UserProfilePage() {
                       ))}
                     </div>
                   )}
+                </div>
 
-                  {/* Mobile Navigation Dots */}
-                  {hasPhotos && photos.length > 1 && (
-                    <div className="lg:hidden flex justify-center gap-2 mt-4">
-                      {photos.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            selectedImageIndex === index ? 'bg-amber-800 w-8' : 'bg-gray-300'
-                          }`}
+                {/* Mobile Layout - Column */}
+                <div className="lg:hidden flex flex-col gap-4">
+                  {hasPhotos ? (
+                    photos.map((photo, index) => (
+                      <div
+                        key={index}
+                        className="w-full bg-custom-light rounded-lg overflow-hidden relative h-[400px]"
+                      >
+                        <Image
+                          src={photo}
+                          alt={`Photo ${index + 1}`}
+                          fill
+                          unoptimized
+                          className="object-cover"
                         />
-                      ))}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="w-full h-[300px] flex items-center justify-center text-custom-medium">
+                      <span>No photos available</span>
                     </div>
                   )}
                 </div>
