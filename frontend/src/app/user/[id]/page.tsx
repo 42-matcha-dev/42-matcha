@@ -107,7 +107,7 @@ export default function UserProfilePage() {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
-      const response = await fetch(`${apiUrl}/api/like/${userId}`, {
+      const response = await fetch(`${apiUrl}/api/likes/${userId}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -273,19 +273,15 @@ export default function UserProfilePage() {
                           onClick={handleLike}
                           disabled={profile.isLiked || likeLoading}
                           className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isMatch
-                              ? 'bg-primary text-white'
-                              : profile.isLiked
+                            profile.isLiked
                                 ? 'bg-gray-400 text-white cursor-not-allowed'
                                 : 'bg-primary hover:bg-[#A6733A] text-white'
                           } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           {likeLoading
                             ? 'Sending...'
-                            : profile.isMatch
-                              ? 'Match!'
                               : profile.isLiked
-                                ? 'Liked'
+                                ? 'Unlike'
                                 : 'Like'}
                         </button>
                         <button
