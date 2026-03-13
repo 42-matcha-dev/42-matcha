@@ -82,7 +82,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         setLoading(true)
         setError(null)
         const [profileRes, conv, msgs] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           fetchConversation(conversationId),

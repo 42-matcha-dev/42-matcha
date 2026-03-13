@@ -34,6 +34,7 @@ interface UserProfile {
   updatedAt: string
   isLiked: boolean
   isMatch: boolean
+  conversationId?: boolean
 }
 
 export default function UserProfilePage() {
@@ -133,7 +134,8 @@ export default function UserProfilePage() {
       setProfile(prev => ({
         ...prev!,
         isLiked: !prev!.isLiked,
-        isMatch: result.isMatch ?? false
+        isMatch: result.isMatch ?? false,
+        conversationId: result.conversationId
         })
       )
 
@@ -300,6 +302,7 @@ export default function UserProfilePage() {
                               ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
                               : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
                           }`}
+                          onClick={() => router.push(`/chat/${profile.conversationId}`)}
                         >
                           Message
                         </button>

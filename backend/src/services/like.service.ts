@@ -7,13 +7,13 @@ export const likeService = {
   likeUser: async (likerId: number, likedId: number) => {
     // Validate user cannot like themselves
     if (likerId === likedId) {
-      throw new Error('Cannot like yourself');
+      throw new HttpError(400, 'Cannot like yourself');
     }
 
     // Check if like already exists
     const likeExists = await likeRepository.checkLikeExists(likerId, likedId);
     if (likeExists) {
-      throw new Error('Like already exists');
+      throw new HttpError(409, 'Like already exists');
     }
 
     // Create the like
@@ -21,6 +21,7 @@ export const likeService = {
 
     // Check for mutual like (match)
     const isMatch = await likeRepository.checkMutualLike(likerId, likedId);
+    let conversationId: number | null = null;
 
     if (!isMatch) {
       // Send LIKE notification to the liked user
@@ -34,8 +35,10 @@ export const likeService = {
         conversation = await conversationRepository.getConversationByUserIds(user1, user2);
       }
       if (!conversation) {
-        throw new Error('Failed to create or retrieve conversation for match');
+        throw new HttpError(500, 'Failed to create or retrieve conversation for match');
       }
+
+      conversationId = conversation.id;
       // Notify both users of the match
       await notificationService.createNotification(likerId, likedId, "MATCH", conversation.id);
       await notificationService.createNotification(likedId, likerId, "MATCH", conversation.id);
@@ -45,6 +48,7 @@ export const likeService = {
     return {
       success: true,
       isMatch,
+      conversationId,
       message: isMatch ? 'Match! You can now start conversation' : 'Like was sent successfully',
     };
   },
