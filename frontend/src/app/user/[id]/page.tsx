@@ -299,7 +299,9 @@ export default function UserProfilePage() {
                       </div>
                       <div className="flex items-center mb-4">
                         <span className="text-sm text-custom-medium">
-                          {profile.gender} • {profile.lookingFor} • {profile.distance} km
+                          {capitalize(profile.gender)} •{' '}
+                          {getSexuality(profile.gender, profile.lookingFor)} •{' '}
+                          {formatDistance(profile.distance)} km
                         </span>
                       </div>
 
