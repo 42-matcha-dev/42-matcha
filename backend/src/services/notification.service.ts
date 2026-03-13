@@ -13,6 +13,13 @@ export const notificationService = {
         }
         return notification;
     },
+    deleteNotification: async (userId: number, actorId: number, type: NotificationType ) => {
+        const result = await notificationRepository.deleteNotification(userId, actorId, type);
+        if (result) {
+            notificationEmitter.emit('notification:deleted', { userId });
+        }
+        return result;
+    },
     markAsRead: async (notificationId: number, userId: number) => {
         return notificationRepository.markAsRead(notificationId, userId);
     },

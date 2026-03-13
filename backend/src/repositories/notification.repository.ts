@@ -31,6 +31,15 @@ export const notificationRepository = {
     return res.rows[0];
   },
 
+  deleteNotification: async (userId: number, actorId: number, type: NotificationType) => {
+    const query = `
+      DELETE FROM notifications
+      WHERE user_id = $1 AND actor_id = $2 AND type = $3
+    `
+    const res = await pool.query(query, [userId, actorId, type]);
+    return res.rowCount > 0;
+  },
+
   markAsRead: async (notificationId: number, userId: number) => {
     const query = `
       UPDATE notifications

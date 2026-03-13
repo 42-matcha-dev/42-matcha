@@ -1,6 +1,7 @@
 import { likeRepository } from '../repositories/like.repository.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { notificationService } from './notification.service.js';
+import { HttpError } from '../errors/HttpError.js';
 
 export const likeService = {
   likeUser: async (likerId: number, likedId: number) => {
@@ -45,6 +46,25 @@ export const likeService = {
       success: true,
       isMatch,
       message: isMatch ? 'Match! You can now start conversation' : 'Like was sent successfully',
+    };
+  },
+
+  deleteLike: async (likerId: number, likedId: number) => {
+    if (likerId === likedId) {
+      throw new HttpError(400, 'Cannot unlike yourself');
+    }
+    const deleted = await likeRepository.deleteLike(likerId, likedId);
+    if (!deleted) {
+      throw new HttpError(404, "Like does not exist");
+    }
+    await notificationService.deleteNotification(likedId, likerId, "LIKE");
+    await notificationService.deleteNotification(likerId, likedId, "MATCH");
+    await notificationService.deleteNotification(likedId, likerId, "MATCH");
+
+    return {
+      success: true,
+      isMatch: false,
+      message: "Your like was removed"
     };
   },
 

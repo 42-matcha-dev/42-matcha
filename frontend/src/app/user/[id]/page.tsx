@@ -108,8 +108,9 @@ export default function UserProfilePage() {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
+      const method = profile.isLiked ? 'DELETE' : 'POST'
       const response = await fetch(`${apiUrl}/api/likes/${userId}`, {
-        method: 'POST',
+        method,
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -129,18 +130,22 @@ export default function UserProfilePage() {
       const result = await response.json()
 
       // Update profile state with new like status
-      setProfile({
-        ...profile,
-        isLiked: true,
-        isMatch: result.isMatch || false
-      })
+      setProfile(prev => ({
+        ...prev!,
+        isLiked: !prev!.isLiked,
+        isMatch: result.isMatch ?? false
+        })
+      )
 
       // Show success message
       if (result.isMatch) {
         const msg = result.message || 'Match! You can now start conversation'
         toast.success(msg)
-      } else {
+      } else if (result.isLiked) {
         const msg = result.message || 'Like was sent successfully'
+        toast.success(msg)
+      } else {
+        const msg = result.message || 'Like removed'
         toast.success(msg)
       }
     } catch (err) {

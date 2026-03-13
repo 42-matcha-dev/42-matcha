@@ -11,4 +11,12 @@ export function setupNotificationSocket(io: Server): void {
             console.error('Failed to emit unreadNotificationCount:', err);
         }
     });
+    notificationEmitter.on('notification:deleted', async ({ userId }: { userId: number}) => {
+        try {
+            const count = await notificationRepository.getUnreadCount(userId);
+            io.to(`user:${userId}`).emit('unreadNotificationCount', { count });
+        } catch (err) {
+            console.error('Failed to emit unreadNotificationCount:', err);
+        }
+    });
 }
