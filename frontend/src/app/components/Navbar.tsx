@@ -93,6 +93,7 @@ const Navbar = () => {
         path={mdiChat}
         size={1.3}
         title={'Messages'}
+        badgeCount={messageCount}
         color={'black'}
         onClick={() => router.push('/chat')}
       />

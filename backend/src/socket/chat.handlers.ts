@@ -117,7 +117,7 @@ export function setupChatSocket(io: Server): void {
 
                 const conversation = await conversationRepository.getConversationById(conversationId);
                 if (!conversation) {
-                    cb?.({ error: 'Conversation not found' });
+                    cb?.({ error: 'Cannot chat with this user' });
                     return;
                 }
                 const otherUserId = conversation.user1_id === userId

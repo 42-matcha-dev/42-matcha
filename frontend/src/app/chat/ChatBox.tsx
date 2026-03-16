@@ -188,7 +188,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
     const socket = getSocket()
     socket.emit('sendMessage', { conversationId, content: trimmed }, (res: { ok?: boolean; message?: Message; error?: string }) => {
       if (res?.error) {
-        console.error('Send error:', res.error)
+        setError(res.error)
         return
       }
       if (res?.message) {
