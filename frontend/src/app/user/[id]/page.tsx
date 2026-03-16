@@ -139,7 +139,7 @@ export default function UserProfilePage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const method = profile.isLiked ? 'DELETE' : 'POST'
-      const response = await fetch(`${apiUrl}/api/likes/${userId}`, {
+      const response = await fetch(`${apiUrl}/api/like/${userId}`, {
         method,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -167,17 +167,7 @@ export default function UserProfilePage() {
         conversationId: result.conversationId
       }))
 
-      // Show success message
-      if (result.isMatch) {
-        const msg = result.message || 'Match! You can now start conversation'
-        toast.success(msg)
-      } else if (result.isLiked) {
-        const msg = result.message || 'Like was sent successfully'
-        toast.success(msg)
-      } else {
-        const msg = result.message || 'Like removed'
-        toast.success(msg)
-      }
+      toast.success(result.message)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to send like'
       toast.error(msg)
