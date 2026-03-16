@@ -8,10 +8,12 @@ type UserRow = {
   first_name: string
   last_name: string
   birthdate: string
-  gender: "male" | "female"
-  sexual_preferences: "male" | "female" | "both"
+  gender: 'male' | 'female'
+  sexual_preferences: 'male' | 'female' | 'both'
   biography: string
   fame_rating: number
+  distance: number
+  can_like: boolean
   location: string
   latitude: number
   longitude: number
@@ -31,6 +33,8 @@ function mapUser(row: UserRow) {
     lookingFor: row.sexual_preferences,
     description: row.biography,
     fameRating: row.fame_rating,
+    distance: row.distance,
+    canLike: row.can_like,
     location: row.location,
     latitude: row.latitude,
     longitude: row.longitude,
@@ -40,8 +44,56 @@ function mapUser(row: UserRow) {
 }
 
 export const userRepository = {
-  findUserById: async (id: number) => {
-    const res = await pool.query('SELECT * FROM users WHERE id = $1', [id])
+  findUserById: async (userId: number, currentUserId: number) => {
+    const query = `
+      SELECT
+        u.id,
+        u.email,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.birthdate,
+        u.gender,
+        u.sexual_preferences,
+        u.biography,
+        u.location,
+        u.latitude,
+        u.longitude,
+        u.icon_url,
+        u.photo_urls,
+
+        -- fame rating based on common tags
+        20 * (
+          SELECT COUNT(*)
+          FROM user_tags ut
+          WHERE ut.user_id = u.id
+            AND ut.tag_id IN (
+              SELECT tag_id FROM user_tags WHERE user_id = $2
+            )
+        ) AS fame_rating,
+
+        -- distance from current user
+        6371 * acos(
+          cos(radians(me.latitude)) * cos(radians(u.latitude)) *
+          cos(radians(u.longitude) - radians(me.longitude)) +
+          sin(radians(me.latitude)) * sin(radians(u.latitude))
+        ) AS distance,
+
+        -- can like this user
+        (
+          (me.sexual_preferences::TEXT = 'both' OR me.sexual_preferences::TEXT = u.gender::TEXT)
+          AND
+          (u.sexual_preferences::TEXT = 'both' OR u.sexual_preferences::TEXT = me.gender::TEXT)
+          AND
+          (u.id != me.id)
+        ) AS can_like
+
+
+      FROM users u
+      JOIN users me ON me.id = $2
+      WHERE u.id = $1
+    `
+    const res = await pool.query(query, [userId, currentUserId])
     const row = res.rows[0]
     if (!row) return null
     return mapUser(row)
@@ -61,17 +113,17 @@ export const userRepository = {
 
   updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {
     const fieldMap: Record<string, string> = {
-      firstName: "first_name",
-      lastName: "last_name",
-      birthday: "birthdate",
-      gender: "gender",
-      lookingFor: "sexual_preferences",
-      description: "biography",
-      location: "location",
-      latitude: "latitude",
-      longitude: "longitude",
-      iconUrl: "icon_url",
-      photoUrls: "photo_urls"
+      firstName: 'first_name',
+      lastName: 'last_name',
+      birthday: 'birthdate',
+      gender: 'gender',
+      lookingFor: 'sexual_preferences',
+      description: 'biography',
+      location: 'location',
+      latitude: 'latitude',
+      longitude: 'longitude',
+      iconUrl: 'icon_url',
+      photoUrls: 'photo_urls'
     }
 
     const fields: string[] = []
@@ -89,14 +141,14 @@ export const userRepository = {
     }
 
     if (fields.length === 0) {
-      throw new Error("No valid fields provided")
+      throw new Error('No valid fields provided')
     }
 
     values.push(userId)
 
     const query = `
       UPDATE users
-      SET ${fields.join(", ")},
+      SET ${fields.join(', ')},
         updated_at = NOW()
       WHERE id = $${index}
       RETURNING *
@@ -157,10 +209,6 @@ export const userRepository = {
       )
       AND (
         u.sexual_preferences::text = 'both' OR u.sexual_preferences::text = me.gender::text
-      )
-      -- Exclude disliked users
-      AND u.id NOT IN (
-        SELECT disliked_id FROM dislikes WHERE disliker_id = $1
       )
       -- Exclude blocked users
       AND u.id NOT IN (

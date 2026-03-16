@@ -5,7 +5,6 @@ import { createTagTable } from '../models/tag.model.js';
 import { createUserTagsTable } from '../models/user_tags.model.js';
 import { createLikeTable } from '../models/like.model.js';
 import { createBlockTable } from '../models/block.model.js';
-import { createDislikeTable } from '../models/dislike.model.js';
 import { createConversationTable } from '../models/converstation.model.js';
 import { createMessageTable } from '../models/messages.model.js';
 import { createNotificationTable } from '../models/notification.model.js';
@@ -39,7 +38,6 @@ export const initDB = async () => {
       await pool.query(createUserTagsTable);
       await pool.query(createLikeTable);
       await pool.query(createBlockTable);
-      await pool.query(createDislikeTable);
       await pool.query(createConversationTable);
       await pool.query(createMessageTable);
       await pool.query(createNotificationTable);

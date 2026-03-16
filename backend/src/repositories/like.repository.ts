@@ -11,6 +11,15 @@ export const likeRepository = {
     return res.rows[0];
   },
 
+  deleteLike: async (likerId: number, likedId: number) => {
+    const query = `
+      DELETE FROM likes
+      WHERE liker_id = $1 AND liked_id = $2
+    `;
+    const res = await pool.query(query, [likerId, likedId]);
+    return res.rowCount > 0;
+  },
+
   checkLikeExists: async (likerId: number, likedId: number): Promise<boolean> => {
     const query = `
       SELECT 1 FROM likes

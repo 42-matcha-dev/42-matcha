@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Navbar from '@/app/components/Navbar'
 import Header from '@/app/components/Header'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
+import { toast } from 'sonner'
 
 interface Tag {
   id: number
@@ -20,17 +21,20 @@ interface UserProfile {
   firstName: string
   lastName: string
   gender: string
-  sexualPreferences: string
+  lookingFor: string
   biography: string
   fameRating: number
+  distance: number
+  canLike: boolean
   location: string
   iconUrl: string
   photoUrls: string[]
   tags?: Tag[]
   createdAt: string
   updatedAt: string
-  isLiked?: boolean
-  isMatch?: boolean
+  isLiked: boolean
+  isMatch: boolean
+  conversationId?: boolean
 }
 
 export default function UserProfilePage() {
@@ -49,6 +53,27 @@ export default function UserProfilePage() {
   const calculateAge = (): number => {
     // For now, return a placeholder age. In production, you'd calculate from birthdate
     return 24 // Placeholder
+  }
+
+  function capitalize(value: string) {
+    if (!value) return ''
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  }
+
+  function getSexuality(gender: string, lookingFor: string) {
+    if (!gender || !lookingFor) return null
+
+    if (lookingFor === 'both') return 'Bisexual'
+    if (gender === lookingFor) return gender === 'male' ? 'Gay' : 'Lesbian'
+
+    return 'Straight'
+  }
+
+  function formatDistance(value: number) {
+    if (value == null) return null
+    if (value > 500) return '500+'
+
+    return value.toFixed(1)
   }
 
   useEffect(() => {
@@ -94,7 +119,7 @@ export default function UserProfilePage() {
   }, [userId, router])
 
   const handleLike = async () => {
-    if (!userId || !profile || profile.isLiked || likeLoading) return
+    if (!userId || !profile || likeLoading) return
 
     try {
       setLikeLoading(true)
@@ -105,8 +130,9 @@ export default function UserProfilePage() {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
-      const response = await fetch(`${apiUrl}/api/like/${userId}`, {
-        method: 'POST',
+      const method = profile.isLiked ? 'DELETE' : 'POST'
+      const response = await fetch(`${apiUrl}/api/likes/${userId}`, {
+        method,
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -126,20 +152,27 @@ export default function UserProfilePage() {
       const result = await response.json()
 
       // Update profile state with new like status
-      setProfile({
-        ...profile,
-        isLiked: true,
-        isMatch: result.isMatch || false
-      })
+      setProfile((prev) => ({
+        ...prev!,
+        isLiked: !prev!.isLiked,
+        isMatch: result.isMatch ?? false,
+        conversationId: result.conversationId
+      }))
 
       // Show success message
       if (result.isMatch) {
-        alert(result.message || 'Match! You can now start conversation')
+        const msg = result.message || 'Match! You can now start conversation'
+        toast.success(msg)
+      } else if (result.isLiked) {
+        const msg = result.message || 'Like was sent successfully'
+        toast.success(msg)
       } else {
-        alert(result.message || 'Like was sent successfully')
+        const msg = result.message || 'Like removed'
+        toast.success(msg)
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to send like')
+      const msg = err instanceof Error ? err.message : 'Failed to send like'
+      toast.error(msg)
     } finally {
       setLikeLoading(false)
     }
@@ -264,27 +297,26 @@ export default function UserProfilePage() {
                           </span>
                         </div>
                       </div>
+                      <div className="flex items-center mb-4">
+                        <span className="text-sm text-custom-medium">
+                          {capitalize(profile.gender)} •{' '}
+                          {getSexuality(profile.gender, profile.lookingFor)} •{' '}
+                          {formatDistance(profile.distance)} km
+                        </span>
+                      </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-3">
+                      <div className={`${!profile.canLike ? 'invisible' : ''} flex gap-3`}>
                         <button
                           onClick={handleLike}
-                          disabled={profile.isLiked || likeLoading}
+                          disabled={likeLoading}
                           className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isMatch
-                              ? 'bg-primary text-white'
-                              : profile.isLiked
-                                ? 'bg-gray-400 text-white cursor-not-allowed'
-                                : 'bg-primary hover:bg-[#A6733A] text-white'
+                            profile.isLiked
+                              ? 'bg-gray-400 text-white'
+                              : 'bg-primary hover:bg-[#A6733A] text-white'
                           } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          {likeLoading
-                            ? 'Sending...'
-                            : profile.isMatch
-                              ? 'Match!'
-                              : profile.isLiked
-                                ? 'Liked'
-                                : 'Like'}
+                          {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
                         </button>
                         <button
                           disabled={!profile.isMatch}
@@ -293,6 +325,7 @@ export default function UserProfilePage() {
                               ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
                               : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
                           }`}
+                          onClick={() => router.push(`/chat/${profile.conversationId}`)}
                         >
                           Message
                         </button>
@@ -327,7 +360,7 @@ export default function UserProfilePage() {
                 </div>
 
                 {/* Right Side - Image Gallery */}
-                <div className="flex gap-4">
+                <div className="hidden lg:flex gap-4">
                   {/* Main Image */}
                   <div
                     className="flex-1 bg-custom-light rounded-lg overflow-hidden relative min-h-[400px] lg:min-h-[500px]"
@@ -376,19 +409,28 @@ export default function UserProfilePage() {
                       ))}
                     </div>
                   )}
+                </div>
 
-                  {/* Mobile Navigation Dots */}
-                  {hasPhotos && photos.length > 1 && (
-                    <div className="lg:hidden flex justify-center gap-2 mt-4">
-                      {photos.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            selectedImageIndex === index ? 'bg-amber-800 w-8' : 'bg-gray-300'
-                          }`}
+                {/* Mobile Layout - Column */}
+                <div className="lg:hidden flex flex-col gap-4">
+                  {hasPhotos ? (
+                    photos.map((photo, index) => (
+                      <div
+                        key={index}
+                        className="w-full bg-custom-light rounded-lg overflow-hidden relative h-[400px]"
+                      >
+                        <Image
+                          src={photo}
+                          alt={`Photo ${index + 1}`}
+                          fill
+                          unoptimized
+                          className="object-cover"
                         />
-                      ))}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="w-full h-[300px] flex items-center justify-center text-custom-medium">
+                      <span>No photos available</span>
                     </div>
                   )}
                 </div>

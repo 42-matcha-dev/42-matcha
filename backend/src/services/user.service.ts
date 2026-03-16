@@ -4,8 +4,8 @@ import { notificationService } from './notification.service.js'
 import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
 
 export const userService = {
-  getProfile: async (userId: number, currentUserId?: number) => {
-    const user = await userRepository.findUserById(userId)
+  getProfile: async (userId: number, currentUserId: number) => {
+    const user = await userRepository.findUserById(userId, currentUserId)
     if (!user) throw new Error('User not found')
 
     // Fetch user tags

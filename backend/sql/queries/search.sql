@@ -42,10 +42,6 @@ WHERE u.id != 1
 	AND (
 		u.sexual_preferences::text = 'both' OR u.sexual_preferences::text = me.gender::text
 	)
-	-- Exclude disliked users
-	AND u.id NOT IN (
-		SELECT disliked_id FROM dislikes WHERE disliker_id = me.id
-	)
 	-- Exclude blocked users
 	AND u.id NOT IN (
 		SELECT blocked_id FROM blocks WHERE blocker_id = me.id
