@@ -19,10 +19,10 @@ export const likeService = {
       reportRepository.checkReportExists(likedId, likerId),
     ]);
     if (isBlocked || isBlockedBy) {
-      throw new Error('Cannot like a blocked user');
+      throw new HttpError(403, 'Cannot like a blocked user');
     }
     if (isReported || isReportedBy) {
-      throw new Error('Cannot like a reported user');
+      throw new HttpError(403, 'Cannot like a reported user');
     }
 
     // Check if like already exists
@@ -72,6 +72,7 @@ export const likeService = {
     if (likerId === likedId) {
       throw new HttpError(400, 'Cannot unlike yourself');
     }
+    const wasMatch = await likeRepository.checkMutualLike(likerId, likedId);
     const deleted = await likeRepository.deleteLike(likerId, likedId);
     if (!deleted) {
       throw new HttpError(404, "Like does not exist");
@@ -79,11 +80,14 @@ export const likeService = {
     await notificationService.deleteNotification(likedId, likerId, "LIKE");
     await notificationService.deleteNotification(likerId, likedId, "MATCH");
     await notificationService.deleteNotification(likedId, likerId, "MATCH");
+    if (wasMatch) {
+      await conversationRepository.removeConversation(likerId, likedId);
+    }
 
     return {
       success: true,
       isMatch: false,
-      message: "Your like was removed"
+      message: wasMatch ? 'Match broken' : 'Like removed',
     };
   },
 
@@ -97,32 +101,5 @@ export const likeService = {
     return likedBy;
   },
 
-  unlikeUser: async (likerId: number, likedId: number) => {
-    if (likerId === likedId) {
-      throw new Error('Cannot unlike yourself');
-    }
-
-    const likeExists = await likeRepository.checkLikeExists(likerId, likedId);
-    if (!likeExists) {
-      throw new Error('Like does not exist');
-    }
-
-    const wasMatch = await likeRepository.checkMutualLike(likerId, likedId);
-
-    await likeRepository.removeLike(likerId, likedId);
-
-    await notificationService.deleteByActorAndType(likedId, likerId, "LIKE");
-
-    if (wasMatch) {
-      await notificationService.deleteByActorAndType(likerId, likedId, "MATCH");
-      await notificationService.deleteByActorAndType(likedId, likerId, "MATCH");
-      await conversationRepository.removeConversation(likerId, likedId);
-    }
-
-    return {
-      success: true,
-      message: wasMatch ? 'Match broken' : 'Like removed successfully',
-    };
-  },
 };
 
