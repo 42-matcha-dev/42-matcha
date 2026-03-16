@@ -2,12 +2,27 @@ import { likeRepository } from '../repositories/like.repository.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { notificationService } from './notification.service.js';
 import { HttpError } from '../errors/HttpError.js';
+import { blockRepository } from '../repositories/block.repository.js';
+import { reportRepository } from '../repositories/report.repository.js';
 
 export const likeService = {
   likeUser: async (likerId: number, likedId: number) => {
     // Validate user cannot like themselves
     if (likerId === likedId) {
       throw new HttpError(400, 'Cannot like yourself');
+    }
+
+    const [isBlocked, isBlockedBy, isReported, isReportedBy] = await Promise.all([
+      blockRepository.checkBlockExists(likerId, likedId),
+      blockRepository.checkBlockExists(likedId, likerId),
+      reportRepository.checkReportExists(likerId, likedId),
+      reportRepository.checkReportExists(likedId, likerId),
+    ]);
+    if (isBlocked || isBlockedBy) {
+      throw new Error('Cannot like a blocked user');
+    }
+    if (isReported || isReportedBy) {
+      throw new Error('Cannot like a reported user');
     }
 
     // Check if like already exists
@@ -101,6 +116,7 @@ export const likeService = {
     if (wasMatch) {
       await notificationService.deleteByActorAndType(likerId, likedId, "MATCH");
       await notificationService.deleteByActorAndType(likedId, likerId, "MATCH");
+      await conversationRepository.removeConversation(likerId, likedId);
     }
 
     return {

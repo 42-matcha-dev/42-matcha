@@ -1,5 +1,7 @@
 import { userRepository } from '../repositories/user.repository.js'
 import { likeRepository } from '../repositories/like.repository.js'
+import { blockRepository } from '../repositories/block.repository.js'
+import { reportRepository } from '../repositories/report.repository.js'
 import { notificationService } from './notification.service.js'
 import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
 
@@ -17,17 +19,29 @@ export const userService = {
     // Check like status if currentUserId is provided
     let isLiked = false
     let isMatch = false
+    let isBlocked = false
+    let isReported = false
 
     if (currentUserId && currentUserId !== userId) {
-      isLiked = await likeRepository.checkLikeExists(currentUserId, userId)
+      const [liked, blocked, reported] = await Promise.all([
+        likeRepository.checkLikeExists(currentUserId, userId),
+        blockRepository.checkBlockExists(currentUserId, userId),
+        reportRepository.checkReportExists(currentUserId, userId),
+      ])
+      isLiked = liked
+      isBlocked = blocked
+      isReported = reported
       if (isLiked) {
         isMatch = await likeRepository.checkMutualLike(currentUserId, userId)
       }
-      // Send notification to the viewed user
+      if (isBlocked || isReported) {
+        isMatch = false
+        isLiked = false
+      }
       await notificationService.createNotification(userId, currentUserId, "VIEW", currentUserId)
     }
 
-    return { ...userWithoutPassword, tags, isLiked, isMatch }
+    return { ...userWithoutPassword, tags, isLiked, isMatch, isBlocked, isReported }
   },
 
   updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {

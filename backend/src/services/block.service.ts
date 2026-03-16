@@ -1,4 +1,8 @@
 import { blockRepository } from '../repositories/block.repository.js';
+import { likeRepository } from '../repositories/like.repository.js';
+import { conversationRepository } from '../repositories/conversation.repository.js';
+import { reportRepository } from '../repositories/report.repository.js';
+import { notificationService } from './notification.service.js';
 
 export const blockService = {
   blockUser: async (blockerId: number, blockedId: number) => {
@@ -15,6 +19,23 @@ export const blockService = {
 
     // Create the block
     await blockRepository.createBlock(blockerId, blockedId);
+
+    // Remove likes in both directions to break any match
+    await Promise.all([
+      likeRepository.removeLike(blockerId, blockedId),
+      likeRepository.removeLike(blockedId, blockerId),
+      conversationRepository.removeConversation(blockerId, blockedId),
+    ])
+
+    // Remove notifications in both directions
+    await Promise.all([
+      notificationService.deleteByActorAndType(blockerId, blockedId, "LIKE"),
+      notificationService.deleteByActorAndType(blockedId, blockerId, "LIKE"),
+      notificationService.deleteByActorAndType(blockerId, blockedId, "MATCH"),
+      notificationService.deleteByActorAndType(blockedId, blockerId, "MATCH"),
+      notificationService.deleteByActorAndType(blockerId, blockedId, "VIEW"),
+      notificationService.deleteByActorAndType(blockedId, blockerId, "VIEW"),
+    ]);
 
     return {
       success: true,
@@ -34,6 +55,11 @@ export const blockService = {
       throw new Error('User is not blocked');
     }
 
+    const isReported = await reportRepository.isReported(blockerId, blockedId);
+    if (isReported) {
+      throw new Error('Cannot unblock a reported user');
+    }
+    
     // Remove the block
     await blockRepository.removeBlock(blockerId, blockedId);
 

@@ -70,7 +70,17 @@ export const conversationRepository = {
         ORDER BY created_at DESC
         LIMIT 1
       ) last_msg ON true
-      WHERE c.user1_id = $1 OR c.user2_id = $1
+      WHERE (c.user1_id = $1 OR c.user2_id = $1)
+        AND NOT EXISTS (
+          SELECT 1 FROM blocks
+          WHERE (blocker_id = $1 AND blocked_id = u.id)
+             OR (blocker_id = u.id AND blocked_id = $1)
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM reports
+          WHERE (reporter_id = $1 AND reported_id = u.id)
+             OR (reporter_id = u.id AND reported_id = $1)
+        )
       ORDER BY last_msg.created_at DESC NULLS LAST, c.created_at DESC
     `;
     const res = await pool.query(query, [userId]);
@@ -127,5 +137,11 @@ export const conversationRepository = {
     `;
     const res = await pool.query(query, [userId]);
     return res.rows[0]?.total ?? 0;
+  },
+
+  removeConversation: async (user1_id: number, user2_id: number) => {
+    const [u1, u2] = user1_id < user2_id ? [user1_id, user2_id] : [user2_id, user1_id];
+    await pool.query('DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE user1_id = $1 AND user2_id = $2)', [u1, u2]);
+    await pool.query('DELETE FROM conversations WHERE user1_id = $1 AND user2_id = $2', [u1, u2]);
   },
 };
