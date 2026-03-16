@@ -2,6 +2,7 @@ import { userRepository } from '../repositories/user.repository.js'
 import { likeRepository } from '../repositories/like.repository.js'
 import { blockRepository } from '../repositories/block.repository.js'
 import { reportRepository } from '../repositories/report.repository.js'
+import { conversationRepository } from '../repositories/conversation.repository.js'
 import { notificationService } from './notification.service.js'
 import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
 
@@ -21,6 +22,7 @@ export const userService = {
     let isMatch = false
     let isBlocked = false
     let isReported = false
+    let conversationId: number | null = null
 
     if (currentUserId && currentUserId !== userId) {
       const [liked, blocked, reported] = await Promise.all([
@@ -38,10 +40,16 @@ export const userService = {
         isMatch = false
         isLiked = false
       }
+      if (isMatch) {
+        const u1 = Math.min(currentUserId, userId)
+        const u2 = Math.max(currentUserId, userId)
+        const conv = await conversationRepository.getConversationByUserIds(u1, u2)
+        conversationId = conv?.id ?? null
+      }
       await notificationService.createNotification(userId, currentUserId, "VIEW", currentUserId)
     }
 
-    return { ...userWithoutPassword, tags, isLiked, isMatch, isBlocked, isReported }
+    return { ...userWithoutPassword, tags, isLiked, isMatch, isBlocked, isReported, conversationId }
   },
 
   updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {
