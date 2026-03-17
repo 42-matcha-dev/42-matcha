@@ -111,9 +111,9 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         const normalizedCurrentUser: ParticipantIdentity = {
           id: profileId,
           username: profile.username ?? '',
-          first_name: profile.first_name ?? null,
-          last_name: profile.last_name ?? null,
-          icon_url: profile.icon_url ?? null,
+          first_name: profile.firstName ?? null,
+          last_name: profile.lastName ?? null,
+          icon_url: profile.iconUrl ?? null,
         }
         setCurrentUser(normalizedCurrentUser)
         if (!conv) {

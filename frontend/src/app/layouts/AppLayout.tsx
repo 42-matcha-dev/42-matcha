@@ -12,7 +12,7 @@ export default function AppLayout({ children }: Props) {
       <Header showMenuButton />
       <div className="flex">
         <Navbar className="hidden md:block"/>
-        <main className="flex-1 pt-16">{children}</main>
+        <main className="flex-1 pt-16 min-h-screen">{children}</main>
       </div>
     </div>
   )
