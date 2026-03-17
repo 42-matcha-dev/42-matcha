@@ -59,7 +59,7 @@ const Navbar = () => {
   }, [])
 
   return (
-    <div className="flex flex-col w-64">
+    <div className="sticky top-0 h-screen flex flex-col w-64 pt-16">
       <NavbarButtonElement
         path={mdiAccount}
         size={1.3}

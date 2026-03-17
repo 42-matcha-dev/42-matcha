@@ -1,19 +1,12 @@
-import Navbar from '@/app/components/Navbar';
-import Header from '@/app/components/Header';
-import EditForm from './EditForm';
+import EditForm from './EditForm'
+import AppLayout from '@/app/layouts/AppLayout'
 
 export default function EditPage() {
   return (
-    <main className="flex flex-col bg-white">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Navbar />
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-4xl mx-auto">
-            <EditForm/>
-          </div>
-        </div>
+    <AppLayout>
+      <div className="max-w-4xl mx-auto pt-16">
+        <EditForm />
       </div>
-    </main>
-  );
+    </AppLayout>
+  )
 }
