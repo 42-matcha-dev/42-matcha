@@ -95,6 +95,7 @@ const Navbar = () => {
         title={'Messages'}
         badgeCount={messageCount}
         color={'black'}
+        badgeCount={messageCount}
         onClick={() => router.push('/chat')}
       />
       <NavbarButtonElement
