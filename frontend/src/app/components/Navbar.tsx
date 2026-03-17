@@ -63,7 +63,7 @@ const Navbar = ({ className }: Props) => {
   }, [])
 
   return (
-    <div className={`sticky top-0 h-screen flex flex-col w-64 pt-16 ${ className ?? ""}`}>
+    <div className={className}>
       <NavbarButtonElement
         path={mdiAccount}
         size={1.3}
