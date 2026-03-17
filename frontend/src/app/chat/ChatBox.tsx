@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { RiSendPlaneFill } from 'react-icons/ri'
 import MessageBubble from './MessageBubble'
 import Image from 'next/image'
-import { fetchMessages, fetchConversation, type Conversation, type Message } from '@/lib/chat'
+import { fetchMessages, fetchConversation, blockUser as apiBlock, reportUser as apiReport, type Conversation, type Message, type ReportReason } from '@/lib/chat'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { getSocket } from '@/lib/socket'
 
@@ -65,6 +65,13 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
   const [error, setError] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportReason, setReportReason] = useState<ReportReason>('FAKE_ACCOUNT')
+  const [reportDescription, setReportDescription] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
   
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -163,6 +170,16 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
     }
   }, [conversationId, currentUser, conversation, loading, error])
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = input.trim()
@@ -171,7 +188,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
     const socket = getSocket()
     socket.emit('sendMessage', { conversationId, content: trimmed }, (res: { ok?: boolean; message?: Message; error?: string }) => {
       if (res?.error) {
-        console.error('Send error:', res.error)
+        setError(res.error)
         return
       }
       if (res?.message) {
@@ -181,8 +198,38 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
       setInput('')
     })
   }
+
   const handleBack = () => {
     router.push('/chat')
+  }
+
+  const handleBlock = async () => {
+    if (!conversation?.otherUser?.id || actionLoading) return
+    try {
+      setActionLoading(true)
+      await apiBlock(conversation.otherUser.id)
+      router.push('/chat')
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to block user')
+    } finally {
+      setActionLoading(false)
+      setMenuOpen(false)
+    }
+  }
+
+  const handleReport = async () => {
+    if (!conversation?.otherUser?.id || actionLoading) return
+    try {
+      setActionLoading(true)
+      await apiReport(conversation.otherUser.id, reportReason, reportDescription || undefined)
+      setShowReportModal(false)
+      setMenuOpen(false)
+      router.push('/chat')
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to report user')
+    } finally {
+      setActionLoading(false)
+    }
   }
   const otherUser = conversation?.otherUser
   const fullName = otherUser
@@ -227,9 +274,39 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
           width={44}
           height={44}
         />
-        <div className="ml-2">
+        <div className="ml-2 flex-1">
           <h3 className="font-semibold text-[#2A3D39] text-lg">{fullName}</h3>
           <p className="font-light text-[#2A3D39] text-sm">@{otherUser?.username ?? ''}</p>
+        </div>
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="p-2 hover:bg-gray-100 rounded-full"
+            aria-label="More options"
+          >
+            <span className="text-xl leading-none">⋮</span>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px]">
+              <button
+                type="button"
+                onClick={handleBlock}
+                disabled={actionLoading}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700"
+              >
+                Block user
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowReportModal(true); setMenuOpen(false) }}
+                disabled={actionLoading}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+              >
+                Report user
+              </button>
+            </div>
+          )}
         </div>
       </header>
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -253,6 +330,48 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
           <RiSendPlaneFill color="black" />
         </button>
       </form>
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Report User</h3>
+            <label className="block text-sm font-medium mb-1">Reason</label>
+            <select
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value as ReportReason)}
+              className="w-full border rounded-lg px-3 py-2 mb-3"
+            >
+              <option value="FAKE_ACCOUNT">Fake Account</option>
+              <option value="SPAM">Spam</option>
+              <option value="HARASSMENT">Harassment</option>
+              <option value="INAPPROPRIATE">Inappropriate Content</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <label className="block text-sm font-medium mb-1">Description (optional)</label>
+            <textarea
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 mb-4"
+              rows={3}
+              placeholder="Add details..."
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReport}
+                disabled={actionLoading}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {actionLoading ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

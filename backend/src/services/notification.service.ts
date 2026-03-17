@@ -7,7 +7,7 @@ export const notificationService = {
         return await notificationRepository.getNotifications(userId);
     },
     createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
-        const notification = await notificationRepository.createNotifiation(userId, actorId, type, referenceId);
+        const notification = await notificationRepository.createNotification(userId, actorId, type, referenceId);
         if (notification) {
             notificationEmitter.emit('notification:created', { userId });
         }
@@ -25,5 +25,5 @@ export const notificationService = {
     },
     getUnreadCount: async (userId: number) => {
         return notificationRepository.getUnreadCount(userId);
-    }
+    },
 }

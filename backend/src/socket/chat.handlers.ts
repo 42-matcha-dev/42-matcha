@@ -2,6 +2,7 @@ import type { Server, Socket } from 'socket.io';
 import { chatService } from '../services/chat.service.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { verifyToken } from '../utils/jwt.util.js';
+import { canChat } from '../services/canChat.service.js';
 
 export function setupChatSocket(io: Server): void {
     io.use((socket, next) => {
@@ -111,6 +112,20 @@ export function setupChatSocket(io: Server): void {
                 const content = payload?.content;
                 if (Number.isNaN(conversationId) || typeof content !== 'string' || !content.trim()) {
                     cb?.({ error: 'conversationId and content are required' });
+                    return;
+                }
+
+                const conversation = await conversationRepository.getConversationById(conversationId);
+                if (!conversation) {
+                    cb?.({ error: 'Cannot chat with this user' });
+                    return;
+                }
+                const otherUserId = conversation.user1_id === userId
+                    ? conversation.user2_id
+                    : conversation.user1_id;
+                const chatCheck = await canChat(userId, otherUserId);
+                if (!chatCheck.allowed) {
+                    cb?.({ error: 'Cannot chat with this user' });
                     return;
                 }
 

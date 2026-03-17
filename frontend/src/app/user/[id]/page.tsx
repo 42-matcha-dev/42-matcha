@@ -7,6 +7,7 @@ import Navbar from '@/app/components/Navbar'
 import Header from '@/app/components/Header'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { toast } from 'sonner'
+import { blockUser as apiBlock, unblockUser as apiUnblock, reportUser as apiReport, type ReportReason } from '@/lib/chat'
 
 interface Tag {
   id: number
@@ -34,7 +35,9 @@ interface UserProfile {
   updatedAt: string
   isLiked: boolean
   isMatch: boolean
-  conversationId?: boolean
+  conversationId?: number
+  isBlocked?: boolean
+  isReported?: boolean
 }
 
 export default function UserProfilePage() {
@@ -45,6 +48,12 @@ export default function UserProfilePage() {
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const [likeLoading, setLikeLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason>('FAKE_ACCOUNT');
+  const [reportDescription, setReportDescription] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
+
   const router = useRouter()
   const params = useParams()
   const userId = params?.id as string
@@ -88,26 +97,30 @@ export default function UserProfilePage() {
         }
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL
-        const response = await fetch(`${apiUrl}/api/users/${userId}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
 
-        if (!response.ok) {
-          if (response.status === 401) {
+        const [profileRes, meRes] = await Promise.all([
+          fetch(`${apiUrl}/api/users/${userId}`, { method: 'GET', headers }),
+          fetch(`${apiUrl}/api/users/me`, { method: 'GET', headers }),
+        ])
+
+        if (!profileRes.ok) {
+          if (profileRes.status === 401) {
             deleteCookie('token')
             router.push('/login')
             return
           }
-          const errorData = await response.json()
+          const errorData = await profileRes.json()
           throw new Error(errorData.error || 'Failed to fetch profile')
         }
 
-        const data = await response.json()
+        const data = await profileRes.json()
+        const meData = await meRes.json()
         setProfile(data)
+        setCurrentUserId(meData.id)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -159,17 +172,7 @@ export default function UserProfilePage() {
         conversationId: result.conversationId
       }))
 
-      // Show success message
-      if (result.isMatch) {
-        const msg = result.message || 'Match! You can now start conversation'
-        toast.success(msg)
-      } else if (result.isLiked) {
-        const msg = result.message || 'Like was sent successfully'
-        toast.success(msg)
-      } else {
-        const msg = result.message || 'Like removed'
-        toast.success(msg)
-      }
+      toast.success(result.message)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to send like'
       toast.error(msg)
@@ -177,6 +180,39 @@ export default function UserProfilePage() {
       setLikeLoading(false)
     }
   }
+
+  const handleBlock = async () => {
+    if (!userId || !profile || actionLoading) return;
+    try {
+      setActionLoading(true);
+      if (profile.isBlocked) {
+        await apiUnblock(Number(userId));
+        setProfile({ ...profile, isBlocked: false });
+      } else {
+        await apiBlock(Number(userId));
+        setProfile({ ...profile, isBlocked: true, isLiked: false, isMatch: false });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!userId || !profile || actionLoading) return;
+    try {
+      setActionLoading(true);
+      await apiReport(Number(userId), reportReason, reportDescription || undefined);
+      setProfile({ ...profile, isReported: true, isLiked: false, isMatch: false });
+      setShowReportModal(false);
+      toast.success('User reported successfully');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to report');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Touch handlers for mobile swipe
   const minSwipeDistance = 50
@@ -305,31 +341,59 @@ export default function UserProfilePage() {
                         </span>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className={`${!profile.canLike ? 'invisible' : ''} flex gap-3`}>
-                        <button
-                          onClick={handleLike}
-                          disabled={likeLoading}
-                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isLiked
-                              ? 'bg-gray-400 text-white'
-                              : 'bg-primary hover:bg-[#A6733A] text-white'
-                          } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
-                        </button>
-                        <button
-                          disabled={!profile.isMatch}
-                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isMatch
-                              ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
-                              : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
-                          }`}
-                          onClick={() => router.push(`/chat/${profile.conversationId}`)}
-                        >
-                          Message
-                        </button>
-                      </div>
+                      {/* Action Buttons — only on other users' profiles */}
+                      {currentUserId !== null && currentUserId !== profile.id && (
+                        <>
+                          {profile.canLike && (
+                            <div className="flex flex-wrap gap-3 mb-3">
+                              <button
+                                onClick={handleLike}
+                                disabled={likeLoading || profile.isBlocked}
+                                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                                  profile.isLiked
+                                    ? 'bg-gray-400 text-white'
+                                    : 'bg-primary hover:bg-[#A6733A] text-white'
+                                } ${(likeLoading || profile.isBlocked) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
+                              </button>
+                              <button
+                                disabled={!profile.isMatch || profile.isBlocked || profile.isReported}
+                                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                                  profile.isMatch && !profile.isBlocked && !profile.isReported
+                                    ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
+                                    : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
+                                }`}
+                                onClick={() => router.push(`/chat/${profile.conversationId}`)}
+                              >
+                                Message
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              onClick={handleBlock}
+                              disabled={actionLoading}
+                              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                                profile.isBlocked
+                                  ? 'bg-gray-800 text-white hover:bg-gray-700'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              } ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {profile.isBlocked ? 'Unblock' : 'Block'}
+                            </button>
+                            {!profile.isReported && (
+                              <button
+                                onClick={() => setShowReportModal(true)}
+                                disabled={actionLoading}
+                                className="px-6 py-2 rounded-lg font-semibold transition-colors bg-red-100 text-red-700 hover:bg-red-200"
+                              >
+                                Report
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -439,6 +503,49 @@ export default function UserProfilePage() {
           </div>
         </div>
       </div>
+
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Report User</h3>
+            <label className="block text-sm font-medium mb-1">Reason</label>
+            <select
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value as ReportReason)}
+              className="w-full border rounded-lg px-3 py-2 mb-3"
+            >
+              <option value="FAKE_ACCOUNT">Fake Account</option>
+              <option value="SPAM">Spam</option>
+              <option value="HARASSMENT">Harassment</option>
+              <option value="INAPPROPRIATE">Inappropriate Content</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <label className="block text-sm font-medium mb-1">Description (optional)</label>
+            <textarea
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 mb-4"
+              rows={3}
+              placeholder="Add details..."
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReport}
+                disabled={actionLoading}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {actionLoading ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

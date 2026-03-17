@@ -13,6 +13,8 @@ import likeRoutes from './routes/like.routes.js';
 import geocodingRoutes from './routes/geocoding.routes.js';
 import notificationRoutes from './routes/notification.routes.js'
 import conversationRoutes from './routes/conversation.routes.js';
+import blockRoutes from './routes/block.routes.js';
+import reportRoutes from './routes/report.routes.js';
 import { setupChatSocket } from './socket/chat.handlers.js';
 import { setupNotificationSocket } from './socket/notification.handlers.js';
 
@@ -28,6 +30,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/likes', likeRoutes);
+app.use('/api/blocks', blockRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/geocoding', geocodingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', uploadRoutes);

@@ -218,6 +218,14 @@ export const userRepository = {
       AND u.id NOT IN (
         SELECT blocker_id FROM blocks WHERE blocked_id = $1
       )
+      -- Exclude reported users
+      AND u.id NOT IN (
+        SELECT reported_id FROM reports WHERE reporter_id = $1
+      )
+      -- Exclude users that reported me
+      AND u.id NOT IN (
+        SELECT reporter_id FROM reports WHERE reported_id = $1
+      )
     `
 
     const queryParams: any[] = [currentUserId]
