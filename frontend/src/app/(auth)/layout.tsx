@@ -1,6 +1,6 @@
 // app/(auth)/layout.tsx
-import Header from "@/app/components/Header";
 import Image from "next/image";
+import PublicLayout from "../layouts/PublicLayout";
 
 export default function AuthLayout({
   children,
@@ -9,8 +9,7 @@ export default function AuthLayout({
 }>) {
   const image = "/image.jpeg";
   return (
-    <main className="absolute top-0 w-screen">
-      <Header />
+    <PublicLayout>
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Zone gauche = contenu spécifique */}
         <div className="flex px-8 lg:px-16 mt-32 lg:mt-0 justify-center items-center w-full lg:w-1/2 bg-white text-black">
@@ -27,6 +26,6 @@ export default function AuthLayout({
           />
         </div>
       </div>
-    </main>
+    </PublicLayout>
   );
 }
