@@ -7,7 +7,11 @@ import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiLogout, mdiPencil } from '
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { getSocket } from '@/lib/socket'
 
-const Navbar = () => {
+type Props = {
+  className?: string
+}
+
+const Navbar = ({ className }: Props) => {
   const [notificationCount, setNotificationCount] = useState(0)
   const [messageCount, setMessageCount] = useState(0)
   const router = useRouter()
@@ -59,7 +63,7 @@ const Navbar = () => {
   }, [])
 
   return (
-    <div className="sticky top-0 h-screen flex flex-col w-64 pt-16">
+    <div className={`sticky top-0 h-screen flex flex-col w-64 pt-16 ${ className ?? ""}`}>
       <NavbarButtonElement
         path={mdiAccount}
         size={1.3}
