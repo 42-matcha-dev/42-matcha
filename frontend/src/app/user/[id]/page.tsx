@@ -281,11 +281,11 @@ export default function UserProfilePage() {
     <AppLayout>
       <div className="max-w-6xl mx-auto p-8">
         <div className="bg-white rounded-lg p-8">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Profile Information */}
             <div className="flex flex-col space-y-6">
               {/* Profile Header */}
-              <div className="flex items-start space-x-6">
+              <div className="flex flex-col lg:flex-row items-center lg:items-start lg:space-x-6">
                 {/* Profile Picture - Larger */}
                 {profile.iconUrl ? (
                   <Image
@@ -408,7 +408,7 @@ export default function UserProfilePage() {
               {profile.tags && profile.tags.length > 0 && (
                 <div>
                   {/* <h2 className="font-semibold text-custom-medium mb-3">Tags</h2> */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap justify-center gap-2">
                     {profile.tags.map((tag) => (
                       <span
                         key={tag.id}
@@ -423,10 +423,10 @@ export default function UserProfilePage() {
             </div>
 
             {/* Right Side - Image Gallery */}
-            <div className="hidden xl:flex gap-4">
+            <div className="hidden lg:flex gap-4">
               {/* Main Image */}
               <div
-                className="flex-1 bg-custom-light rounded-lg overflow-hidden relative min-h-[400px] xl:min-h-[500px]"
+                className="flex-1 bg-custom-light rounded-lg overflow-hidden relative min-h-[400px] lg:min-h-[500px]"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -449,7 +449,7 @@ export default function UserProfilePage() {
 
               {/* Thumbnails - Vertical Stack on Right */}
               {hasPhotos && photos.length > 1 && (
-                <div className="hidden xl:flex flex-col gap-2">
+                <div className="hidden lg:flex flex-col gap-2">
                   {photos.map((photo, index) => (
                     <button
                       key={index}

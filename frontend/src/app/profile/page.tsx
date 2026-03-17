@@ -106,7 +106,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto p-16">
+      <div className="max-w-4xl mx-auto p-16">
         <h1 className="text-3xl font-bold mb-8 text-black">Dashboard</h1>
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <h2 className="text-2xl font-semibold mb-6 text-black">Profile</h2>
