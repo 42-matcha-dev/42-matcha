@@ -99,7 +99,6 @@ const Navbar = ({ className }: Props) => {
         title={'Messages'}
         badgeCount={messageCount}
         color={'black'}
-        badgeCount={messageCount}
         onClick={() => router.push('/chat')}
       />
       <NavbarButtonElement
