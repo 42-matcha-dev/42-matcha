@@ -66,28 +66,28 @@ const Navbar = ({ className }: Props) => {
     <div className={className}>
       <NavbarButtonElement
         path={mdiAccount}
-        size={1.3}
+        size={1.2}
         title={'Profile'}
         color={'black'}
         onClick={() => router.push('/profile')}
       />
       <NavbarButtonElement
         path={mdiPencil}
-        size={1.3}
+        size={1.2}
         title={'Edit Profile'}
         color={'black'}
         onClick={() => router.push('/profile/edit')}
       />
       <NavbarButtonElement
         path={mdiMagnify}
-        size={1.3}
+        size={1.2}
         title={'Search'}
         color={'black'}
         onClick={() => router.push('/search')}
       />
       <NavbarButtonElement
         path={mdiBell}
-        size={1.3}
+        size={1.2}
         title={'Notifications'}
         color={'black'}
         badgeCount={notificationCount}
@@ -95,7 +95,7 @@ const Navbar = ({ className }: Props) => {
       />
       <NavbarButtonElement
         path={mdiChat}
-        size={1.3}
+        size={1.2}
         title={'Messages'}
         badgeCount={messageCount}
         color={'black'}
@@ -104,7 +104,7 @@ const Navbar = ({ className }: Props) => {
       />
       <NavbarButtonElement
         path={mdiLogout}
-        size={1.3}
+        size={1.2}
         title={'Logout'}
         color={'black'}
         onClick={handleLogout}

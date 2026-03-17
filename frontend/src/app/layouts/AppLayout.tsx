@@ -14,7 +14,7 @@ export default function AppLayout({ children }: Props) {
     <div className="h-screen flex flex-col relative">
       <Header showMenuButton onMenuClick={() => setMenuOpen(!menuOpen)} />
       <div className="flex">
-        <Navbar className="hidden md:block sticky top-0 h-screen flex flex-col w-64 pt-16" />
+        <Navbar className="hidden md:block sticky top-0 h-screen flex flex-col w-64 pt-16 border-r border-gray-200" />
         <main className="flex-1 pt-16 min-h-screen">{children}</main>
       </div>
       <Navbar
