@@ -35,12 +35,12 @@ export const reportService = {
     await conversationRepository.removeConversation(reporterId, reportedId);
 
     await Promise.all([
-      notificationService.deleteByActorAndType(reporterId, reportedId, "LIKE"),
-      notificationService.deleteByActorAndType(reportedId, reporterId, "LIKE"),
-      notificationService.deleteByActorAndType(reporterId, reportedId, "MATCH"),
-      notificationService.deleteByActorAndType(reportedId, reporterId, "MATCH"),
-      notificationService.deleteByActorAndType(reporterId, reportedId, "VIEW"),
-      notificationService.deleteByActorAndType(reportedId, reporterId, "VIEW"),
+      notificationService.deleteNotification(reporterId, reportedId, "LIKE"),
+      notificationService.deleteNotification(reportedId, reporterId, "LIKE"),
+      notificationService.deleteNotification(reporterId, reportedId, "MATCH"),
+      notificationService.deleteNotification(reportedId, reporterId, "MATCH"),
+      notificationService.deleteNotification(reporterId, reportedId, "VIEW"),
+      notificationService.deleteNotification(reportedId, reporterId, "VIEW"),
     ]);
 
     return {

@@ -29,12 +29,12 @@ export const blockService = {
 
     // Remove notifications in both directions
     await Promise.all([
-      notificationService.deleteByActorAndType(blockerId, blockedId, "LIKE"),
-      notificationService.deleteByActorAndType(blockedId, blockerId, "LIKE"),
-      notificationService.deleteByActorAndType(blockerId, blockedId, "MATCH"),
-      notificationService.deleteByActorAndType(blockedId, blockerId, "MATCH"),
-      notificationService.deleteByActorAndType(blockerId, blockedId, "VIEW"),
-      notificationService.deleteByActorAndType(blockedId, blockerId, "VIEW"),
+      notificationService.deleteNotification(blockerId, blockedId, "LIKE"),
+      notificationService.deleteNotification(blockedId, blockerId, "LIKE"),
+      notificationService.deleteNotification(blockerId, blockedId, "MATCH"),
+      notificationService.deleteNotification(blockedId, blockerId, "MATCH"),
+      notificationService.deleteNotification(blockerId, blockedId, "VIEW"),
+      notificationService.deleteNotification(blockedId, blockerId, "VIEW"),
     ]);
 
     return {
@@ -55,8 +55,9 @@ export const blockService = {
       throw new Error('User is not blocked');
     }
 
-    const isReported = await reportRepository.isReported(blockerId, blockedId);
-    if (isReported) {
+    // const isReported = await reportRepository.isReported(blockerId, blockedId);
+    const blockerReportedBlocked = await reportRepository.checkReportExists(blockerId, blockedId);
+    if (blockerReportedBlocked) {
       throw new Error('Cannot unblock a reported user');
     }
     

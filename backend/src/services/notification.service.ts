@@ -26,8 +26,4 @@ export const notificationService = {
     getUnreadCount: async (userId: number) => {
         return notificationRepository.getUnreadCount(userId);
     },
-    deleteByActorAndType: async (userId: number, actorId: number, type: NotificationType) => {
-        await notificationRepository.deleteByActorAndType(userId, actorId, type);
-        notificationEmitter.emit('notification:created', { userId });
-      },
 }

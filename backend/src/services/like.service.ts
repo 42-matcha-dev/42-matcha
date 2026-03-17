@@ -18,11 +18,21 @@ export const likeService = {
       reportRepository.checkReportExists(likerId, likedId),
       reportRepository.checkReportExists(likedId, likerId),
     ]);
-    if (isBlocked || isBlockedBy) {
+    
+    // Block checks - separate messages
+    if (isBlocked) {
       throw new HttpError(403, 'Cannot like a blocked user');
     }
-    if (isReported || isReportedBy) {
+    if (isBlockedBy) {
+      throw new HttpError(403, 'Cannot like this user');
+    }
+
+    // Report checks - separate messages
+    if (isReported) {
       throw new HttpError(403, 'Cannot like a reported user');
+    }
+    if (isReportedBy) {
+      throw new HttpError(403, 'Cannot like this user');
     }
 
     // Check if like already exists

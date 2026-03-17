@@ -139,7 +139,7 @@ export default function UserProfilePage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const method = profile.isLiked ? 'DELETE' : 'POST'
-      const response = await fetch(`${apiUrl}/api/like/${userId}`, {
+      const response = await fetch(`${apiUrl}/api/likes/${userId}`, {
         method,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -337,29 +337,33 @@ export default function UserProfilePage() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className={`${!profile.canLike ? 'invisible' : ''} flex flex-wrap gap-3`}>
-                        <button
-                          onClick={handleLike}
-                          disabled={likeLoading || profile.isBlocked}
-                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isLiked
-                              ? 'bg-gray-400 text-white'
-                              : 'bg-primary hover:bg-[#A6733A] text-white'
-                          } ${(likeLoading || profile.isBlocked) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
-                        </button>
-                        <button
-                          disabled={!profile.isMatch || profile.isBlocked || profile.isReported}
-                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isMatch && !profile.isBlocked && !profile.isReported
-                              ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
-                              : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
-                          }`}
-                          onClick={() => router.push(`/chat/${profile.conversationId}`)}
-                        >
-                          Message
-                        </button>
+                      {profile.canLike && (
+                        <div className="flex flex-wrap gap-3 mb-3">
+                          <button
+                            onClick={handleLike}
+                            disabled={likeLoading || profile.isBlocked}
+                            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                              profile.isLiked
+                                ? 'bg-gray-400 text-white'
+                                : 'bg-primary hover:bg-[#A6733A] text-white'
+                            } ${(likeLoading || profile.isBlocked) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
+                          </button>
+                          <button
+                            disabled={!profile.isMatch || profile.isBlocked || profile.isReported}
+                            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                              profile.isMatch && !profile.isBlocked && !profile.isReported
+                                ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
+                                : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
+                            }`}
+                            onClick={() => router.push(`/chat/${profile.conversationId}`)}
+                          >
+                            Message
+                          </button>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-3">
                         <button
                           onClick={handleBlock}
                           disabled={actionLoading}
@@ -484,56 +488,55 @@ export default function UserProfilePage() {
                       <span>No photos available</span>
                     </div>
                   )}
-
-                  {/* Report Modal */}
-                  {showReportModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                        <h3 className="text-lg font-semibold mb-4">Report User</h3>
-                        <label className="block text-sm font-medium mb-1">Reason</label>
-                        <select
-                          value={reportReason}
-                          onChange={(e) => setReportReason(e.target.value as ReportReason)}
-                          className="w-full border rounded-lg px-3 py-2 mb-3"
-                        >
-                          <option value="FAKE_ACCOUNT">Fake Account</option>
-                          <option value="SPAM">Spam</option>
-                          <option value="HARASSMENT">Harassment</option>
-                          <option value="INAPPROPRIATE">Inappropriate Content</option>
-                          <option value="OTHER">Other</option>
-                        </select>
-                        <label className="block text-sm font-medium mb-1">Description (optional)</label>
-                        <textarea
-                          value={reportDescription}
-                          onChange={(e) => setReportDescription(e.target.value)}
-                          className="w-full border rounded-lg px-3 py-2 mb-4"
-                          rows={3}
-                          placeholder="Add details..."
-                        />
-                        <div className="flex gap-3 justify-end">
-                          <button
-                            onClick={() => setShowReportModal(false)}
-                            className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleReport}
-                            disabled={actionLoading}
-                            className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                          >
-                            {actionLoading ? 'Submitting...' : 'Submit Report'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Report User</h3>
+            <label className="block text-sm font-medium mb-1">Reason</label>
+            <select
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value as ReportReason)}
+              className="w-full border rounded-lg px-3 py-2 mb-3"
+            >
+              <option value="FAKE_ACCOUNT">Fake Account</option>
+              <option value="SPAM">Spam</option>
+              <option value="HARASSMENT">Harassment</option>
+              <option value="INAPPROPRIATE">Inappropriate Content</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <label className="block text-sm font-medium mb-1">Description (optional)</label>
+            <textarea
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 mb-4"
+              rows={3}
+              placeholder="Add details..."
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReport}
+                disabled={actionLoading}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {actionLoading ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

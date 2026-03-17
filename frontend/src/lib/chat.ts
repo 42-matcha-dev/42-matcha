@@ -99,7 +99,7 @@ export async function sendMessage(conversationId: number, content: string): Prom
 }
 
 export async function unlikeUser(userId: number): Promise<{ success: boolean; message: string }> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/like/${userId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/likes/${userId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
@@ -112,7 +112,7 @@ export async function unlikeUser(userId: number): Promise<{ success: boolean; me
 }
 
 export async function blockUser(userId: number): Promise<{ success: boolean; message: string }> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/block/${userId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blocks/${userId}`, {
         method: 'POST',
         headers: getAuthHeaders(),
     });
@@ -125,7 +125,7 @@ export async function blockUser(userId: number): Promise<{ success: boolean; mes
 }
 
 export async function unblockUser(userId: number): Promise<{ success: boolean; message: string }> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/block/${userId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blocks/${userId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
@@ -144,7 +144,7 @@ export async function reportUser(
     reason: ReportReason,
     description?: string
 ): Promise<{ success: boolean; message: string }> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/report/${userId}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/${userId}`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ reason, description }),
