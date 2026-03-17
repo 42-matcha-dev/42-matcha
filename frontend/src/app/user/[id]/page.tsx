@@ -52,6 +52,7 @@ export default function UserProfilePage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState<ReportReason>('FAKE_ACCOUNT');
   const [reportDescription, setReportDescription] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
   const router = useRouter()
   const params = useParams()
@@ -96,26 +97,30 @@ export default function UserProfilePage() {
         }
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL
-        const response = await fetch(`${apiUrl}/api/users/${userId}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
 
-        if (!response.ok) {
-          if (response.status === 401) {
+        const [profileRes, meRes] = await Promise.all([
+          fetch(`${apiUrl}/api/users/${userId}`, { method: 'GET', headers }),
+          fetch(`${apiUrl}/api/users/me`, { method: 'GET', headers }),
+        ])
+
+        if (!profileRes.ok) {
+          if (profileRes.status === 401) {
             deleteCookie('token')
             router.push('/login')
             return
           }
-          const errorData = await response.json()
+          const errorData = await profileRes.json()
           throw new Error(errorData.error || 'Failed to fetch profile')
         }
 
-        const data = await response.json()
+        const data = await profileRes.json()
+        const meData = await meRes.json()
         setProfile(data)
+        setCurrentUserId(meData.id)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -336,55 +341,59 @@ export default function UserProfilePage() {
                         </span>
                       </div>
 
-                      {/* Action Buttons */}
-                      {profile.canLike && (
-                        <div className="flex flex-wrap gap-3 mb-3">
-                          <button
-                            onClick={handleLike}
-                            disabled={likeLoading || profile.isBlocked}
-                            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                              profile.isLiked
-                                ? 'bg-gray-400 text-white'
-                                : 'bg-primary hover:bg-[#A6733A] text-white'
-                            } ${(likeLoading || profile.isBlocked) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
-                          </button>
-                          <button
-                            disabled={!profile.isMatch || profile.isBlocked || profile.isReported}
-                            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                              profile.isMatch && !profile.isBlocked && !profile.isReported
-                                ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
-                                : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
-                            }`}
-                            onClick={() => router.push(`/chat/${profile.conversationId}`)}
-                          >
-                            Message
-                          </button>
-                        </div>
+                      {/* Action Buttons — only on other users' profiles */}
+                      {currentUserId !== null && currentUserId !== profile.id && (
+                        <>
+                          {profile.canLike && (
+                            <div className="flex flex-wrap gap-3 mb-3">
+                              <button
+                                onClick={handleLike}
+                                disabled={likeLoading || profile.isBlocked}
+                                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                                  profile.isLiked
+                                    ? 'bg-gray-400 text-white'
+                                    : 'bg-primary hover:bg-[#A6733A] text-white'
+                                } ${(likeLoading || profile.isBlocked) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                {likeLoading ? 'Sending...' : profile.isLiked ? 'Unlike' : 'Like'}
+                              </button>
+                              <button
+                                disabled={!profile.isMatch || profile.isBlocked || profile.isReported}
+                                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                                  profile.isMatch && !profile.isBlocked && !profile.isReported
+                                    ? 'text-custom-heavy bg-custom-light hover:bg-custom-medium hover:text-white'
+                                    : 'text-custom-heavy bg-custom-light cursor-not-allowed opacity-50'
+                                }`}
+                                onClick={() => router.push(`/chat/${profile.conversationId}`)}
+                              >
+                                Message
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              onClick={handleBlock}
+                              disabled={actionLoading}
+                              className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                                profile.isBlocked
+                                  ? 'bg-gray-800 text-white hover:bg-gray-700'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              } ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {profile.isBlocked ? 'Unblock' : 'Block'}
+                            </button>
+                            {!profile.isReported && (
+                              <button
+                                onClick={() => setShowReportModal(true)}
+                                disabled={actionLoading}
+                                className="px-6 py-2 rounded-lg font-semibold transition-colors bg-red-100 text-red-700 hover:bg-red-200"
+                              >
+                                Report
+                              </button>
+                            )}
+                          </div>
+                        </>
                       )}
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={handleBlock}
-                          disabled={actionLoading}
-                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isBlocked
-                              ? 'bg-gray-800 text-white hover:bg-gray-700'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          } ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {profile.isBlocked ? 'Unblock' : 'Block'}
-                        </button>
-                        {!profile.isReported && (
-                          <button
-                            onClick={() => setShowReportModal(true)}
-                            disabled={actionLoading}
-                            className="px-6 py-2 rounded-lg font-semibold transition-colors bg-red-100 text-red-700 hover:bg-red-200"
-                          >
-                            Report
-                          </button>
-                        )}
-                      </div>
                     </div>
                   </div>
 
