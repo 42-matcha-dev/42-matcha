@@ -10,7 +10,7 @@ const Title = ({title, subTitle}: titleSchema) => {
         <h1 className="w-full text-4xl font-bold mb-2">
             {title}
         </h1>
-        <p className="w-full text-base text-gray-900">
+        <p className="w-full text-base text-custom-medium">
             {subTitle}
         </p>
     </div>

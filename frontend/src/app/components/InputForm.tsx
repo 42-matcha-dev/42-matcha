@@ -15,9 +15,9 @@ const InputForm = ({ label, placeholder, type, error, ...props }: InputFormProps
     <div className="flex flex-col gap-2 w-full">
       {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
       <input
-        className="border-b border-gray-300 p-2 w-full focus:outline-none "
+        className="border-b border-gray-300 p-2 w-full focus:outline-none text-custom-medium"
         type={type}
-        name={label ? label.toLowerCase() : ""}
+        name={label ? label.toLowerCase() : ''}
         placeholder={placeholder}
         {...props}
       />
