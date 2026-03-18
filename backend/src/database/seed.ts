@@ -255,7 +255,7 @@ export const seedTestUsers = async () => {
     const userCountResult = await pool.query('SELECT COUNT(*) FROM users');
     const userCount = parseInt(userCountResult.rows[0].count, 10);
 
-    if (userCount > 1005) {
+    if (userCount > Number(process.env.SEED_MORE_USERS || 0) + 5) {
       console.log(`✅ Database already seeded with ${userCount} users. Skipping seed.`);
       return;
     }
