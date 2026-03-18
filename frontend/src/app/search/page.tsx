@@ -7,6 +7,7 @@ import SearchFilters, { FilterState } from '@/app/components/SearchFilters'
 import Pagination from '@/app/components/Pagination'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import AppLayout from '../layouts/AppLayout'
+import { toast } from 'sonner'
 
 interface Tag {
   id: number
@@ -169,7 +170,7 @@ function SearchContent() {
       setTotalCount(data.totalCount)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      toast.error(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
