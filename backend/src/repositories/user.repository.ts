@@ -267,14 +267,27 @@ export const userRepository = {
       paramIndex += 2
     }
 
-    // Add fame rating filter only if both fameMin and fameMax are provided
+    // Fame rating filter
     if (fameMin !== undefined && fameMax !== undefined) {
       whereConditions += `
-        -- Fame rating filter
         AND ru.fame_rating BETWEEN $${paramIndex} AND $${paramIndex + 1}
       `
       queryParams.push(fameMin, fameMax)
       paramIndex += 2
+
+    } else if (fameMin !== undefined) {
+      whereConditions += `
+        AND ru.fame_rating >= $${paramIndex}
+      `
+      queryParams.push(fameMin)
+      paramIndex++
+
+    } else if (fameMax !== undefined) {
+      whereConditions += `
+        AND ru.fame_rating <= $${paramIndex}
+      `
+      queryParams.push(fameMax)
+      paramIndex++
     }
 
     // Add distance filter only if distanceMax is provided
