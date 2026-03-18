@@ -8,6 +8,7 @@ import Title from "@/app/components/Title";
 import InputForm from "@/app/components/InputForm";
 import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const registerSignupSchema = registerSchema.pick({
     email: true,
@@ -52,23 +53,28 @@ export default function RegisterBasicForm() {
             }
 
             const result = await response.json();
-            console.log('Signup successful:', result);
+            toast.success("Signup success: Please check your email to complete the registration")
             router.push("/email-sent");
         } catch (error) {
-            console.log('Signup request failed:', error);
-            // TODO: Show error message to user
+            toast.error((error as Error).message || "Something went wrong... Please try again later")
         }
     };
 
   return (
-    <div className="flex justify-center items-center min-h-screen w-1/2 h-full bg-white text-black p-4 border">
+    <div className="flex justify-center items-center min-h-screen h-full bg-white text-black p-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
           <Title title="Create your account" subTitle="Join Matcha – start by entering your email."/>
           <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
           <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
-          <InputForm placeholder="RepeatPassword" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
+          <InputForm placeholder="Repeat password" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
+          <div>
+            <span className="text-custom-medium">Already have an account?</span>
+            <button className="cursor-pointer ml-2" type="button" onClick={() => router.push("/login")}>
+                <span className="font-semibold">Log in here</span>
+            </button>
+          </div>
           <NextButton text="Next"/>
       </form>
     </div>
