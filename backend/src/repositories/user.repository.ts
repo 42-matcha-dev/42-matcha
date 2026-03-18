@@ -385,14 +385,23 @@ export const userRepository = {
     // Remove limit and offset from count query params
     const countParams = queryParams.slice(0, -2)
 
-    const [searchResult, countResult] = await Promise.all([
-      pool.query(searchQuery, queryParams),
-      pool.query(countQuery, countParams)
-    ])
+    try {
+      const [searchResult, countResult] = await Promise.all([
+        pool.query(searchQuery, queryParams),
+        pool.query(countQuery, countParams)
+      ])
 
-    return {
-      results: searchResult.rows,
-      totalCount: parseInt(countResult.rows[0].total, 10)
+      return {
+        results: searchResult.rows,
+        totalCount: parseInt(countResult.rows[0].total, 10)
+      }
+    } catch (error) {
+      console.error('searchUsers query failed', {
+        error,
+        currentUserId,
+        params
+      })
+      throw new Error('DATABASE_QUERY_FAILED')
     }
   }
 }

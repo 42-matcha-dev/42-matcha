@@ -1,6 +1,7 @@
 import express from 'express'
 import { type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 import { userService } from '../services/user.service.js'
+import { HttpError } from '../errors/HttpError.js'
 
 type Response = express.Response
 
@@ -140,8 +141,9 @@ export const searchUsers = async (req: AuthenticatedRequest, res: Response) => {
 
     return res.status(200).json(searchResults)
   } catch (error) {
-    console.error(error)
-
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Server error'
     })

@@ -5,6 +5,7 @@ import { reportRepository } from '../repositories/report.repository.js'
 import { conversationRepository } from '../repositories/conversation.repository.js'
 import { notificationService } from './notification.service.js'
 import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
+import { HttpError } from '../errors/HttpError.js'
 
 export const userService = {
   getProfile: async (userId: number, currentUserId: number) => {
@@ -110,18 +111,22 @@ export const userService = {
       throw new Error('distanceMax must be greater than or equal to 0')
     }
 
-    // Pass through undefined values - filters will be excluded if not provided
-    return await userRepository.searchUsers(currentUserId, {
-      ageMin: params.ageMin,
-      ageMax: params.ageMax,
-      distanceMax: params.distanceMax,
-      fameMin: params.fameMin,
-      fameMax: params.fameMax,
-      tagIds: params.tagIds && params.tagIds.length > 0 ? params.tagIds : undefined,
-      page,
-      limit,
-      sortBy: params.sortBy,
-      order: params.order
-    })
+    try {
+      const result = await userRepository.searchUsers(currentUserId, {
+        ageMin: params.ageMin,
+        ageMax: params.ageMax,
+        distanceMax: params.distanceMax,
+        fameMin: params.fameMin,
+        fameMax: params.fameMax,
+        tagIds: params.tagIds && params.tagIds.length > 0 ? params.tagIds : undefined,
+        page,
+        limit,
+        sortBy: params.sortBy,
+        order: params.order
+      })
+      return result
+    } catch (err) {
+      throw new HttpError(500, 'Failed to search users')
+    }
   }
 }
