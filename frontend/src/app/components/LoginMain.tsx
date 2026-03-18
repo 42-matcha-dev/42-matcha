@@ -10,6 +10,7 @@ import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
 import { setCookie } from "@/utils/cookie.util";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const loginSchema = registerSchema.pick({
     email: true,
@@ -72,6 +73,11 @@ export default function LoginForm() {
           <Title title="Welcome back" subTitle="Sign in to your Matcha account."/>
           <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
           <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
+          <div className="w-full text-right">
+            <Link href="/forgot-password" className="text-sm text-secondary hover:underline">
+              Forgot password?
+            </Link>
+          </div>
           <NextButton text="Log in"/>
       </form>
     </div>
