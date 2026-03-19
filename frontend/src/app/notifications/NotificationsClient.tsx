@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { getCookie } from '@/utils/cookie.util'
 import { useRouter } from 'next/navigation'
 import { formatTimeAgo } from '@/utils/format'
+import { getSocket } from '@/lib/socket'
 
 interface Notification {
   id: number
@@ -46,6 +47,20 @@ export default function NotificationsClient() {
       }
     }
     fetchNotifications()
+  }, [])
+
+  useEffect(() => {
+    const socket = getSocket()
+    const onNewNotification = (notification: Notification) => {
+      setNotifications(prev => {
+        if (prev.some(n => n.id === notification.id)) return prev
+        return [notification, ...prev]
+      })
+    }
+    socket.on('newNotification', onNewNotification)
+    return () => {
+      socket.off('newNotification', onNewNotification)
+    }
   }, [])
 
   const handleClick = async (n: Notification) => {

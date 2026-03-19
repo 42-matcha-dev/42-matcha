@@ -6,13 +6,19 @@ export const notificationService = {
     getNotifications: async (userId: number) => {
         return await notificationRepository.getNotifications(userId);
     },
+
     createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
         const notification = await notificationRepository.createNotification(userId, actorId, type, referenceId);
         if (notification) {
-            notificationEmitter.emit('notification:created', { userId });
+            const fullNotification = await notificationRepository.getNotificationById(notification.id);
+            notificationEmitter.emit('notification:created', {
+                userId,
+                notification: fullNotification,
+            });
         }
         return notification;
     },
+
     deleteNotification: async (userId: number, actorId: number, type: NotificationType ) => {
         const result = await notificationRepository.deleteNotification(userId, actorId, type);
         if (result) {
@@ -20,9 +26,11 @@ export const notificationService = {
         }
         return result;
     },
+
     markAsRead: async (notificationId: number, userId: number) => {
         return notificationRepository.markAsRead(notificationId, userId);
     },
+    
     getUnreadCount: async (userId: number) => {
         return notificationRepository.getUnreadCount(userId);
     },

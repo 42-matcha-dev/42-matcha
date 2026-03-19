@@ -23,6 +23,27 @@ export const notificationRepository = {
     const result = await pool.query(query, [userId]);
     return result.rows;
   },
+
+  getNotificationById: async (notificationId: number) => {
+    const query = `
+      SELECT
+        n.id,
+        n.type,
+        n.actor_id,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.icon_url,
+        n.reference_id,
+        n.is_read,
+        n.created_at
+      FROM notifications n
+      JOIN users u ON u.id = n.actor_id
+      WHERE n.id = $1
+    `;
+    const result = await pool.query(query, [notificationId]);
+    return result.rows[0];
+  },
     
   createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
     const query = `
