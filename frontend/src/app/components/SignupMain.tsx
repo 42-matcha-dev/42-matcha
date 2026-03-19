@@ -47,12 +47,10 @@ export default function RegisterBasicForm() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.log('Signup error:', errorData);
-                // TODO: Show error message to user
+                toast.error(errorData.error || "Signup failed. Please try again.");
                 return;
             }
 
-            const result = await response.json();
             toast.success("Signup success: Please check your email to complete the registration")
             router.push("/email-sent");
         } catch (error) {
@@ -61,21 +59,21 @@ export default function RegisterBasicForm() {
     };
 
   return (
-    <div className="flex justify-center items-center min-h-screen h-full bg-white text-black p-4">
+    <div className="flex justify-center items-center h-full bg-white text-black p-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-15">
+        className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-10">
           <Title title="Create your account" subTitle="Join Matcha – start by entering your email."/>
           <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
           <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
           <InputForm placeholder="Repeat password" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
-          <div>
+          <NextButton text="Next"/>
+          <div className="text-center">
             <span className="text-custom-medium">Already have an account?</span>
             <button className="cursor-pointer ml-2" type="button" onClick={() => router.push("/login")}>
                 <span className="font-semibold">Log in here</span>
             </button>
           </div>
-          <NextButton text="Next"/>
       </form>
     </div>
   );
