@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 
@@ -17,6 +17,7 @@ interface Props {
 export default function AvatarUploader({ initialUrl, onChange }: Props) {
   const [iconUrl, setIconUrl] = useState<string | null>(initialUrl)
   const [uploading, setUploading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setIconUrl(initialUrl ?? null)
@@ -68,7 +69,12 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
 
   return (
     <div className="flex items-center gap-4">
-      <label className="cursor-pointer">
+      <div
+        className="cursor-pointer"
+        onClick={() => {
+          if (!uploading) inputRef.current!.click()
+        }}
+      >
         {iconUrl ? (
           <Image
             src={iconUrl}
@@ -84,6 +90,7 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
           </div>
         )}
         <input
+          ref={inputRef}
           type="file"
           accept="image/*"
           className="hidden"
@@ -93,10 +100,13 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
           }}
           disabled={uploading}
         />
-      </label>
+      </div>
       <button
+        type="button"
         className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
-        onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+        onClick={() => {
+          if (!uploading) inputRef.current!.click()
+        }}
       >
         Upload Icon
       </button>
