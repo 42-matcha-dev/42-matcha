@@ -79,6 +79,10 @@ export default function LoginForm() {
             </Link>
           </div>
           <NextButton text="Log in"/>
+          <div>
+            <span className="text-custom-medium">Don&apos;t have an account?</span>
+            <Link href="/signup" className="ml-2 font-semibold">Sign up here</Link>
+          </div>
       </form>
     </div>
   );
