@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 type SignedUrlData = {
   signedUrl: string
@@ -25,22 +26,44 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
     if (!file) return
     setUploading(true)
 
-    const fileName = file.name
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileNames: [fileName] })
-    })
-    const { urls }: { urls: SignedUrlData[] } = await res.json()
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          files: [
+            {
+              type: file.type,
+              size: file.size
+            }
+          ]
+        })
+      })
 
-    await fetch(urls[0].signedUrl, { method: 'PUT', body: file })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
 
-    const uploadedUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${urls[0].path}`
+      const { urls }: { urls: SignedUrlData[] } = await res.json()
 
-    setIconUrl(uploadedUrl)
-    onChange?.(uploadedUrl)
+      const uploadRes = await fetch(urls[0].signedUrl, { method: 'PUT', body: file })
 
-    setUploading(false)
+      if (!uploadRes.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
+
+      const uploadedUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${urls[0].path}`
+
+      setIconUrl(uploadedUrl)
+      onChange?.(uploadedUrl)
+      setUploading(false)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload')
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (

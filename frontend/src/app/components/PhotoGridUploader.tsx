@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 type SignedUrlData = {
   signedUrl: string
@@ -20,30 +21,47 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
   const uploadFiles = async (files: FileList, index: number) => {
     const file = files?.[0]
     if (!file) return
-
     setUploading(true)
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileNames: [file.name] })
+        body: JSON.stringify({ 
+          files: [
+            {
+              type: file.type,
+              size: file.size
+            }
+          ]
+        })
       })
 
-      const { urls }: { urls: SignedUrlData[] } = await res.json()
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
 
+      const { urls }: { urls: SignedUrlData[] } = await res.json()
       const { signedUrl, path } = urls[0]
 
-      await fetch(signedUrl, {
+      const uploadRes = await fetch(signedUrl, {
         method: 'PUT',
         body: file
       })
+
+      if (!uploadRes.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
 
       const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${path}`
 
       const newUrls = [...photoUrls]
       newUrls[index] = publicUrl
       onChange(newUrls)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload')
     } finally {
       setUploading(false)
     }
