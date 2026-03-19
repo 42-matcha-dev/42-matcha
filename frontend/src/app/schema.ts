@@ -12,13 +12,33 @@ const longText = (min = 3, max = 150) =>
     .min(min, { message: `Text must contain at least ${min} characters.` })
     .max(max, { message: `Text must contain at most ${max} characters.` })
 
+const MIN_AGE = 18
+const MAX_AGE = 100
+
+const today = new Date()
+
+const minDate = new Date(
+  today.getFullYear() - MAX_AGE,
+  today.getMonth(),
+  today.getDate()
+)
+
+const maxDate = new Date(
+  today.getFullYear() - MIN_AGE,
+  today.getMonth(),
+  today.getDate()
+)
+
 export const registerSchema = z.object({
   email: z.email(),
   password: shortText(),
   repeatPassword: shortText(),
   firstName: shortText(),
   lastName: shortText(),
-  birthday: z.string(),
+  birthday: z.coerce
+    .date()
+    .min(minDate, "Age must be less than 100")
+    .max(maxDate, "You must be at least 18"),
   location: z.string(),
   latitude: z.number(),
   longitude: z.number(),
