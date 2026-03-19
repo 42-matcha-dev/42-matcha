@@ -31,12 +31,6 @@ const UserCard = ({ user }: UserCardProps) => {
     router.push(`/user/${user.id}`)
   }
 
-  const handleLikeClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    // TODO: Implement like logic
-    console.log('Like clicked for user', user.id)
-  }
-
   return (
     <div
       onClick={handleCardClick}
@@ -105,16 +99,10 @@ const UserCard = ({ user }: UserCardProps) => {
 
       {/* Footer Actions */}
       <div className="p-3 flex justify-between items-center border-t border-gray-50">
-        <div className="flex items-center gap-1 text-gray-600">
+        <div className="flex items-start gap-1 text-gray-600">
           <Image src="/icons/handshake.svg" alt="Logo" width={20} height={20} />
           <span className="text-sm font-medium text-gray-500">{Math.round(user.fame_rating)}%</span>
         </div>
-        <button
-          onClick={handleLikeClick}
-          className="text-gray-400 hover:text-red-500 transition-colors"
-        >
-          <Icon path={mdiHeartOutline} size={1} />
-        </button>
       </div>
     </div>
   )
