@@ -20,10 +20,10 @@ interface UserProfile {
   username: string
   firstName: string
   lastName: string
+  birthday: string
   gender: string
   lookingFor: string
   description: string
-  fameRating: number
   location: string
   iconUrl: string
   photoUrls: string[]
@@ -104,6 +104,20 @@ export default function Dashboard() {
     return null
   }
 
+  const calculateAge = (birthday?: string): string => {
+    if (!birthday) return 'N/A'
+    const birth = new Date(birthday)
+    if (Number.isNaN(birth.getTime())) return 'N/A'
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age >= 0 ? String(age) : 'N/A'
+  }
+  const age = calculateAge(profile.birthday)
+
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto p-16">
@@ -172,8 +186,8 @@ export default function Dashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fame Rating</label>
-              <p className="text-black text-lg">{profile.fameRating}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+              <p className="text-black text-lg">{age}</p>
             </div>
 
             {/* Biography */}
