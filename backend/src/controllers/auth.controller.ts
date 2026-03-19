@@ -10,19 +10,37 @@ import type { RegisterSchema } from '../types/auth.types.js';
 type Request = express.Request;
 type Response = express.Response;
 
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({ error: 'Missing fields' });
 
+    const existingUser = await pool.query(
+      'SELECT id FROM users WHERE email = $1', [email]
+    );
+    if (existingUser.rows.length > 0)
+      return res.status(409).json({ error: 'This email is already registered' });
+
     const hashed = await bcrypt.hash(password, 10);
     const token = uuidv4();
 
-    await pool.query(
-      'INSERT INTO pending_users (email, password_hash, token) VALUES ($1, $2, $3)',
-      [email, hashed, token]
+    const existingPending = await pool.query(
+      'SELECT id FROM pending_users WHERE email = $1', [email]
     );
+
+    if (existingPending.rows.length > 0) {
+      await pool.query(
+        'UPDATE pending_users SET password_hash = $1, token = $2, created_at = NOW() WHERE email = $3',
+        [hashed, token, email]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO pending_users (email, password_hash, token) VALUES ($1, $2, $3)',
+        [email, hashed, token]
+      );
+    }
 
     const verifyLink = `${process.env.FRONTEND_URL}/register?token=${token}`;
     await sendEmail({
