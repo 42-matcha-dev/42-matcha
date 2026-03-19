@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
+import KebabMenu from '../components/KebabMenu'
 import { useRouter } from 'next/navigation'
 import { RiSendPlaneFill } from 'react-icons/ri'
 import MessageBubble from './MessageBubble'
@@ -65,12 +66,10 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
   const [error, setError] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [reportReason, setReportReason] = useState<ReportReason>('FAKE_ACCOUNT')
   const [reportDescription, setReportDescription] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
 
   
   useEffect(() => {
@@ -170,16 +169,6 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
     }
   }, [conversationId, currentUser, conversation, loading, error])
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = input.trim()
@@ -213,7 +202,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
       alert(err instanceof Error ? err.message : 'Failed to block user')
     } finally {
       setActionLoading(false)
-      setMenuOpen(false)
+      // setMenuOpen(false)
     }
   }
 
@@ -223,7 +212,6 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
       setActionLoading(true)
       await apiReport(conversation.otherUser.id, reportReason, reportDescription || undefined)
       setShowReportModal(false)
-      setMenuOpen(false)
       router.push('/chat')
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to report user')
@@ -278,36 +266,12 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
           <h3 className="font-semibold text-[#2A3D39] text-lg">{fullName}</h3>
           <p className="font-light text-[#2A3D39] text-sm">@{otherUser?.username ?? ''}</p>
         </div>
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="p-2 hover:bg-gray-100 rounded-full"
-            aria-label="More options"
-          >
-            <span className="text-xl leading-none">⋮</span>
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px]">
-              <button
-                type="button"
-                onClick={handleBlock}
-                disabled={actionLoading}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700"
-              >
-                Block user
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowReportModal(true); setMenuOpen(false) }}
-                disabled={actionLoading}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
-              >
-                Report user
-              </button>
-            </div>
-          )}
-        </div>
+      <KebabMenu
+         items={[
+           { label: 'Block user', onClick: handleBlock, disabled: actionLoading },
+           { label: 'Report user', onClick: () => setShowReportModal(true), disabled: actionLoading, className: 'text-red-600' },
+         ]}
+       />
       </header>
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import KebabMenu from '@/app/components/KebabMenu'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import Header from '@/app/components/Header'
@@ -29,6 +30,7 @@ interface UserProfile {
   gender: string
   lookingFor: string
   biography: string
+  birthday: string
   fameRating: number
   distance: number
   canLike: boolean
@@ -65,8 +67,15 @@ export default function UserProfilePage() {
 
   // Calculate age from createdAt (or could be a separate field)
   const calculateAge = (): number => {
-    // For now, return a placeholder age. In production, you'd calculate from birthdate
-    return 24 // Placeholder
+    if (!profile?.birthday) return 0
+    const birth = new Date(profile.birthday)
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age
   }
 
   function capitalize(value: string) {
@@ -344,7 +353,7 @@ export default function UserProfilePage() {
                   {currentUserId !== null && currentUserId !== profile.id && (
                     <>
                       {profile.canLike && (
-                        <div className="flex flex-wrap gap-3 mb-3">
+                        <div className="flex items-center gap-3 mb-3">
                           <button
                             onClick={handleLike}
                             disabled={likeLoading || profile.isBlocked}
@@ -367,30 +376,23 @@ export default function UserProfilePage() {
                           >
                             Message
                           </button>
+                          <KebabMenu
+                           items={[
+                             {
+                               label: profile.isBlocked ? 'Unblock' : 'Block user',
+                               onClick: handleBlock,
+                               disabled: actionLoading,
+                             },
+                             ...(!profile.isReported ? [{
+                               label: 'Report user',
+                               onClick: () => setShowReportModal(true),
+                               disabled: actionLoading,
+                               className: 'text-red-600',
+                             }] : []),
+                           ]}
+                         />
                         </div>
                       )}
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={handleBlock}
-                          disabled={actionLoading}
-                          className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                            profile.isBlocked
-                              ? 'bg-gray-800 text-white hover:bg-gray-700'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          } ${actionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {profile.isBlocked ? 'Unblock' : 'Block'}
-                        </button>
-                        {!profile.isReported && (
-                          <button
-                            onClick={() => setShowReportModal(true)}
-                            disabled={actionLoading}
-                            className="px-6 py-2 rounded-lg font-semibold transition-colors bg-red-100 text-red-700 hover:bg-red-200"
-                          >
-                            Report
-                          </button>
-                        )}
-                      </div>
                     </>
                   )}
                 </div>
