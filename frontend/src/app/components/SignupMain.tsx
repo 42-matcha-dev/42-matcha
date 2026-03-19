@@ -59,10 +59,10 @@ export default function RegisterBasicForm() {
     };
 
   return (
-    <div className="flex justify-center items-center h-full bg-white text-black p-4">
+    <div className="flex justify-center lg:items-center h-full w-full bg-white text-black">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center w-1/1.9 max-w-md p-5 gap-10">
+        className="flex flex-1 flex-col items-center max-w-md gap-12">
           <Title title="Create your account" subTitle="Join Matcha – start by entering your email."/>
           <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
           <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>

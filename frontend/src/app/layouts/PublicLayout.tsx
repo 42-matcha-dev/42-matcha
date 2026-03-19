@@ -1,4 +1,5 @@
 import Header from '@/app/components/Header'
+import Footer from '@/app/components/Footer'
 
 export default function PublicLayout({
   children
@@ -6,9 +7,10 @@ export default function PublicLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="absolute top-0 w-screen">
+    <div className="absolute top-0 w-screen min-h-screen flex flex-col">
       <Header />
-      <main>{children}</main>
+      <main className="flex-1 pt-16 pb-16">{children}</main>
+      <Footer />
     </div>
   )
 }
