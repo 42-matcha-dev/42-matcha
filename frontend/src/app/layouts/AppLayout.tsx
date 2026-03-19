@@ -3,6 +3,7 @@
 import { ReactNode, useState } from 'react'
 import Navbar from '../components/Navbar'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 type Props = {
   children: ReactNode
@@ -11,12 +12,13 @@ type Props = {
 export default function AppLayout({ children }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   return (
-    <div className="h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative">
       <Header showMenuButton onMenuClick={() => setMenuOpen(!menuOpen)} />
-      <div className="flex">
+      <div className="flex flex-1">
         <Navbar className="hidden md:block sticky top-0 h-screen flex flex-col w-64 pt-16 border-r border-gray-200" />
-        <main className="flex-1 pt-16 min-h-screen">{children}</main>
+        <main className="flex-1 pt-16 pb-16">{children}</main>
       </div>
+      <Footer />
       <Navbar
         className={`
             fixed top-0 left-0 h-screen w-64 bg-white shadow-lg

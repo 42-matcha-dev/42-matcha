@@ -1,6 +1,7 @@
 'use client'
 
 import Header from './components/Header'
+import Footer from './components/Footer'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -9,10 +10,10 @@ export default function Home() {
   const router = useRouter()
 
   return (
-    <main className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-white">
       <Header />
       {message && <h1 className="bg-blue-500 text-white p-4">{message}</h1>}
-      <div className="flex flex-col items-center justify-center h-full">
+      <main className="flex flex-col items-center justify-center flex-1 pb-16">
         <h2 className="text-2xl mb-4 text-black">Welcome to Matcha</h2>
         <button
           onClick={() => router.push('/signup')}
@@ -20,7 +21,8 @@ export default function Home() {
         >
           Sign Up
         </button>
-      </div>
-    </main>
+      </main>
+      <Footer />
+    </div>
   )
 }
