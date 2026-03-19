@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 
 type SignedUrlData = {
@@ -14,6 +14,8 @@ interface Props {
 }
 export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
   const [uploading, setUploading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const uploadFiles = async (files: FileList, index: number) => {
     const file = files?.[0]
@@ -58,7 +60,12 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
 
       <div className="grid grid-cols-[3fr_1fr] gap-4 items-stretch">
         {/* Left: main large photo */}
-        <label className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer w-full h-full">
+        <div 
+          className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer w-full h-full"
+          onClick={() => {
+            if (!uploading) inputRef.current?.click()
+          }}
+          >
           {photoUrls[0] ? (
             <>
               <Image
@@ -69,9 +76,11 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                 unoptimized
               />
               <button
+                type="button"
                 className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-6 h-6 text-sm cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault()
+                  e.stopPropagation()
                   removePhoto(0)
                 }}
               >
@@ -84,20 +93,24 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
             </div>
           )}
           <input
+            ref={inputRef}
             type="file"
             accept="image/*"
             className="hidden"
             onChange={(e) => e.target.files && uploadFiles(e.target.files, 0)}
             disabled={uploading}
           />
-        </label>
+        </div>
 
         {/* Right: 3 stacked small square photos */}
         <div className="flex flex-col justify-between gap-4">
           {[1, 2, 3].map((i) => (
-            <label
+            <div
               key={i}
               className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer"
+              onClick={() => {
+                if (!uploading) inputRefs.current[i]?.click()
+              }}
             >
               {photoUrls[i] ? (
                 <>
@@ -109,6 +122,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                     unoptimized
                   />
                   <button
+                    type="button"
                     className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
@@ -124,13 +138,14 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                 </div>
               )}
               <input
+                ref={(el) => {inputRefs.current[i] = el}}
                 type="file"
                 accept="image/*"
                 className="hidden"
                 onChange={(e) => e.target.files && uploadFiles(e.target.files, i)}
                 disabled={uploading}
               />
-            </label>
+            </div>
           ))}
         </div>
       </div>
