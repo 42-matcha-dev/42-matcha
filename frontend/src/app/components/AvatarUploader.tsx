@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 type SignedUrlData = {
   signedUrl: string
@@ -16,6 +17,7 @@ interface Props {
 export default function AvatarUploader({ initialUrl, onChange }: Props) {
   const [iconUrl, setIconUrl] = useState<string | null>(initialUrl)
   const [uploading, setUploading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setIconUrl(initialUrl ?? null)
@@ -25,27 +27,54 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
     if (!file) return
     setUploading(true)
 
-    const fileName = file.name
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileNames: [fileName] })
-    })
-    const { urls }: { urls: SignedUrlData[] } = await res.json()
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          files: [
+            {
+              type: file.type,
+              size: file.size
+            }
+          ]
+        })
+      })
 
-    await fetch(urls[0].signedUrl, { method: 'PUT', body: file })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
 
-    const uploadedUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${urls[0].path}`
+      const { urls }: { urls: SignedUrlData[] } = await res.json()
 
-    setIconUrl(uploadedUrl)
-    onChange?.(uploadedUrl)
+      const uploadRes = await fetch(urls[0].signedUrl, { method: 'PUT', body: file })
 
-    setUploading(false)
+      if (!uploadRes.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
+
+      const uploadedUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${urls[0].path}`
+
+      setIconUrl(uploadedUrl)
+      onChange?.(uploadedUrl)
+      setUploading(false)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload')
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
     <div className="flex items-center gap-4">
-      <label className="cursor-pointer">
+      <div
+        className="cursor-pointer"
+        onClick={() => {
+          if (!uploading) inputRef.current!.click()
+        }}
+      >
         {iconUrl ? (
           <Image
             src={iconUrl}
@@ -61,6 +90,7 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
           </div>
         )}
         <input
+          ref={inputRef}
           type="file"
           accept="image/*"
           className="hidden"
@@ -70,10 +100,13 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
           }}
           disabled={uploading}
         />
-      </label>
+      </div>
       <button
+        type="button"
         className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
-        onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+        onClick={() => {
+          if (!uploading) inputRef.current!.click()
+        }}
       >
         Upload Icon
       </button>

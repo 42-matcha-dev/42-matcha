@@ -8,6 +8,7 @@ import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 import { z } from "zod";
 import { registerSchema } from "@/app/schema";
+import { toast } from "sonner";
 
 type SignedUrlData = {
   signedUrl: string;
@@ -44,47 +45,67 @@ function RegisterImagesFormContent({
   );
   const [uploading, setUploading] = useState(false);
 
-  const uploadFiles = async (files: FileList, type: "icon" | "photos", index?: number) => {
+  const uploadFiles = async (
+    files: FileList, 
+    type: "icon" | "photos", 
+    index?: number
+  ) => {
     if (!files || files.length === 0) return;
     setUploading(true);
 
-    const fileNames = Array.from(files).map((f) => f.name);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fileNames }),
-    });
-    const { urls }: { urls: SignedUrlData[] } = await res.json();
-
-    await Promise.all(
-      Array.from(files).map((file, i) =>
-        fetch(urls[i].signedUrl, { method: "PUT", body: file })
-      )
-    );
-
-    const uploaded = urls.map(
-      (u) =>
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${u.path}`
-    );
-
-    if (type === "icon") {
-      setIconUrl(uploaded[0]);
-      updateData({ iconUrl: uploaded[0] });
-    } else if (index !== undefined) {
-      // Compute new arrays first
-      const newUrls = [...photoUrls];
-      newUrls[index] = uploaded[0];
-
-      // Update state
-      setPhotoUrls(newUrls);
-
-      // Pass computed arrays to updateData
-      updateData({
-        photoUrls: newUrls,
+    try {
+      const fileArray = Array.from(files)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          files: fileArray.map((f) => ({
+            type: f.type,
+            size: f.size
+          }))
+        }),
       });
-    }
 
-    setUploading(false);
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.message)
+      }
+
+      const { urls }: { urls: SignedUrlData[] } = await res.json();
+
+      await Promise.all(
+        Array.from(files).map((file, i) =>
+          fetch(urls[i].signedUrl, { method: "PUT", body: file })
+        )
+      );
+
+      const uploaded = urls.map(
+        (u) =>
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${u.path}`
+      );
+
+      if (type === "icon") {
+        setIconUrl(uploaded[0]);
+        updateData({ iconUrl: uploaded[0] });
+      } else if (index !== undefined) {
+        // Compute new arrays first
+        const newUrls = [...photoUrls];
+        newUrls[index] = uploaded[0];
+
+        // Update state
+        setPhotoUrls(newUrls);
+
+        // Pass computed arrays to updateData
+        updateData({
+          photoUrls: newUrls,
+        });
+      }
+
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload')
+    } finally {
+      setUploading(false)
+    }
   };
 
   const removePhoto = (index: number) => {

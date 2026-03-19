@@ -74,6 +74,7 @@ export default function EditForm() {
           location: user.location,
           latitude: user.latitude,
           longitude: user.longitude,
+          locationVerified: true,
           gender: user.gender,
           lookingFor: user.lookingFor,
           description: user.description,
