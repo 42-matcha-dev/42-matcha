@@ -4,6 +4,7 @@ import pool from '../database/init.js';
 import bcrypt from 'bcrypt';
 import { sendEmail } from '../utils/email.util.js';
 import { authService } from '../services/auth.service.js';
+import { passwordResetService } from '../services/password_reset.service.js';
 import type { RegisterSchema } from '../types/auth.types.js';
 
 type Request = express.Request;
@@ -67,5 +68,35 @@ export const login = async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Login successful', user, token });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : "Invalid input" });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email)
+      return res.status(400).json({ error: 'Email is required' });
+
+    await passwordResetService.requestReset(email);
+    res.status(200).json({ message: 'If this email is registered, a reset link has been sent.' });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password)
+      return res.status(400).json({ error: 'Token and password are required' });
+
+    if (password.length < 3 || password.length > 20)
+      return res.status(400).json({ error: 'Password must be between 3 and 20 characters' });
+
+    await passwordResetService.resetPassword(token, password);
+    res.status(200).json({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid request' });
   }
 };

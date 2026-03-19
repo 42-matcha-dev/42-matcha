@@ -9,6 +9,7 @@ import { createConversationTable } from '../models/converstation.model.js';
 import { createMessageTable } from '../models/messages.model.js';
 import { createNotificationTable } from '../models/notification.model.js';
 import { createReportTable } from '../models/report.model.js';
+import { createPasswordResetTable } from '../models/password_reset.model.js';
 
 let pool: any;
 
@@ -43,6 +44,7 @@ export const initDB = async () => {
       await pool.query(createMessageTable);
       await pool.query(createNotificationTable);
       await pool.query(createReportTable);
+      await pool.query(createPasswordResetTable);
       console.log('✅ Database initialized');
       return;
     } catch (err) {
