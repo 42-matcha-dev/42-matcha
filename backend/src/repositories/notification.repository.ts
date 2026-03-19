@@ -5,15 +5,20 @@ export const notificationRepository = {
   getNotifications: async (userId: number) => {
     const query = `
     SELECT
-        id,
-        type,
-        actor_id,
-        reference_id,
-        is_read,
-        created_at
-    FROM notifications
-    WHERE user_id = $1
-    ORDER BY created_at DESC
+        n.id,
+        n.type,
+        n.actor_id,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.icon_url,
+        n.reference_id,
+        n.is_read,
+        n.created_at
+    FROM notifications n
+    JOIN users u ON u.id = n.actor_id
+    WHERE n.user_id = $1
+    ORDER BY n.created_at DESC
     `;
     const result = await pool.query(query, [userId]);
     return result.rows;
