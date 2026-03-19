@@ -18,7 +18,22 @@ export const registerSchema = z.object({
   repeatPassword: shortText(),
   firstName: shortText(),
   lastName: shortText(),
-  birthday: z.string(),
+  birthday: z
+    .string()
+    .refine((val) => {
+      const date = new Date(val)
+      if (isNaN(date.getTime())) return false
+
+      const today = new Date()
+      let age = today.getFullYear() - date.getFullYear()
+      const m = today.getMonth() - date.getMonth()
+
+      if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+        age--
+      }
+
+      return age >= 18 && age <= 100
+    }, "You must be between 18 and 100 years old"),
   location: z.string(),
   latitude: z.number(),
   longitude: z.number(),
