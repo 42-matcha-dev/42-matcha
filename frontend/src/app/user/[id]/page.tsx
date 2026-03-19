@@ -30,6 +30,7 @@ interface UserProfile {
   gender: string
   lookingFor: string
   biography: string
+  birthday: string
   fameRating: number
   distance: number
   canLike: boolean
@@ -66,8 +67,15 @@ export default function UserProfilePage() {
 
   // Calculate age from createdAt (or could be a separate field)
   const calculateAge = (): number => {
-    // For now, return a placeholder age. In production, you'd calculate from birthdate
-    return 24 // Placeholder
+    if (!profile?.birthday) return 0
+    const birth = new Date(profile.birthday)
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age
   }
 
   function capitalize(value: string) {
