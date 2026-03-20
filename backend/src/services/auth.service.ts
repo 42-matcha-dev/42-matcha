@@ -21,6 +21,7 @@ export const authService = {
       username,
       first_name: data.firstName,
       last_name: data.lastName,
+      birthdate: data.birthday,
       gender: data.gender.toLowerCase(),
       sexual_preferences: data.lookingFor.toLowerCase(),
       biography: data.description,
