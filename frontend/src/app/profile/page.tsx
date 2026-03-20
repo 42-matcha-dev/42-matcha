@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import Navbar from '@/app/components/Navbar'
 import Header from '@/app/components/Header'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import AppLayout from '../layouts/AppLayout'
@@ -121,7 +120,17 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto p-16">
-        <h1 className="text-3xl font-bold mb-8 text-black">Dashboard</h1>
+        <div className="mb-8 flex items-center justify-between gap-2 sm:gap-4">
+          <h1 className="text-3xl font-bold text-black">Dashboard</h1>
+          <button
+            type="button"
+            onClick={() => router.push('/profile/edit')}
+            className="bg-black text-white text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-md whitespace-nowrap hover:opacity-90"
+          >
+            Edit Profile
+          </button>
+        </div>
+
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <h2 className="text-2xl font-semibold mb-6 text-black">Profile</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
