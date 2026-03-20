@@ -103,6 +103,86 @@ const testUsers: TestUser[] = [
   },
 ];
 
+const avatarGenderMap = [
+  { id: 1, gender: 'male' },
+  // { id: 2, gender: 'female' },
+  { id: 3, gender: 'male' },
+  // { id: 4, gender: 'male' },
+  { id: 5, gender: 'female' },
+  { id: 6, gender: 'male' },
+  { id: 7, gender: 'male' },
+  { id: 8, gender: 'male' },
+  { id: 9, gender: 'female' },
+  { id: 10, gender: 'female' },
+  { id: 11, gender: 'male' },
+  { id: 12, gender: 'male' },
+  { id: 13, gender: 'male' },
+  { id: 14, gender: 'male' },
+  { id: 15, gender: 'male' },
+  { id: 16, gender: 'female' },
+  { id: 17, gender: 'male' },
+  { id: 18, gender: 'male' },
+  { id: 19, gender: 'female' },
+  { id: 20, gender: 'female' },
+  { id: 21, gender: 'female' },
+  { id: 22, gender: 'female' },
+  { id: 23, gender: 'female' },
+  { id: 24, gender: 'female' },
+  { id: 25, gender: 'female' },
+  { id: 26, gender: 'female' },
+  { id: 27, gender: 'female' },
+  { id: 28, gender: 'female' },
+  { id: 29, gender: 'female' },
+  { id: 30, gender: 'female' },
+  { id: 31, gender: 'female' },
+  { id: 32, gender: 'female' },
+  { id: 33, gender: 'male' },
+  { id: 34, gender: 'female' },
+  { id: 35, gender: 'female' },
+  { id: 36, gender: 'female' },
+  // { id: 37, gender: 'female' },
+  { id: 38, gender: 'female' },
+  { id: 39, gender: 'female' },
+  { id: 40, gender: 'female' },
+  { id: 41, gender: 'female' },
+  { id: 42, gender: 'female' },
+  { id: 43, gender: 'female' },
+  { id: 44, gender: 'female' },
+  { id: 45, gender: 'female' },
+  // { id: 46, gender: 'female' },
+  { id: 47, gender: 'female' },
+  { id: 48, gender: 'female' },
+  { id: 49, gender: 'female' },
+  { id: 50, gender: 'male' },
+  { id: 51, gender: 'male' },
+  { id: 52, gender: 'male' },
+  { id: 53, gender: 'male' },
+  { id: 54, gender: 'male' },
+  { id: 55, gender: 'male' },
+  { id: 56, gender: 'male' },
+  { id: 57, gender: 'male' },
+  { id: 58, gender: 'male' },
+  { id: 59, gender: 'male' },
+  { id: 60, gender: 'male' },
+  { id: 61, gender: 'male' },
+  { id: 62, gender: 'female' },
+  { id: 63, gender: 'male' },
+  { id: 64, gender: 'male' },
+  { id: 65, gender: 'male' },
+  { id: 66, gender: 'male' },
+  { id: 67, gender: 'male' },
+  { id: 68, gender: 'male' },
+  { id: 69, gender: 'male' },
+  { id: 70, gender: 'male' }
+];
+
+function getRandomAvatar(gender: 'male' | 'female') {
+  const filtered = avatarGenderMap.filter(a => a.gender === gender);
+  const random = filtered[Math.floor(Math.random() * filtered.length)];
+
+  return `https://i.pravatar.cc/300?img=${random.id}`;
+}
+
 // French cities with matching coordinates
 const frenchCities = [
   { city: 'Paris', country: 'FR', latitude: 48.8566, longitude: 2.3522 },
@@ -155,11 +235,16 @@ const generateFakerUser = (): TestUser => {
   const latitude = selectedCity.latitude;
   const longitude = selectedCity.longitude;
 
-  // Generate photo URLs (mandatory, 1-4 photos)
-  const photoUrls = Array.from({ length: faker.number.int({ min: 1, max: 4 }) }, () => faker.image.avatar());
-
   // Generate icon URL (mandatory)
-  const iconUrl = faker.image.avatar();
+  const iconUrl = getRandomAvatar(gender);
+
+  // Generate photo URLs (1–4 total, first = icon)
+  const photoCount = faker.number.int({ min: 1, max: 4 });
+
+  const photoUrls = [
+    iconUrl,
+    ...Array.from({ length: photoCount - 1 }, () => faker.image.avatar())
+  ];
 
   return {
     email: faker.internet.email(),
