@@ -1,6 +1,8 @@
 import { notificationRepository } from "../repositories/notification.repository.js";
 import { notificationEmitter } from "../events/notification.emitter.js";
 import type { NotificationType } from "../types/notification.types.js";
+import { blockRepository } from "../repositories/block.repository.js";
+import { reportRepository } from "../repositories/report.repository.js";
 
 export const notificationService = {
     getNotifications: async (userId: number) => {
@@ -8,6 +10,11 @@ export const notificationService = {
     },
 
     createNotification: async (userId: number, actorId: number, type: NotificationType, referenceId?: number) => {
+        const [blockCheck, reportCheck] = await Promise.all([
+            blockRepository.checkBlockEitherDirection(userId, actorId),
+            reportRepository.checkReportEitherDirection(userId, actorId),
+        ]);
+        if (blockCheck || reportCheck) return;
         const notification = await notificationRepository.createNotification(userId, actorId, type, referenceId);
         if (notification) {
             const fullNotification = await notificationRepository.getNotificationById(notification.id);
