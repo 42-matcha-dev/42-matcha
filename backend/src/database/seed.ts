@@ -47,9 +47,9 @@ const testUsers: TestUser[] = [
     gender: 'male',
     sexual_preferences: 'female',
     biography: 'Tech enthusiast and coffee lover.',
-    location: 'New York, USA',
-    latitude: 40.7128,
-    longitude: -74.0060,
+    location: 'Paris, France',
+    latitude: 48.8575,
+    longitude: 2.3512,
     icon_url: "https://i.pravatar.cc/300?img=12",
     photo_urls: ["https://i.pravatar.cc/300?img=12"]
   },
@@ -63,9 +63,9 @@ const testUsers: TestUser[] = [
     gender: 'male',
     sexual_preferences: 'both',
     biography: 'Musician and artist. Always up for an adventure!',
-    location: 'London, UK',
-    latitude: 51.5074,
-    longitude: -0.1278,
+    location: 'Paris, France',
+    latitude: 48.8559,
+    longitude: 2.3548,
     icon_url: "https://i.pravatar.cc/300?img=6",
     photo_urls: ["https://i.pravatar.cc/300?img=6"]
   },
@@ -79,9 +79,9 @@ const testUsers: TestUser[] = [
     gender: 'female',
     sexual_preferences: 'both',
     biography: 'Fitness enthusiast and nature lover.',
-    location: 'Tokyo, Japan',
-    latitude: 35.6762,
-    longitude: 139.6503,
+    location: 'Paris, France',
+    latitude: 48.8601,
+    longitude: 2.3483,
     icon_url: "https://i.pravatar.cc/300?img=9",
     photo_urls: ["https://i.pravatar.cc/300?img=9"]
   },
@@ -95,9 +95,9 @@ const testUsers: TestUser[] = [
     gender: 'female',
     sexual_preferences: 'male',
     biography: 'Bookworm and foodie. Always exploring new restaurants!',
-    location: 'Barcelona, Spain',
-    latitude: 41.3851,
-    longitude: 2.1734,
+    location: 'Paris, France',
+    latitude: 48.8538,
+    longitude: 2.3571,
     icon_url: "https://i.pravatar.cc/300?img=10",
     photo_urls: ["https://i.pravatar.cc/300?img=10"]
   },
@@ -348,8 +348,8 @@ export const seedTestUsers = async () => {
     // First, seed tags
     const tagMap = await seedTags();
 
-    // Generate 300 faker users
-    console.log('🌱 Generating 300 faker users...');
+    // Generate faker users
+    console.log('🌱 Generating more users...');
     const fakerUsers = Array.from({ length: Number(process.env.SEED_MORE_USERS) }, () => generateFakerUser());
 
     // Combine existing test users with faker-generated users
