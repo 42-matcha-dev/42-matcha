@@ -44,6 +44,14 @@ function mapUser(row: UserRow) {
 }
 
 export const userRepository = {
+  findCredentialById: async (userId: number) => {
+    const res = await pool.query(
+      'SELECT id, email, password_hash FROM users WHERE id = $1',
+      [userId]
+    )
+    return res.rows[0]
+  },
+
   findUserById: async (userId: number, currentUserId: number) => {
     const query = `
       SELECT

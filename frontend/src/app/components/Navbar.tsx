@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import NavbarButtonElement from './NavbarButtonElement'
-import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiLogout, mdiPencil } from '@mdi/js'
+import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiLogout, mdiCog } from '@mdi/js'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { getSocket } from '@/lib/socket'
 
@@ -72,13 +72,6 @@ const Navbar = ({ className }: Props) => {
         onClick={() => router.push('/profile')}
       />
       <NavbarButtonElement
-        path={mdiPencil}
-        size={1.2}
-        title={'Edit Profile'}
-        color={'black'}
-        onClick={() => router.push('/profile/edit')}
-      />
-      <NavbarButtonElement
         path={mdiMagnify}
         size={1.2}
         title={'Search'}
@@ -100,6 +93,13 @@ const Navbar = ({ className }: Props) => {
         badgeCount={messageCount}
         color={'black'}
         onClick={() => router.push('/chat')}
+      />
+      <NavbarButtonElement
+        path={mdiCog}
+        size={1.2}
+        title={'Settings'}
+        color={'black'}
+        onClick={() => router.push('/settings')}
       />
       <NavbarButtonElement
         path={mdiLogout}

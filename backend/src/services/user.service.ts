@@ -15,9 +15,6 @@ export const userService = {
     // Fetch user tags
     const tags = await userRepository.findUserTags(userId)
 
-    // Remove password_hash from response
-    const { password_hash, ...userWithoutPassword } = user
-
     // Check like status if currentUserId is provided
     let isLiked = false
     let isMatch = false
@@ -50,7 +47,7 @@ export const userService = {
       await notificationService.createNotification(userId, currentUserId, "VIEW", currentUserId)
     }
 
-    return { ...userWithoutPassword, tags, isLiked, isMatch, isBlocked, isReported, conversationId }
+    return { ...user, tags, isLiked, isMatch, isBlocked, isReported, conversationId }
   },
 
   updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {

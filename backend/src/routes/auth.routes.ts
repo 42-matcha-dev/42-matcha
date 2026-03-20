@@ -1,5 +1,12 @@
 import { Router } from 'express';
-import { signup, login, completeRegistration, forgotPassword, resetPassword } from '../controllers/auth.controller.js';
+import {
+  signup,
+  login,
+  completeRegistration,
+  forgotPassword,
+  resetPassword,
+  confirmEmailChange,
+} from '../controllers/auth.controller.js';
 
 const router = Router();
 
@@ -8,5 +15,6 @@ router.post('/login', login);
 router.post('/register', completeRegistration);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.post('/confirm-email-change', confirmEmailChange);
 
 export default router;
