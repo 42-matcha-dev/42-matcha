@@ -239,11 +239,13 @@ const generateFakerUser = (): TestUser => {
   const iconUrl = getRandomAvatar(gender);
 
   // Generate photo URLs (1–4 total, first = icon)
-  const photoCount = faker.number.int({ min: 1, max: 4 });
+  const photoCount = faker.number.int({ min: 0, max: 3 });
 
   const photoUrls = [
     iconUrl,
-    ...Array.from({ length: photoCount - 1 }, () => faker.image.avatar())
+    ...Array.from({ length: photoCount }, () =>
+      `https://picsum.photos/300?random=${Math.random()}`
+    )
   ];
 
   return {
