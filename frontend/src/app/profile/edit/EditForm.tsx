@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
-import { profileEditSchema, profilePatchSchema } from '@/app/schema'
+import { profileEditSchema } from '@/app/schema'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import InputForm from '@/app/components/InputForm'
@@ -71,9 +71,9 @@ export default function EditForm() {
           firstName: user.firstName,
           lastName: user.lastName,
           birthday: user.birthday?.split('T')[0],
-          location: user.location,
-          latitude: user.latitude,
-          longitude: user.longitude,
+          location: user.location ?? '',
+          latitude: user.latitude ?? 0,
+          longitude: user.longitude ?? 0,
           locationVerified: true,
           gender: user.gender,
           lookingFor: user.lookingFor,
@@ -120,10 +120,8 @@ export default function EditForm() {
         throw new Error(errorData.error || 'Failed to fetch profile')
       }
 
-      const res = await response.json()
-
       toast.success('profile updated')
-    } catch (err) {
+    } catch {
       toast.error('Error updating profile')
     }
   }
@@ -159,9 +157,9 @@ export default function EditForm() {
 
       {/* Location */}
       <LocationField
-        location={watch('location')}
-        latitude={watch('latitude')}
-        longitude={watch('longitude')}
+        location={watch('location') ?? ''}
+        latitude={watch('latitude') ?? 0}
+        longitude={watch('longitude') ?? 0}
         error={errors.locationVerified ?? errors.location}
         onChange={(loc, lat, lon) => {
           setValue('location', loc)
