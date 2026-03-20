@@ -1,6 +1,7 @@
 import express from 'express'
 import { type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 import { userService } from '../services/user.service.js'
+import { emailChangeService } from '../services/change_email.service.js'
 import { HttpError } from '../errors/HttpError.js'
 
 type Response = express.Response
@@ -47,6 +48,25 @@ export const updateCurrentUser = async (req: AuthenticatedRequest, res: Response
   } catch (error) {
     res.status(500).json({
       error: error instanceof Error ? error.message : "Failed to update profile"
+    })
+  }
+}
+
+export const updateCurrentUserEmail = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' })
+    }
+
+    const { newEmail, currentPassword } = req.body
+    const result = await emailChangeService.requestChange(req.user.userId, newEmail, currentPassword)
+    return res.status(200).json(result)
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message })
+    }
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to update email'
     })
   }
 }
