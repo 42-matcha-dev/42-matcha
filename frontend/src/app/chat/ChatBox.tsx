@@ -273,7 +273,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
          ]}
        />
       </header>
-      <main className="flex-1 overflow-y-auto p-4 space-y-4">
+      <main className="flex-1 max-h-[calc(100vh-300px)] md:max-h-[calc(100vh-250px)] overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
