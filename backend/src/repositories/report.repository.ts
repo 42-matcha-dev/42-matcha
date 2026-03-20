@@ -23,6 +23,20 @@ export const reportRepository = {
     return res.rows.length > 0;
   },
 
+  checkReportEitherDirection: async (
+    userA: number,
+    userB: number
+  ): Promise<boolean> => {
+    const query = `
+      SELECT 1 FROM reports
+      WHERE (reporter_id = $1 AND reported_id = $2)
+        OR (reporter_id = $2 AND reported_id = $1)
+      LIMIT 1
+    `;
+    const res = await pool.query(query, [userA, userB]);
+    return res.rows.length > 0;
+  },
+
   isReported: async (userA: number, userB: number): Promise<boolean> => {
     const query = `
       SELECT 1 FROM reports

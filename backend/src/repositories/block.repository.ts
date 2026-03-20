@@ -21,6 +21,20 @@ export const blockRepository = {
     return res.rows.length > 0;
   },
 
+  checkBlockEitherDirection: async (
+    userA: number,
+    userB: number
+  ): Promise<boolean> => {
+    const query = `
+      SELECT 1 FROM blocks
+      WHERE (blocker_id = $1 AND blocked_id = $2)
+        OR (blocker_id = $2 AND blocked_id = $1)
+      LIMIT 1
+    `;
+    const res = await pool.query(query, [userA, userB]);
+    return res.rows.length > 0;
+  },
+
   removeBlock: async (blockerId: number, blockedId: number) => {
     const query = `
       DELETE FROM blocks
