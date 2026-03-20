@@ -43,6 +43,7 @@ export default function LocationField({ location, latitude, longitude, onChange,
       const verified = data.display_name || location
 
       setVerifiedLocation(verified)
+      setApiError(null)
       onChange(verified, data.latitude, data.longitude)
     } catch {
       setApiError('Could not verify location')
@@ -52,14 +53,17 @@ export default function LocationField({ location, latitude, longitude, onChange,
   }
 
   const enableGPS = () => {
+    setApiError(null)
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const { latitude, longitude } = pos.coords
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const res = await fetch(`${apiUrl}/api/geocoding/reverse?lat=${latitude}&lon=${longitude}`)
       const data = await res.json()
 
-      setVerifiedLocation(data.address)
-      onChange(data.address, latitude, longitude)
+      const address = data.address ?? location ?? ''
+      setVerifiedLocation(address)
+      setApiError(null)
+      onChange(address, latitude, longitude)
     })
   }
 
@@ -69,9 +73,10 @@ export default function LocationField({ location, latitude, longitude, onChange,
       
       <div className="flex gap-2">
         <input
-          value={location}
+          value={location ?? ''}
           onChange={(e) => {
             setVerifiedLocation(null)
+            setApiError(null)
             onChange(e.target.value, 0, 0)
           }}
           className="border-b border-gray-300 p-2 flex-1 focus:outline-none"
