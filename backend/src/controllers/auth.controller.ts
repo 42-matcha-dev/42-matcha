@@ -5,7 +5,9 @@ import bcrypt from 'bcrypt';
 import { sendEmail } from '../utils/email.util.js';
 import { authService } from '../services/auth.service.js';
 import { passwordResetService } from '../services/password_reset.service.js';
+import { emailChangeService } from '../services/change_email.service.js';
 import type { RegisterSchema } from '../types/auth.types.js';
+import { HttpError } from '../errors/HttpError.js';
 
 type Request = express.Request;
 type Response = express.Response;
@@ -116,5 +118,25 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Password has been reset successfully' });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid request' });
+  }
+};
+
+export const confirmEmailChange = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    const result = await emailChangeService.confirmChange(token);
+    res.status(200).json(result);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    if (error instanceof Error) {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Server error' });
   }
 };
