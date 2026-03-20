@@ -1,6 +1,7 @@
 export type RegisterSchema = {
   firstName: string;
   lastName: string;
+  birthday: string;
   gender: string;
   lookingFor: string;
   description: string;
