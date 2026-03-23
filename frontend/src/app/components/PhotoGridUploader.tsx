@@ -4,11 +4,6 @@ import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 
-type SignedUrlData = {
-  signedUrl: string
-  path: string
-}
-
 interface Props {
   photoUrls: string[]
   onChange: (urls: string[]) => void
@@ -18,48 +13,35 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  const uploadFiles = async (files: FileList, index: number) => {
+  const uploadImage = async (files: FileList, index: number) => {
     const file = files?.[0]
     if (!file) return
     setUploading(true)
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          files: [
-            {
-              type: file.type,
-              size: file.size
-            }
-          ]
-        })
-      })
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      )
 
       if (!res.ok) {
         const data = await res.json()
+        console.log("too large:", data)
         throw new Error(data.message)
       }
 
-      const { urls }: { urls: SignedUrlData[] } = await res.json()
-      const { signedUrl, path } = urls[0]
-
-      const uploadRes = await fetch(signedUrl, {
-        method: 'PUT',
-        body: file
-      })
-
-      if (!uploadRes.ok) {
-        const data = await res.json()
-        throw new Error(data.message)
-      }
-
-      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${path}`
+      const { url } = await res.json()
 
       const newUrls = [...photoUrls]
-      newUrls[index] = publicUrl
+      newUrls[index] = url
       onChange(newUrls)
+    
     } catch (err: any) {
       toast.error(err.message || 'Failed to upload')
     } finally {
@@ -115,7 +97,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => e.target.files && uploadFiles(e.target.files, 0)}
+            onChange={(e) => e.target.files && uploadImage(e.target.files, 0)}
             disabled={uploading}
           />
         </div>
@@ -160,7 +142,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => e.target.files && uploadFiles(e.target.files, i)}
+                onChange={(e) => e.target.files && uploadImage(e.target.files, i)}
                 disabled={uploading}
               />
             </div>
