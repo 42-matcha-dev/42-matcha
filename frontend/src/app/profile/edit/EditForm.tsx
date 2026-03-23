@@ -83,7 +83,6 @@ export default function EditForm() {
           photoUrls: user.photoUrls
         })
 
-        console.log('user', user)
       } catch (err) {
         const errMsg = err ?? ''
         toast.error('Error fetching tags ', errMsg)

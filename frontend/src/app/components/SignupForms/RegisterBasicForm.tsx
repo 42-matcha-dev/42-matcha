@@ -194,7 +194,6 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
     }
 
     updateData(data);
-    console.log("RegisterBasicForm: ", data);
     onNext();
   };
 
