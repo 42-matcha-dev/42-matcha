@@ -4,11 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 
-type SignedUrlData = {
-  signedUrl: string
-  path: string
-}
-
 interface Props {
   initialUrl: string | null
   onChange?: (url: string) => void
@@ -23,43 +18,28 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
     setIconUrl(initialUrl ?? null)
   }, [initialUrl])
 
-  const uploadFile = async (file: File) => {
+  const uploadImage = async (file: File) => {
     if (!file) return
     setUploading(true)
 
+    const formData = new FormData();
+    formData.append('image', file)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          files: [
-            {
-              type: file.type,
-              size: file.size
-            }
-          ]
-        })
-      })
+        body: formData
+      });
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.message)
+        const data = await res.json();
+        throw new Error(data.message);
       }
 
-      const { urls }: { urls: SignedUrlData[] } = await res.json()
+      const { url } = await res.json();
 
-      const uploadRes = await fetch(urls[0].signedUrl, { method: 'PUT', body: file })
-
-      if (!uploadRes.ok) {
-        const data = await res.json()
-        throw new Error(data.message)
-      }
-
-      const uploadedUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${urls[0].path}`
-
-      setIconUrl(uploadedUrl)
-      onChange?.(uploadedUrl)
-      setUploading(false)
+      setIconUrl(url)
+      onChange?.(url)
+      console.log(url)
     } catch (err: any) {
       toast.error(err.message || 'Failed to upload')
     } finally {
@@ -96,7 +76,7 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0]
-            if (file) uploadFile(file)
+            if (file) uploadImage(file)
           }}
           disabled={uploading}
         />

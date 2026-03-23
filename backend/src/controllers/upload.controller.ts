@@ -2,18 +2,35 @@ import type { Request, Response } from 'express'
 import { uploadService } from '../services/upload.service.js'
 import { HttpError } from '../errors/HttpError.js'
 
-export const createUploadUrls = async (req: Request, res: Response) => {
+export const processAndUploadImage = async (req: Request, res: Response) => {
   try {
-    const { files } = req.body
-    if (!files || !Array.isArray(files)) {
-      return res.status(400).json({ error: 'Invalid files array' })
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' })
     }
-    const urls = await uploadService.createSignedUrls(files)
-    res.json({ urls })
-  } catch (err) {
+    const url = await uploadService.processAndUploadImage(req.file.buffer)
+    res.status(201).json({ url })
+  } catch (err: any) {
     if (err instanceof HttpError) {
       return res.status(err.status).json({ message: err.message })
     }
-    res.status(500).json({ message: 'Server error creating signed URLs' })
+
+    res.status(500).json({ message: 'Internal server error' })
   }
+}
+
+export const uploadMultipleImages = async (req: Request, res: Response) => {
+  try {
+    if (!req.files || !Array.isArray(req.files)) {
+      return res.status(400).json({ message: 'No files uploaded' });
+    }
+    const files = req.files as Express.Multer.File[];
+    const urls = await uploadService.processMultipleImages(files);
+    res.status(201).json({ urls })
+  } catch (err: any) {
+    if (err instanceof HttpError) {
+      return res.status(err.status).json({ message: err.message })
+    }
+
+    res.status(500).json({ message: 'Internal server error' })
+  } 
 }

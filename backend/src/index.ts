@@ -17,6 +17,7 @@ import blockRoutes from './routes/block.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import { setupChatSocket } from './socket/chat.handlers.js';
 import { setupNotificationSocket } from './socket/notification.handlers.js';
+import { multerErrorHandler } from './middleware/multerError.middleware.js';
 
 const app = express();
 const port = process.env.PORT_BACKEND || 4000;
@@ -36,6 +37,9 @@ app.use('/api/geocoding', geocodingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api/conversations', conversationRoutes);
+
+// --- ERROR HANDLERS ---
+app.use(multerErrorHandler)
 
 // --- SOCKET.IO SETUP ---
 const server = http.createServer(app);
