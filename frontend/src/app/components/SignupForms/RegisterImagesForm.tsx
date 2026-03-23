@@ -10,11 +10,6 @@ import { z } from "zod";
 import { registerSchema } from "@/app/schema";
 import { toast } from "sonner";
 
-type SignedUrlData = {
-  signedUrl: string;
-  path: string;
-};
-
 // Form data type matching the register form (excluding email/password fields)
 // Includes both current (iconImage, photos) and legacy (iconUrl, photoUrls) field names
 type FormData = Partial<Omit<z.infer<typeof registerSchema>, "email" | "password" | "repeatPassword">> & {
@@ -45,68 +40,48 @@ function RegisterImagesFormContent({
   );
   const [uploading, setUploading] = useState(false);
 
-  const uploadFiles = async (
+  const uploadImage =  async (
     files: FileList, 
     type: "icon" | "photos", 
     index?: number
   ) => {
     if (!files || files.length === 0) return;
     setUploading(true);
-
     try {
-      const fileArray = Array.from(files)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          files: fileArray.map((f) => ({
-            type: f.type,
-            size: f.size
-          }))
-        }),
-      });
+      const formData = new FormData();
+      formData.append("image", files[0]);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.message)
+        const data = await res.json();
+        throw new Error(data.message);
       }
 
-      const { urls }: { urls: SignedUrlData[] } = await res.json();
-
-      await Promise.all(
-        Array.from(files).map((file, i) =>
-          fetch(urls[i].signedUrl, { method: "PUT", body: file })
-        )
-      );
-
-      const uploaded = urls.map(
-        (u) =>
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${u.path}`
-      );
+      const { url } = await res.json();
 
       if (type === "icon") {
-        setIconUrl(uploaded[0]);
-        updateData({ iconUrl: uploaded[0] });
+        setIconUrl(url);
+        updateData({ iconUrl: url });
       } else if (index !== undefined) {
-        // Compute new arrays first
         const newUrls = [...photoUrls];
-        newUrls[index] = uploaded[0];
+        newUrls[index] = url;
 
-        // Update state
         setPhotoUrls(newUrls);
-
-        // Pass computed arrays to updateData
-        updateData({
-          photoUrls: newUrls,
-        });
+        updateData({ photoUrls: newUrls });
       }
-
     } catch (err: any) {
-      toast.error(err.message || 'Failed to upload')
+      toast.error(err.message || "Failed to upload");
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  };
+  }
 
   const removePhoto = (index: number) => {
     // Compute filtered array first
@@ -148,7 +123,7 @@ function RegisterImagesFormContent({
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => e.target.files && uploadFiles(e.target.files, "icon")}
+              onChange={(e) => e.target.files && uploadImage(e.target.files, "icon")}
               disabled={uploading}
             />
           </label>
@@ -199,7 +174,7 @@ function RegisterImagesFormContent({
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => e.target.files && uploadFiles(e.target.files, "photos", 0)}
+                onChange={(e) => e.target.files && uploadImage(e.target.files, "photos", 0)}
                 disabled={uploading}
               />
             </label>
@@ -240,7 +215,7 @@ function RegisterImagesFormContent({
                     accept="image/*"
                     className="hidden"
                     onChange={(e) =>
-                      e.target.files && uploadFiles(e.target.files, "photos", i)
+                      e.target.files && uploadImage(e.target.files, "photos", i)
                     }
                     disabled={uploading}
                   />
