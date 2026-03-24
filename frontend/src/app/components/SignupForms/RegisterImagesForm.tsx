@@ -104,13 +104,13 @@ function RegisterImagesFormContent({
               <Image
                 src={iconUrl}
                 alt="icon"
-                width={120}
-                height={120}
-                className="rounded-full object-cover bg-gray-300"
+                width={128}
+                height={128}
+                className="w-32 h-32 rounded-full object-cover bg-gray-300"
                 unoptimized
               />
             ) : (
-              <div className="w-[120px] h-[120px] rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
+              <div className="w-32 h-32 rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
                 +
               </div>
             )}
