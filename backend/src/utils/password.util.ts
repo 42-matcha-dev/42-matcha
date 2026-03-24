@@ -5,8 +5,6 @@ const COMMON_PASSWORDS = new Set([
     'azertyulop',
     'azerty123',
     'final9999',
-    'Password',
-    'Azerty123',
     'motdepasse',
     '1234567890',
     'gazeuses',
