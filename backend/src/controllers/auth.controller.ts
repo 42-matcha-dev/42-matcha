@@ -8,6 +8,7 @@ import { passwordResetService } from '../services/password_reset.service.js';
 import { emailChangeService } from '../services/change_email.service.js';
 import type { RegisterSchema } from '../types/auth.types.js';
 import { HttpError } from '../errors/HttpError.js';
+import { validatePasswordPolicy } from '../utils/password.util.js';
 
 type Request = express.Request;
 type Response = express.Response;
@@ -18,6 +19,11 @@ export const signup = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({ error: 'Missing fields' });
+
+    const passwordError = validatePasswordPolicy(password);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
+    }
 
     const existingUser = await pool.query(
       'SELECT id FROM users WHERE email = $1', [email]
@@ -111,8 +117,10 @@ export const resetPassword = async (req: Request, res: Response) => {
     if (!token || !password)
       return res.status(400).json({ error: 'Token and password are required' });
 
-    if (password.length < 3 || password.length > 20)
-      return res.status(400).json({ error: 'Password must be between 3 and 20 characters' });
+    const passwordError = validatePasswordPolicy(password);
+    if (passwordError) {
+      return res.status(400).json({ error: passwordError });
+    }
 
     await passwordResetService.resetPassword(token, password);
     res.status(200).json({ message: 'Password has been reset successfully' });
