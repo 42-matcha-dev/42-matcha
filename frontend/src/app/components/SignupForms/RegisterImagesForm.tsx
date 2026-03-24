@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useRef } from "react";
 import Image from "next/image";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
@@ -9,6 +9,7 @@ import Stepper from "@/app/components/Stepper";
 import { z } from "zod";
 import { registerSchema } from "@/app/schema";
 import { toast } from "sonner";
+import { normalizePhotoUrls } from "@/utils/photo.utils";
 
 // Form data type matching the register form (excluding email/password fields)
 // Includes both current (iconImage, photos) and legacy (iconUrl, photoUrls) field names
@@ -35,10 +36,10 @@ function RegisterImagesFormContent({
     null
   );
   const [photoUrls, setPhotoUrls] = useState<string[]>(
-    (defaultValues.photoUrls as string[] | undefined) ||
-    []
+    normalizePhotoUrls(defaultValues.photoUrls as string[] | undefined)
   );
   const [uploading, setUploading] = useState(false);
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImage =  async (
     files: FileList, 
@@ -84,16 +85,10 @@ function RegisterImagesFormContent({
   }
 
   const removePhoto = (index: number) => {
-    // Compute filtered array first
-    const newUrls = photoUrls.filter((_, i) => i !== index);
-
-    // Update state
+    const newUrls = [...photoUrls];
+    newUrls[index] = "";
     setPhotoUrls(newUrls);
-
-    // Pass computed array to updateData
-    updateData({
-      photoUrls: newUrls,
-    });
+    updateData({ photoUrls: newUrls });
   };
 
   return (
@@ -120,6 +115,7 @@ function RegisterImagesFormContent({
               </div>
             )}
             <input
+              ref={iconInputRef}
               type="file"
               accept="image/*"
               className="hidden"
@@ -129,9 +125,7 @@ function RegisterImagesFormContent({
           </label>
           <button
             className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
-            onClick={() =>
-              document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
-            }
+            onClick={() => iconInputRef.current?.click()}
           >
             Upload Your Icon
           </button>
@@ -159,6 +153,7 @@ function RegisterImagesFormContent({
                     className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-6 h-6 text-sm cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       removePhoto(0);
                     }}
                   >
@@ -199,6 +194,7 @@ function RegisterImagesFormContent({
                         className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
                         onClick={(e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           removePhoto(i);
                         }}
                       >
