@@ -10,10 +10,13 @@ import NextButton from "@/app/components/Buttons/NextButton";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-const registerSignupSchema = registerSchema.pick({
-    email: true,
-    password: true,
-    repeatPassword: true
+const registerSignupSchema = z.object({
+    email: registerSchema.shape.email,
+    password: registerSchema.shape.password,
+    repeatPassword: z.string(),
+}).refine((data) => data.password === data.repeatPassword, {
+    message: 'Passwords do not match.',
+    path: ['repeatPassword'],
 })
 
 type registerSignupSchema = z.infer<typeof registerSignupSchema>;
@@ -21,7 +24,7 @@ type registerSignupSchema = z.infer<typeof registerSignupSchema>;
 export default function RegisterBasicForm() {
 
     const router = useRouter();
-    const { register, handleSubmit, formState: { errors }} = useForm<registerSignupSchema>({
+    const { register, handleSubmit, setError, clearErrors, formState: { errors }} = useForm<registerSignupSchema>({
         resolver: zodResolver(registerSignupSchema),
         mode: "onBlur",
         defaultValues: {
@@ -47,7 +50,12 @@ export default function RegisterBasicForm() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                toast.error(errorData.error || "Signup failed. Please try again.");
+                const msg = errorData.error || "Signup failed. Please try again.";
+                if (msg.toLowerCase().startsWith("password")) {
+                    setError("password", { type: "server", message: msg });
+                } else {
+                    toast.error(msg);
+                }
                 return;
             }
 
@@ -65,7 +73,12 @@ export default function RegisterBasicForm() {
         className="flex flex-1 flex-col items-center max-w-md gap-12">
           <Title title="Create your account" subTitle="Join Matcha – start by entering your email."/>
           <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
-          <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
+          <InputForm
+            placeholder="Password"
+            type="password"
+            error={errors.password}
+            {...register("password", { onChange: () => clearErrors("password") })}
+          />
           <InputForm placeholder="Repeat password" type="password" error={errors.repeatPassword} {...register("repeatPassword")}/>
           <NextButton text="Next"/>
           <div className="text-center">
