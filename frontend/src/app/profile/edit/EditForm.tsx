@@ -16,6 +16,8 @@ import PhotoGridUploader from '@/app/components/PhotoGridUploader'
 import { toast } from 'sonner'
 import { apiFetch } from '@/utils/apiClient'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
+import { getArrayFieldError } from '@/utils/getArrayError'
+import { normalizePhotoUrls, compactPhotoUrls } from '@/utils/photo.utils';
 
 interface Tag {
   id: number
@@ -80,9 +82,8 @@ export default function EditForm() {
           description: user.description,
           curiousAbout: user.tags.map((tag: Tag) => tag.id) ?? [],
           iconUrl: user.iconUrl,
-          photoUrls: user.photoUrls
+          photoUrls: normalizePhotoUrls(user.photoUrls)
         })
-
       } catch (err) {
         const errMsg = err ?? ''
         toast.error('Error fetching tags ', errMsg)
@@ -99,10 +100,15 @@ export default function EditForm() {
         return
       }
 
+      const cleanedData = {
+        ...data,
+        photoUrls: compactPhotoUrls(data.photoUrls)
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const response = await fetch(`${apiUrl}/api/users/me`, {
         method: 'PATCH',
-        body: JSON.stringify(data),
+        body: JSON.stringify(cleanedData),
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -132,7 +138,8 @@ export default function EditForm() {
       {/* Photos */}
       <PhotoGridUploader
         photoUrls={watch('photoUrls') ?? ['', '', '', '']}
-        onChange={(urls) => setValue('photoUrls', urls)}
+        onChange={(urls) => setValue('photoUrls', normalizePhotoUrls(urls))}
+        error={getArrayFieldError(errors.photoUrls)}
       />
 
       {/* Basic info */}

@@ -7,8 +7,9 @@ import { toast } from 'sonner'
 interface Props {
   photoUrls: string[]
   onChange: (urls: string[]) => void
+  error?: string
 }
-export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
+export default function PhotoGridUploader({ photoUrls, onChange, error}: Props) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -32,7 +33,6 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
 
       if (!res.ok) {
         const data = await res.json()
-        console.log("too large:", data)
         throw new Error(data.message)
       }
 
@@ -50,9 +50,10 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
   }
 
   const removePhoto = (index: number) => {
-    const newUrls = photoUrls.filter((_, i) => i !== index);
+    const newUrls = [...photoUrls];
+    newUrls[index] = "";
     onChange(newUrls);
-  }
+  };
 
   return (
     <div className="text-left w-full">
@@ -126,6 +127,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                     className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
                       removePhoto(i)
                     }}
                   >
@@ -149,6 +151,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
           ))}
         </div>
       </div>
+      {error && <div className="text-red-500">{error}</div>}
     </div>
   )
 }

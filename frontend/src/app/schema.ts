@@ -57,7 +57,9 @@ export const registerSchema = z.object({
     .min(1, { message: 'Please select at least one tag.' })
     .max(5, { message: 'You can select up to 5 tags.' }),
   iconUrl: z.string().url().nullable(),
-  photoUrls: z.array(z.string().url()).max(4)
+  photoUrls: z
+    .array(z.string().url().or(z.literal("")))
+    .max(4)
 }).refine((data) => data.password === data.repeatPassword, {
   message: 'Passwords do not match.',
   path: ['repeatPassword'],
