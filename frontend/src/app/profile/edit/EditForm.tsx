@@ -36,7 +36,7 @@ type UserProfile = {
   lookingFor: 'male' | 'female' | 'both'
   description: string
   tags: Tag[]
-  iconUrl: string | null
+  iconUrl: string
   photoUrls: string[]
 }
 
@@ -59,7 +59,8 @@ export default function EditForm() {
       lastName: '',
       location: '',
       latitude: 0,
-      longitude: 0
+      longitude: 0,
+      iconUrl: ""
     }
   })
   const selectedTags = watch('curiousAbout') || []
@@ -81,7 +82,7 @@ export default function EditForm() {
           lookingFor: user.lookingFor,
           description: user.description,
           curiousAbout: user.tags.map((tag: Tag) => tag.id) ?? [],
-          iconUrl: user.iconUrl,
+          iconUrl: user.iconUrl ?? "",
           photoUrls: normalizePhotoUrls(user.photoUrls)
         })
       } catch (err) {
@@ -215,7 +216,11 @@ export default function EditForm() {
       />
 
       {/* Avatar */}
-      <AvatarUploader initialUrl={watch('iconUrl')} onChange={(url) => setValue('iconUrl', url)} />
+      <AvatarUploader
+        initialUrl={watch('iconUrl')}
+        onChange={(url) => setValue('iconUrl', url)}
+        error={errors.iconUrl?.message}
+      />
 
       {/* Submit */}
       <NextButton text="Save Profile" type="submit" />
