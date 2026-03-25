@@ -1,27 +1,27 @@
 "use client";
 
-import { Suspense, useState, useRef } from "react";
-import Image from "next/image";
+import { Suspense } from "react";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
 import BackButton from "@/app/components/Buttons/BackButton";
 import Stepper from "@/app/components/Stepper";
 import { z } from "zod";
 import { registerSchema } from "@/app/schema";
-import { toast } from "sonner";
+import PhotoGridUploader from "../PhotoGridUploader";
+import AvatarUploader from "../AvatarUploader";
 import { normalizePhotoUrls } from "@/utils/photo.utils";
 
-// Form data type matching the register form (excluding email/password fields)
-// Includes both current (iconImage, photos) and legacy (iconUrl, photoUrls) field names
-type FormData = Partial<Omit<z.infer<typeof registerSchema>, "email" | "password" | "repeatPassword">> & {
-  iconUrl?: string | null;
-  photoUrls?: string[];
-};
+const registerPhotoSchema = registerSchema.pick({
+  iconUrl: true,
+  photoUrls: true,
+})
+
+type RegisterPhotoSchema = z.infer<typeof registerPhotoSchema>;
 
 interface Props {
   onBack: () => void;
-  updateData: (data: Partial<FormData>) => void;
-  defaultValues: Partial<FormData>;
+  updateData: (data: Partial<RegisterPhotoSchema>) => void;
+  defaultValues: Partial<RegisterPhotoSchema>;
   onSubmitFinal: () => void;
 }
 
@@ -31,65 +31,6 @@ function RegisterImagesFormContent({
   defaultValues,
   onSubmitFinal,
 }: Props) {
-  const [iconUrl, setIconUrl] = useState<string | null>(
-    (defaultValues.iconUrl as string | undefined) ||
-    null
-  );
-  const [photoUrls, setPhotoUrls] = useState<string[]>(
-    normalizePhotoUrls(defaultValues.photoUrls as string[] | undefined)
-  );
-  const [uploading, setUploading] = useState(false);
-  const iconInputRef = useRef<HTMLInputElement>(null);
-
-  const uploadImage =  async (
-    files: FileList, 
-    type: "icon" | "photos", 
-    index?: number
-  ) => {
-    if (!files || files.length === 0) return;
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", files[0]);
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message);
-      }
-
-      const { url } = await res.json();
-
-      if (type === "icon") {
-        setIconUrl(url);
-        updateData({ iconUrl: url });
-      } else if (index !== undefined) {
-        const newUrls = [...photoUrls];
-        newUrls[index] = url;
-
-        setPhotoUrls(newUrls);
-        updateData({ photoUrls: newUrls });
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to upload");
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  const removePhoto = (index: number) => {
-    const newUrls = [...photoUrls];
-    newUrls[index] = "";
-    setPhotoUrls(newUrls);
-    updateData({ photoUrls: newUrls });
-  };
 
   return (
     <div className="w-full bg-white">
@@ -98,131 +39,19 @@ function RegisterImagesFormContent({
         <Stepper currentStep="2" />
 
         {/* Profile Icon */}
-        <div className="flex items-center gap-4">
-          <label className="cursor-pointer">
-            {iconUrl ? (
-              <Image
-                src={iconUrl}
-                alt="icon"
-                width={128}
-                height={128}
-                className="w-32 h-32 rounded-full object-cover bg-gray-300"
-                unoptimized
-              />
-            ) : (
-              <div className="w-32 h-32 rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
-                +
-              </div>
-            )}
-            <input
-              ref={iconInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => e.target.files && uploadImage(e.target.files, "icon")}
-              disabled={uploading}
-            />
-          </label>
-          <button
-            className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
-            onClick={() => iconInputRef.current?.click()}
-          >
-            Upload Your Icon
-          </button>
-        </div>
+        <AvatarUploader
+          initialUrl={defaultValues.iconUrl ?? null}
+          onChange={(url) => updateData({ iconUrl: url})}
+        />
 
         {/* Photos Upload */}
-        <div className="text-left w-full max-w-[420px]">
-          <h2 className="text-base font-bold mb-3">Upload Photos (4 maximum)</h2>
-
-          <div className="grid grid-cols-[3fr_1fr] gap-4 items-stretch">
-            {/* Left: main large photo */}
-            <label
-              className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer w-full h-full"
-            >
-              {photoUrls[0] ? (
-                <>
-                  <Image
-                    src={photoUrls[0]}
-                    alt="main-photo"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                  <button
-                    className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-6 h-6 text-sm cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      removePhoto(0);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </>
-              ) : (
-                <div className="w-full h-full flex justify-center items-center text-gray-600 text-3xl">
-                  +
-                </div>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files && uploadImage(e.target.files, "photos", 0)}
-                disabled={uploading}
-              />
-            </label>
-
-            {/* Right: 3 stacked small square photos */}
-            <div className="flex flex-col justify-between gap-4">
-              {[1, 2, 3].map((i) => (
-                <label
-                  key={i}
-                  className="relative bg-gray-300 rounded-[10px] overflow-hidden aspect-square cursor-pointer"
-                >
-                  {photoUrls[i] ? (
-                    <>
-                      <Image
-                        src={photoUrls[i]}
-                        alt={`photo-${i}`}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                      <button
-                        className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          removePhoto(i);
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex justify-center items-center text-gray-600 text-2xl">
-                      +
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) =>
-                      e.target.files && uploadImage(e.target.files, "photos", i)
-                    }
-                    disabled={uploading}
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
+        <PhotoGridUploader 
+          photoUrls={normalizePhotoUrls(defaultValues.photoUrls)}
+          onChange={(urls) => updateData({ photoUrls: urls })}
+        />
 
         {/* Nav buttons */}
-        <div className="flex flex-col gap-4 justify-between w-full max-w-[400px]">
+        <div className="flex flex-col gap-4 justify-between w-full">
           <BackButton text="Back" onClick={onBack} />
           <NextButton text="Complete" onClick={onSubmitFinal} />
         </div>
