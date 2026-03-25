@@ -56,7 +56,7 @@ export const registerSchema = z.object({
     .array(z.number())
     .min(1, { message: 'Please select at least one tag.' })
     .max(5, { message: 'You can select up to 5 tags.' }),
-  iconUrl: z.string().url().nullable(),
+  iconUrl: z.string().url("Please select an image").nullable(),
   photoUrls: z
     .array(z.string().url().or(z.literal("")))
     .max(4)

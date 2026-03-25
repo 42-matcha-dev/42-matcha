@@ -23,6 +23,7 @@ interface Props {
   updateData: (data: Partial<RegisterPhotoSchema>) => void;
   defaultValues: Partial<RegisterPhotoSchema>;
   onSubmitFinal: () => void;
+  errors?: Record<string, string>;
 }
 
 function RegisterImagesFormContent({
@@ -30,6 +31,7 @@ function RegisterImagesFormContent({
   updateData,
   defaultValues,
   onSubmitFinal,
+  errors
 }: Props) {
 
   return (
@@ -42,10 +44,11 @@ function RegisterImagesFormContent({
         <AvatarUploader
           initialUrl={defaultValues.iconUrl ?? null}
           onChange={(url) => updateData({ iconUrl: url})}
+          error={errors?.iconUrl}
         />
 
         {/* Photos Upload */}
-        <PhotoGridUploader 
+        <PhotoGridUploader
           photoUrls={normalizePhotoUrls(defaultValues.photoUrls)}
           onChange={(urls) => updateData({ photoUrls: urls })}
         />

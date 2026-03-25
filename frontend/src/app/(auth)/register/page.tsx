@@ -26,8 +26,12 @@ function RegisterFormStepperContent() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0); // 1 = next, -1 = back
-  const [formData, setFormData] = useState<Partial<FormData>>({});
-
+  const [formData, setFormData] = useState<Partial<FormData>>({
+    //Put default values here
+    iconUrl: "",
+    photoUrls: ["", "", "", ""]
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const updateData = (data: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
@@ -64,6 +68,15 @@ function RegisterFormStepperContent() {
       router.push("/login");
     } catch (err) {
       if (err instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+
+        err.issues.forEach((issue) => {
+          const field = issue.path[0];
+          if (field) {
+            fieldErrors[field.toString()] = issue.message;
+          }
+        })
+        setFormErrors(fieldErrors);
         toast.error("Form is incomplete")
       } else {
         toast.error((err as Error).message || "Something went wrong... Please try again later")
@@ -120,6 +133,7 @@ function RegisterFormStepperContent() {
       updateData={updateData}
       defaultValues={formData}
       onSubmitFinal={handleSubmitFinal}
+      errors={formErrors}
     />,
   ];
 

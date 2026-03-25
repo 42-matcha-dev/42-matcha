@@ -7,9 +7,10 @@ import { toast } from 'sonner'
 interface Props {
   initialUrl: string | null
   onChange?: (url: string) => void
+  error?: string
 }
 
-export default function AvatarUploader({ initialUrl, onChange }: Props) {
+export default function AvatarUploader({ initialUrl, onChange, error }: Props) {
   const [iconUrl, setIconUrl] = useState<string | null>(initialUrl)
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -47,48 +48,52 @@ export default function AvatarUploader({ initialUrl, onChange }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <div
-        className="cursor-pointer"
-        onClick={() => {
-          if (!uploading) inputRef.current!.click()
-        }}
-      >
-        {iconUrl ? (
-          <Image
-            src={iconUrl}
-            alt="icon"
-            width={128}
-            height={128}
-            className="w-32 h-32 rounded-full object-cover bg-gray-300"
-            unoptimized
-          />
-        ) : (
-          <div className="w-32 h-32 rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
-            +
-          </div>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (file) uploadImage(file)
+    <div className='w-full'>
+      <div className="flex items-center justify-center gap-4 w-full">
+        <div
+          className="cursor-pointer"
+          onClick={() => {
+            if (!uploading) inputRef.current!.click()
           }}
-          disabled={uploading}
-        />
+        >
+          {iconUrl ? (
+            <Image
+              src={iconUrl}
+              alt="icon"
+              width={128}
+              height={128}
+              className="w-32 h-32 rounded-full object-cover bg-gray-300"
+              unoptimized
+            />
+          ) : (
+            <div className="w-32 h-32 rounded-full bg-gray-300 flex justify-center items-center text-2xl text-gray-600">
+              +
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) uploadImage(file)
+            }}
+            disabled={uploading}
+          />
+        </div>
+        <button
+          type="button"
+          className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
+          onClick={() => {
+            if (!uploading) inputRef.current!.click()
+          }}
+        >
+          Upload Icon
+        </button>
       </div>
-      <button
-        type="button"
-        className="bg-black text-white px-6 py-3 rounded-lg font-medium border-none cursor-pointer"
-        onClick={() => {
-          if (!uploading) inputRef.current!.click()
-        }}
-      >
-        Upload Icon
-      </button>
+      {error && <div className="text-red-500 mt-2 text-center">{error}</div>}
     </div>
+
   )
 }
