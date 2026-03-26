@@ -1,23 +1,20 @@
-const COMMON_PASSWORDS = new Set([
-    'password',
-    '12345678',
-    '12345679',
-    'azertyulop',
-    'azerty123',
-    'final9999',
-    'motdepasse',
-    '1234567890',
-    'gazeuses',
-    '12345678910',
-    'football',
-    'iloveyou',
-    'realmadrid'
-]);
+import { zxcvbnAsync, zxcvbnOptions } from "@zxcvbn-ts/core";
+import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
+import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
+
+zxcvbnOptions.setOptions({
+    graphs: zxcvbnCommonPackage.adjacencyGraphs,
+    dictionary: {
+      ...zxcvbnCommonPackage.dictionary,
+      ...zxcvbnEnPackage.dictionary,
+    },
+})
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 72;
+const MIN_ZXCVBN_SCORE = 2;
 
-export const validatePasswordPolicy = (rawPassword: unknown): string | null => {
+export const validatePasswordPolicy = async (rawPassword: unknown): Promise<string | null> => {
 if (typeof rawPassword !== 'string') {
     return 'Password is required';
     }
@@ -28,13 +25,9 @@ if (typeof rawPassword !== 'string') {
     if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
     return `Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`;
     }
-    const normalized = password.toLowerCase();
-    if (COMMON_PASSWORDS.has(normalized)) {
-    return 'Password is too common';
-    }
-    // Keeps protection simple: avoid pure alphabetic words only.
-    if (/^[a-zA-Z]+$/.test(password)) {
-    return 'Password must include at least one number or symbol';
+    const result = await zxcvbnAsync(password);
+    if (result.score < MIN_ZXCVBN_SCORE) {
+        return 'Password is too weak. Try a longer or less common password.';
     }
     return null;
 };
