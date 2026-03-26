@@ -1,7 +1,6 @@
 "use client";
 
 import { z } from "zod";
-import { registerSchema } from "@/app/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
@@ -12,9 +11,9 @@ import { setCookie } from "@/utils/cookie.util";
 import { toast } from "sonner";
 import Link from "next/link";
 
-const loginSchema = registerSchema.pick({
-    email: true,
-    password: true
+const loginSchema = z.object({
+  email: z.email(),
+  password: z.string().min(1, { message: "Password is required." }),
 })
 
 type LoginSchema = z.infer<typeof loginSchema>;
@@ -60,7 +59,7 @@ export default function LoginForm() {
                 setCookie('token', result.token, 7); // 7 days expiration
             }
             router.push("/profile");
-        } catch (error) {
+        } catch {
             toast.error('Network error. Please try again.');
         }
     };
