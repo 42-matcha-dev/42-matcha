@@ -20,9 +20,9 @@ export const signup = async (req: Request, res: Response) => {
     if (!email || !password)
       return res.status(400).json({ error: 'Missing fields' });
 
-    const passwordError = validatePasswordPolicy(password);
+    const passwordError = await validatePasswordPolicy(password);
     if (passwordError) {
-      return res.status(400).json({ error: passwordError });
+      return res.status(400).json({ error: passwordError, field: 'password' });
     }
 
     const existingUser = await pool.query(
@@ -117,9 +117,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     if (!token || !password)
       return res.status(400).json({ error: 'Token and password are required' });
 
-    const passwordError = validatePasswordPolicy(password);
+    const passwordError = await validatePasswordPolicy(password);
     if (passwordError) {
-      return res.status(400).json({ error: passwordError });
+      return res.status(400).json({ error: passwordError, field: 'password' });
     }
 
     await passwordResetService.resetPassword(token, password);
