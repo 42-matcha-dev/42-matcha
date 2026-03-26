@@ -1,8 +1,4 @@
 import express from 'express';
-import { v4 as uuidv4 } from 'uuid';
-import pool from '../database/init.js';
-import bcrypt from 'bcrypt';
-import { sendEmail } from '../utils/email.util.js';
 import { authService } from '../services/auth.service.js';
 import { passwordResetService } from '../services/password_reset.service.js';
 import { emailChangeService } from '../services/change_email.service.js';
@@ -19,44 +15,7 @@ export const signup = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({ error: 'Missing fields' });
-
-    const passwordError = await validatePasswordPolicy(password);
-    if (passwordError) {
-      return res.status(400).json({ error: passwordError, field: 'password' });
-    }
-
-    const existingUser = await pool.query(
-      'SELECT id FROM users WHERE email = $1', [email]
-    );
-    if (existingUser.rows.length > 0)
-      return res.status(409).json({ error: 'This email is already registered' });
-
-    const hashed = await bcrypt.hash(password, 10);
-    const token = uuidv4();
-
-    const existingPending = await pool.query(
-      'SELECT id FROM pending_users WHERE email = $1', [email]
-    );
-
-    if (existingPending.rows.length > 0) {
-      await pool.query(
-        'UPDATE pending_users SET password_hash = $1, token = $2, created_at = NOW() WHERE email = $3',
-        [hashed, token, email]
-      );
-    } else {
-      await pool.query(
-        'INSERT INTO pending_users (email, password_hash, token) VALUES ($1, $2, $3)',
-        [email, hashed, token]
-      );
-    }
-
-    const verifyLink = `${process.env.FRONTEND_URL}/register?token=${token}`;
-    await sendEmail({
-      to: email,
-      subject: 'Verify your Matcha account',
-      text: `Click here to verify your account: ${verifyLink}`,
-    });
-
+    await authService.signup(email, password)
     res.status(200).json({ message: 'Verification email sent' });
   } catch (err: any) {
     console.error(err);

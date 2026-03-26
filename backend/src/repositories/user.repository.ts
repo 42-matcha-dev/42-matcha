@@ -52,6 +52,13 @@ export const userRepository = {
     return res.rows[0]
   },
 
+  userExistsByEmail: async(email: string) => {
+    const res = await pool.query(
+      'SELECT id FROM users WHERE email = $1', [email]
+    )
+    return res.rowCount > 0
+  },
+
   findUserById: async (userId: number, currentUserId: number) => {
     const query = `
       SELECT
