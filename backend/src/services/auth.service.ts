@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { authRepository } from "../repositories/auth.repository.js";
 import { userService } from "./user.service.js";
-import type { RegisterSchema } from "../types/auth.types.js";
+import type { RegisterSchema } from "../shemas/auth.schema.js";
 import { generateToken } from "../utils/jwt.util.js";
 import { v4 as uuidv4 } from 'uuid';
 import { sendEmail } from '../utils/email.util.js';

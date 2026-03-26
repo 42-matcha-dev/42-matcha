@@ -42,3 +42,5 @@ export const registerSchema = z.object({
   iconUrl: z.string().url().nullable(),
   photoUrls: z.array(z.string().url()).max(4)
 }).strict();
+
+export type RegisterSchema = z.infer<typeof registerSchema>;
