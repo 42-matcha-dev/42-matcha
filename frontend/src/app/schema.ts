@@ -12,10 +12,18 @@ const longText = (min = 3, max = 150) =>
     .min(min, { message: `Text must contain at least ${min} characters.` })
     .max(max, { message: `Text must contain at most ${max} characters.` })
 
+export const passwordSchema = z
+  .string()
+  .min(8, { message: 'Password must be at least 8 characters.' })
+  .max(72, { message: 'Password must be at most 72 characters.' })
+  .refine((v) => v === v.trim(), {
+    message: 'Password cannot start or end with spaces.',
+  })
+
 export const registerSchema = z.object({
   email: z.email(),
-  password: shortText(),
-  repeatPassword: shortText(),
+  password: passwordSchema,
+  repeatPassword: z.string(),
   firstName: shortText(),
   lastName: shortText(),
   birthday: z
@@ -50,6 +58,9 @@ export const registerSchema = z.object({
     .max(5, { message: 'You can select up to 5 tags.' }),
   iconUrl: z.string().url().nullable(),
   photoUrls: z.array(z.string().url()).max(4)
+}).refine((data) => data.password === data.repeatPassword, {
+  message: 'Passwords do not match.',
+  path: ['repeatPassword'],
 })
 
 export type RegisterSchema = z.infer<typeof registerSchema>

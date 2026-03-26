@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import { passwordSchema } from "@/app/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
@@ -13,10 +14,7 @@ import { Suspense } from "react";
 
 const resetPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(3, "Password must be at least 3 characters")
-      .max(20, "Password must be at most 20 characters"),
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -34,6 +32,8 @@ function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordSchema>({
     resolver: zodResolver(resetPasswordSchema),
@@ -69,7 +69,11 @@ function ResetPasswordForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        toast.error(errorData.error ?? "Failed to reset password");
+        if (errorData.field === "password") {
+          setError("password", { type: "server", message: errorData.error });
+        } else {
+          toast.error(errorData.error ?? "Failed to reset password");
+        }
         return;
       }
 
@@ -94,7 +98,7 @@ function ResetPasswordForm() {
           placeholder="New Password"
           type="password"
           error={errors.password}
-          {...register("password")}
+          {...register("password", { onChange: () => clearErrors("password") })}
         />
         <InputForm
           placeholder="Confirm Password"
