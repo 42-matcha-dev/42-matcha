@@ -69,11 +69,10 @@ function ResetPasswordForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const msg = errorData.error ?? "Failed to reset password";
-        if (msg.toLowerCase().startsWith("password")) {
-          setError("password", { type: "server", message: msg });
+        if (errorData.field === "password") {
+          setError("password", { type: "server", message: errorData.error });
         } else {
-          toast.error(msg);
+          toast.error(errorData.error ?? "Failed to reset password");
         }
         return;
       }
