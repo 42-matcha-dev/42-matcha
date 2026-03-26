@@ -43,8 +43,8 @@ export const registerSchema = z.object({
       return age >= 18 && age <= 100
     }, "You must be between 18 and 100 years old"),
   location: z.string(),
-  latitude: z.number(),
-  longitude: z.number(),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
   gender: z.enum(['male', 'female'], {
     message: 'Please select an option.'
   }),
