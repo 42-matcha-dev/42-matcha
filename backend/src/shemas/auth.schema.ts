@@ -1,16 +1,5 @@
 import { z } from 'zod'
-
-const shortText = (min = 3, max = 20) =>
-  z
-    .string()
-    .min(min, { message: `Text must contain at least ${min} characters.` })
-    .max(max, { message: `Text must contain at most ${max} characters.` })
-
-const longText = (min = 3, max = 150) =>
-  z
-    .string()
-    .min(min, { message: `Text must contain at least ${min} characters.` })
-    .max(max, { message: `Text must contain at most ${max} characters.` })
+import { shortText, longText } from '../utils/zod.js';
 
 export const registerSchema = z.object({
   firstName: shortText(),
