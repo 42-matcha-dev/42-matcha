@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS pending_users (
   token UUID UNIQUE NOT NULL,
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 `;
