@@ -6,6 +6,7 @@ import { conversationRepository } from '../repositories/conversation.repository.
 import { notificationService } from './notification.service.js'
 import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
 import { HttpError } from '../errors/HttpError.js'
+import type { SearchUsersSchema } from '../shemas/search.schema.js'
 
 export const userService = {
   getProfile: async (userId: number, currentUserId: number) => {
@@ -60,67 +61,10 @@ export const userService = {
 
   searchUsers: async (
     currentUserId: number,
-    params: {
-      ageMin?: number
-      ageMax?: number
-      distanceMax?: number
-      fameMin?: number
-      fameMax?: number
-      tagIds?: number[]
-      page?: number
-      limit?: number
-      sortBy?: string
-      order?: string
-    }
+    data: SearchUsersSchema
   ) => {
-    // Set defaults only for pagination
-    const page = params.page !== undefined ? Math.max(0, params.page) : 0
-    const limit = params.limit !== undefined ? Math.max(1, Math.min(100, params.limit)) : 20
-
-    // Validate sort parameters
-    const validSortFields = ['age', 'distance', 'fame', 'tags']
-    const validOrder = ['asc', 'desc']
-
-    if (params.sortBy && !validSortFields.includes(params.sortBy)) {
-      throw new Error(`Invalid sortBy parameter. Must be one of: ${validSortFields.join(', ')}`)
-    }
-
-    if (params.order && !validOrder.includes(params.order)) {
-      throw new Error(`Invalid order parameter. Must be one of: ${validOrder.join(', ')}`)
-    }
-
-    // Validate age range only if both are provided
-    if (params.ageMin !== undefined && params.ageMax !== undefined) {
-      if (params.ageMin > params.ageMax) {
-        throw new Error('ageMin must be less than or equal to ageMax')
-      }
-    }
-
-    // Validate fame range only if both are provided
-    if (params.fameMin !== undefined && params.fameMax !== undefined) {
-      if (params.fameMin > params.fameMax) {
-        throw new Error('fameMin must be less than or equal to fameMax')
-      }
-    }
-
-    // Validate distanceMax if provided
-    if (params.distanceMax !== undefined && params.distanceMax < 0) {
-      throw new Error('distanceMax must be greater than or equal to 0')
-    }
-
     try {
-      const result = await userRepository.searchUsers(currentUserId, {
-        ageMin: params.ageMin,
-        ageMax: params.ageMax,
-        distanceMax: params.distanceMax,
-        fameMin: params.fameMin,
-        fameMax: params.fameMax,
-        tagIds: params.tagIds && params.tagIds.length > 0 ? params.tagIds : undefined,
-        page,
-        limit,
-        sortBy: params.sortBy,
-        order: params.order
-      })
+      const result = await userRepository.searchUsers(currentUserId, data)
       return result
     } catch (err) {
       throw new HttpError(500, 'Failed to search users')

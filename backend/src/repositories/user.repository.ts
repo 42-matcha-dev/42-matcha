@@ -1,5 +1,6 @@
 import pool from '../database/init.js'
 import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
+import type { SearchUsersSchema } from '../shemas/search.schema.js'
 
 type UserRow = {
   id: number
@@ -187,18 +188,7 @@ export const userRepository = {
 
   searchUsers: async (
     currentUserId: number,
-    params: {
-      ageMin?: number
-      ageMax?: number
-      distanceMax?: number
-      fameMin?: number
-      fameMax?: number
-      tagIds?: number[]
-      page?: number
-      limit?: number
-      sortBy?: string
-      order?: string
-    }
+    params: SearchUsersSchema
   ) => {
     const {
       ageMin,

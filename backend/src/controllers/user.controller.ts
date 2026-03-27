@@ -146,18 +146,7 @@ export const searchUsers = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Call service
-    const searchResults = await userService.searchUsers(req.user.userId, {
-      ageMin,
-      ageMax,
-      distanceMax,
-      fameMin,
-      fameMax,
-      tagIds,
-      page,
-      limit,
-      sortBy,
-      order
-    })
+    const searchResults = await userService.searchUsers(req.user.userId, req.body)
 
     return res.status(200).json(searchResults)
   } catch (error) {
