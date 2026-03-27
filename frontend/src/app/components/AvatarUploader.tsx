@@ -3,14 +3,21 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { getCookie } from '@/utils/cookie.util'
 
 interface Props {
   initialUrl: string | null
+  pendingToken?: string | null
   onChange?: (url: string) => void
   error?: string
 }
 
-export default function AvatarUploader({ initialUrl, onChange, error }: Props) {
+export default function AvatarUploader({ 
+  initialUrl,
+  pendingToken,
+  onChange,
+  error 
+}: Props) {
   const [iconUrl, setIconUrl] = useState<string | null>(initialUrl)
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -26,9 +33,21 @@ export default function AvatarUploader({ initialUrl, onChange, error }: Props) {
     const formData = new FormData();
     formData.append('image', file)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`, {
+      const jwtToken = getCookie('token')
+      const headers: any = {};
+      if (jwtToken) {
+        headers.Authorization = `Bearer ${jwtToken}`
+      } else if (!pendingToken) {
+        throw new Error("Authentication required for upload");
+      }
+      
+      const apiUrl = pendingToken
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar?token=${pendingToken}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`
+      const res = await fetch(apiUrl, {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers
       });
 
       if (!res.ok) {

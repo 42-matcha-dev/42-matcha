@@ -3,13 +3,21 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { getCookie } from '@/utils/cookie.util'
 
 interface Props {
   photoUrls: string[]
+  pendingToken?: string | null
   onChange: (urls: string[]) => void
   error?: string
 }
-export default function PhotoGridUploader({ photoUrls, onChange, error}: Props) {
+
+export default function PhotoGridUploader({
+  photoUrls,
+  pendingToken,
+  onChange,
+  error
+}: Props) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -22,14 +30,22 @@ export default function PhotoGridUploader({ photoUrls, onChange, error}: Props) 
     try {
       const formData = new FormData()
       formData.append('image', file)
+      const jwtToken = getCookie('token')
+      const headers: any = {};
+      if (jwtToken) {
+        headers.Authorization = `Bearer ${jwtToken}`
+      } else if (!pendingToken) {
+        throw new Error("Authentication required for upload");
+      }
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`,
-        {
-          method: 'POST',
-          body: formData
-        }
-      )
+      const apiUrl = pendingToken
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar?token=${pendingToken}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData,
+        headers
+      });
 
       if (!res.ok) {
         const data = await res.json()

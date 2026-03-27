@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Title from "@/app/components/Title";
 import NextButton from "@/app/components/Buttons/NextButton";
 import BackButton from "@/app/components/Buttons/BackButton";
@@ -33,6 +34,8 @@ function RegisterImagesFormContent({
   onSubmitFinal,
   errors
 }: Props) {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token")
 
   return (
     <div className="w-full bg-white">
@@ -44,12 +47,14 @@ function RegisterImagesFormContent({
         <AvatarUploader
           initialUrl={defaultValues.iconUrl ?? null}
           onChange={(url) => updateData({ iconUrl: url})}
+          pendingToken={token}
           error={errors?.iconUrl}
         />
 
         {/* Photos Upload */}
         <PhotoGridUploader
           photoUrls={normalizePhotoUrls(defaultValues.photoUrls)}
+          pendingToken={token}
           onChange={(urls) => updateData({ photoUrls: urls })}
         />
 
