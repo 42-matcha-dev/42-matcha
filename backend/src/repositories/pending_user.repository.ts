@@ -22,7 +22,11 @@ export const pendingUserRepository = {
     return res.rows[0]
   },
   findByToken: async (token: string) => {
-    const res = await pool.query('SELECT * FROM pending_users WHERE token = $1', [token])
+    const res = await pool.query(`
+      SELECT * FROM pending_users 
+      WHERE token = $1
+      AND expires_at > NOW()
+    `, [token])
     return res.rows[0]
   },
   delete: async (token: string) => {
