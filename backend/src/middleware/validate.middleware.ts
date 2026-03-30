@@ -20,12 +20,12 @@ export const validateQuery =
     const result = schema.safeParse(req.query || {})
 
     if (!result.success) {
+      const fieldErrors = Object.fromEntries(
+        result.error.issues.map((issue) => [issue.path.join('.'), issue.message])
+      )
       return res.status(400).json({
         error: 'Invalid query parameter',
-        errors: result.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message
-        }))
+        fields: fieldErrors
       })
     }
 
