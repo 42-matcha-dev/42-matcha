@@ -27,7 +27,7 @@ export const userService = {
       const [liked, blocked, reported] = await Promise.all([
         likeRepository.checkLikeExists(currentUserId, userId),
         blockRepository.checkBlockExists(currentUserId, userId),
-        reportRepository.checkReportExists(currentUserId, userId),
+        reportRepository.checkReportExists(currentUserId, userId)
       ])
       isLiked = liked
       isBlocked = blocked
@@ -45,24 +45,21 @@ export const userService = {
         const conv = await conversationRepository.getConversationByUserIds(u1, u2)
         conversationId = conv?.id ?? null
       }
-      await notificationService.createNotification(userId, currentUserId, "VIEW", currentUserId)
+      await notificationService.createNotification(userId, currentUserId, 'VIEW', currentUserId)
     }
 
     return { ...user, tags, isLiked, isMatch, isBlocked, isReported, conversationId }
   },
 
   updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {
-    return userRepository.updateUserProfile(userId, data);
+    return userRepository.updateUserProfile(userId, data)
   },
 
   assignTags: async (userId: number, tagIds: number[]) => {
     await userRepository.insertUserTags(userId, tagIds)
   },
 
-  searchUsers: async (
-    currentUserId: number,
-    data: SearchUsersSchema
-  ) => {
+  searchUsers: async (currentUserId: number, data: SearchUsersSchema) => {
     try {
       const result = await userRepository.searchUsers(currentUserId, data)
       return result
