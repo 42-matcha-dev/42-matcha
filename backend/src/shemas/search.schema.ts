@@ -14,16 +14,27 @@ export const searchUsersShema = z
     tags: z
       .string()
       .optional()
-      .transform((val) =>
-        val
-          ? val
-              .split(',')
-              .map((v) => Number(v.trim()))
-              .filter((v) => !isNaN(v))
-          : undefined
-      ),
+      .refine(
+        (val) => {
+          if (!val) return true
+          return val.split(',').every((v) => !isNaN(Number(v.trim())))
+        },
+        { message: 'Tags must be a comma-separated list of numbers' }
+      )
+      .refine(
+        (val) => {
+          if (!val) return true
+          return val.split(',').length <= 10
+        },
+        { message: 'You can filter by up to 10 tags' }
+      )
+      .transform((val) => (val ? val.split(',').map((v) => Number(v.trim())) : undefined)),
 
-    sortBy: z.enum(['distance-asc', 'fame-desc', 'age-asc', 'age-desc', 'common-desc']).optional()
+    sortBy: z
+      .enum(['distance-asc', 'fame-desc', 'age-asc', 'age-desc', 'common-desc'], {
+        message: 'Invalid sort option'
+      })
+      .optional()
   })
   .refine((data) => !data.ageMin || !data.ageMax || data.ageMin <= data.ageMax, {
     message: 'Minimum age cannot be greater than maximum age'
