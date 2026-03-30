@@ -1,23 +1,23 @@
-import bcrypt from 'bcrypt';
-import { faker } from '@faker-js/faker';
-import pool from './init.js';
-import tagsData from '../data/tags.json' with { type: 'json' };
+import bcrypt from 'bcrypt'
+import { faker } from '@faker-js/faker'
+import pool from './init.js'
+import tagsData from '../data/tags.json' with { type: 'json' }
 
 interface TestUser {
-  email: string;
-  password: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  birthday: string;
-  gender: 'male' | 'female';
-  sexual_preferences: 'male' | 'female' | 'both';
-  biography: string;
-  location: string;
-  latitude: number;
-  longitude: number;
-  icon_url?: string;
-  photo_urls?: string[];
+  email: string
+  password: string
+  username: string
+  first_name: string
+  last_name: string
+  birthday: string
+  gender: 'male' | 'female'
+  sexual_preferences: 'male' | 'female' | 'both'
+  biography: string
+  location: string
+  latitude: number
+  longitude: number
+  icon_url?: string
+  photo_urls?: string[]
 }
 
 const testUsers: TestUser[] = [
@@ -34,8 +34,8 @@ const testUsers: TestUser[] = [
     location: 'Paris, France',
     latitude: 48.8566,
     longitude: 2.3522,
-    icon_url: "https://i.pravatar.cc/300?img=5",
-    photo_urls: ["https://i.pravatar.cc/300?img=5"]
+    icon_url: 'https://i.pravatar.cc/300?img=5',
+    photo_urls: ['https://i.pravatar.cc/300?img=5']
   },
   {
     email: 'test2@example.com',
@@ -50,8 +50,8 @@ const testUsers: TestUser[] = [
     location: 'Paris, France',
     latitude: 48.8575,
     longitude: 2.3512,
-    icon_url: "https://i.pravatar.cc/300?img=12",
-    photo_urls: ["https://i.pravatar.cc/300?img=12"]
+    icon_url: 'https://i.pravatar.cc/300?img=12',
+    photo_urls: ['https://i.pravatar.cc/300?img=12']
   },
   {
     email: 'test3@example.com',
@@ -66,8 +66,8 @@ const testUsers: TestUser[] = [
     location: 'Paris, France',
     latitude: 48.8559,
     longitude: 2.3548,
-    icon_url: "https://i.pravatar.cc/300?img=6",
-    photo_urls: ["https://i.pravatar.cc/300?img=6"]
+    icon_url: 'https://i.pravatar.cc/300?img=6',
+    photo_urls: ['https://i.pravatar.cc/300?img=6']
   },
   {
     email: 'test4@example.com',
@@ -82,8 +82,8 @@ const testUsers: TestUser[] = [
     location: 'Paris, France',
     latitude: 48.8601,
     longitude: 2.3483,
-    icon_url: "https://i.pravatar.cc/300?img=9",
-    photo_urls: ["https://i.pravatar.cc/300?img=9"]
+    icon_url: 'https://i.pravatar.cc/300?img=9',
+    photo_urls: ['https://i.pravatar.cc/300?img=9']
   },
   {
     email: 'test5@example.com',
@@ -98,10 +98,10 @@ const testUsers: TestUser[] = [
     location: 'Paris, France',
     latitude: 48.8538,
     longitude: 2.3571,
-    icon_url: "https://i.pravatar.cc/300?img=10",
-    photo_urls: ["https://i.pravatar.cc/300?img=10"]
-  },
-];
+    icon_url: 'https://i.pravatar.cc/300?img=10',
+    photo_urls: ['https://i.pravatar.cc/300?img=10']
+  }
+]
 
 const avatarGenderMap = [
   { id: 1, gender: 'male' },
@@ -174,22 +174,22 @@ const avatarGenderMap = [
   { id: 68, gender: 'male' },
   { id: 69, gender: 'male' },
   { id: 70, gender: 'male' }
-];
+]
 
 function getRandomAvatar(gender: 'male' | 'female') {
-  const filtered = avatarGenderMap.filter(a => a.gender === gender);
-  const random = filtered[Math.floor(Math.random() * filtered.length)];
+  const filtered = avatarGenderMap.filter((a) => a.gender === gender)
+  const random = filtered[Math.floor(Math.random() * filtered.length)]
 
-  return `https://i.pravatar.cc/300?img=${random.id}`;
+  return `https://i.pravatar.cc/300?img=${random.id}`
 }
 
 // French cities with matching coordinates
 const frenchCities = [
   { city: 'Paris', country: 'FR', latitude: 48.8566, longitude: 2.3522 },
-  { city: 'Lyon', country: 'FR', latitude: 45.7640, longitude: 4.8357 },
+  { city: 'Lyon', country: 'FR', latitude: 45.764, longitude: 4.8357 },
   { city: 'Marseille', country: 'FR', latitude: 43.2965, longitude: 5.3698 },
   { city: 'Toulouse', country: 'FR', latitude: 43.6047, longitude: 1.4442 },
-  { city: 'Nice', country: 'FR', latitude: 43.7102, longitude: 7.2620 },
+  { city: 'Nice', country: 'FR', latitude: 43.7102, longitude: 7.262 },
   { city: 'Nantes', country: 'FR', latitude: 47.2184, longitude: -1.5536 },
   { city: 'Strasbourg', country: 'FR', latitude: 48.5734, longitude: 7.7521 },
   { city: 'Montpellier', country: 'FR', latitude: 43.6108, longitude: 3.8767 },
@@ -199,9 +199,9 @@ const frenchCities = [
   { city: 'Reims', country: 'FR', latitude: 49.2583, longitude: 4.0317 },
   { city: 'Le Havre', country: 'FR', latitude: 49.4944, longitude: 0.1079 },
   { city: 'Saint-Étienne', country: 'FR', latitude: 45.4397, longitude: 4.3872 },
-  { city: 'Toulon', country: 'FR', latitude: 43.1242, longitude: 5.9280 },
+  { city: 'Toulon', country: 'FR', latitude: 43.1242, longitude: 5.928 },
   { city: 'Grenoble', country: 'FR', latitude: 45.1885, longitude: 5.7245 },
-  { city: 'Dijon', country: 'FR', latitude: 47.3220, longitude: 5.0415 },
+  { city: 'Dijon', country: 'FR', latitude: 47.322, longitude: 5.0415 },
   { city: 'Angers', country: 'FR', latitude: 47.4739, longitude: -0.5517 },
   { city: 'Nîmes', country: 'FR', latitude: 43.8367, longitude: 4.3601 },
   { city: 'Villeurbanne', country: 'FR', latitude: 45.7719, longitude: 4.8902 },
@@ -214,39 +214,47 @@ const frenchCities = [
   { city: 'Limoges', country: 'FR', latitude: 45.8354, longitude: 1.2622 },
   { city: 'Perpignan', country: 'FR', latitude: 42.6977, longitude: 2.8954 },
   { city: 'Metz', country: 'FR', latitude: 49.1193, longitude: 6.1757 },
-  { city: 'Besançon', country: 'FR', latitude: 47.2378, longitude: 6.0241 },
-];
+  { city: 'Besançon', country: 'FR', latitude: 47.2378, longitude: 6.0241 }
+]
 
 const generateFakerUser = (): TestUser => {
-  const gender = faker.helpers.arrayElement(['male', 'female'] as const);
-  const sexualPreferences = faker.helpers.arrayElement(['male', 'female', 'both'] as const);
+  const gender = faker.helpers.arrayElement(['male', 'female'] as const)
+  const sexualPreferences = faker.helpers.arrayElement(['male', 'female', 'both'] as const)
 
   // Generate birthday between 18-80 years ago
-  const minAge = 18;
-  const maxAge = 42;
-  const birthYear = new Date().getFullYear() - faker.number.int({ min: minAge, max: maxAge });
-  const birthMonth = faker.number.int({ min: 1, max: 12 });
-  const birthDay = faker.number.int({ min: 1, max: 28 }); // Use 28 to avoid month-end issues
-  const birthday = `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
+  const today = new Date()
+
+  const minAge = 18
+  const maxAge = 42
+
+  const maxBirthDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate())
+
+  const minBirthDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate())
+
+  // Random date between minBirthDate and maxBirthDate
+  const birthdayDate = faker.date.between({
+    from: minBirthDate,
+    to: maxBirthDate
+  })
+
+  const birthday = birthdayDate.toISOString().split('T')[0]
 
   // Generate location with coordinates (select from French cities)
-  const selectedCity = faker.helpers.arrayElement(frenchCities);
-  const location = `${selectedCity.city}, ${selectedCity.country}`;
-  const latitude = selectedCity.latitude;
-  const longitude = selectedCity.longitude;
+  const selectedCity = faker.helpers.arrayElement(frenchCities)
+  const location = `${selectedCity.city}, ${selectedCity.country}`
+  const latitude = selectedCity.latitude
+  const longitude = selectedCity.longitude
 
   // Generate icon URL (mandatory)
-  const iconUrl = getRandomAvatar(gender);
+  const iconUrl = getRandomAvatar(gender)
 
   // Generate photo URLs (1–4 total, first = icon)
-  const photoCount = faker.number.int({ min: 0, max: 3 });
+  const photoCount = faker.number.int({ min: 0, max: 3 })
 
   const photoUrls = [
     iconUrl,
-    ...Array.from({ length: photoCount }, () =>
-      `https://picsum.photos/300?random=${Math.random()}`
-    )
-  ];
+    ...Array.from({ length: photoCount }, () => `https://picsum.photos/300?random=${Math.random()}`)
+  ]
 
   return {
     email: faker.internet.email(),
@@ -262,116 +270,117 @@ const generateFakerUser = (): TestUser => {
     latitude,
     longitude,
     icon_url: iconUrl,
-    photo_urls: photoUrls,
-  };
-};
+    photo_urls: photoUrls
+  }
+}
 
 export const seedTags = async () => {
-  console.log('🌱 Seeding tags...');
+  console.log('🌱 Seeding tags...')
 
   try {
-    const tagMap = new Map<string, number>(); // name -> id
+    const tagMap = new Map<string, number>() // name -> id
 
     for (const [category, tags] of Object.entries(tagsData)) {
-      const tagArray = tags as string[];
+      const tagArray = tags as string[]
       for (const tagName of tagArray) {
         // Check if tag already exists
-        const existingTag = await pool.query(
-          'SELECT id FROM tags WHERE name = $1',
-          [tagName]
-        );
+        const existingTag = await pool.query('SELECT id FROM tags WHERE name = $1', [tagName])
 
         if (existingTag.rows.length > 0) {
-          tagMap.set(tagName, existingTag.rows[0].id);
-          continue;
+          tagMap.set(tagName, existingTag.rows[0].id)
+          continue
         }
 
         // Insert new tag
         const result = await pool.query(
           'INSERT INTO tags (name, category) VALUES ($1, $2) RETURNING id',
           [tagName, category]
-        );
-        tagMap.set(tagName, result.rows[0].id);
-        console.log(`✅ Created tag: ${tagName} (${category})`);
+        )
+        tagMap.set(tagName, result.rows[0].id)
+        console.log(`✅ Created tag: ${tagName} (${category})`)
       }
     }
 
-    console.log('✅ Tag seeding completed!');
-    return tagMap;
+    console.log('✅ Tag seeding completed!')
+    return tagMap
   } catch (err: any) {
-    console.error('❌ Error seeding tags:', err.message);
-    throw err;
+    console.error('❌ Error seeding tags:', err.message)
+    throw err
   }
-};
+}
 
 export const assignTagsToUser = async (userId: number, tagMap: Map<string, number>) => {
   try {
     // Get all tag IDs
-    const allTagIds = Array.from(tagMap.values());
+    const allTagIds = Array.from(tagMap.values())
 
     // Randomly assign 3-6 tags to each user
-    const numTags = Math.floor(Math.random() * 4) + 2; // 2-5 tags
-    const shuffled = [...allTagIds].sort(() => 0.5 - Math.random());
-    const selectedTagIds = shuffled.slice(0, numTags);
+    const numTags = Math.floor(Math.random() * 4) + 2 // 2-5 tags
+    const shuffled = [...allTagIds].sort(() => 0.5 - Math.random())
+    const selectedTagIds = shuffled.slice(0, numTags)
 
     // Insert user_tags associations
     for (const tagId of selectedTagIds) {
       await pool.query(
         'INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2) ON CONFLICT (user_id, tag_id) DO NOTHING',
         [userId, tagId]
-      );
+      )
     }
 
-    console.log(`✅ Assigned ${selectedTagIds.length} tags to user ${userId}`);
+    console.log(`✅ Assigned ${selectedTagIds.length} tags to user ${userId}`)
   } catch (err: any) {
-    console.error(`❌ Error assigning tags to user ${userId}:`, err.message);
+    console.error(`❌ Error assigning tags to user ${userId}:`, err.message)
   }
-};
+}
 
 export const seedTestUsers = async () => {
   // Only seed if SEED_TEST_USERS environment variable is set
   if (process.env.SEED_TEST_USERS !== 'true') {
-    console.log('ℹ️  Skipping test user seeding (set SEED_TEST_USERS=true to enable)');
-    return;
+    console.log('ℹ️  Skipping test user seeding (set SEED_TEST_USERS=true to enable)')
+    return
   }
 
-  console.log('🌱 Seeding test users...');
+  console.log('🌱 Seeding test users...')
 
   try {
     // Check if users already exist to avoid re-seeding
-    const userCountResult = await pool.query('SELECT COUNT(*) FROM users');
-    const userCount = parseInt(userCountResult.rows[0].count, 10);
+    const userCountResult = await pool.query('SELECT COUNT(*) FROM users')
+    const userCount = parseInt(userCountResult.rows[0].count, 10)
 
-    if (userCount > Number(process.env.SEED_MORE_USERS || 0) + 5) {
-      console.log(`✅ Database already seeded with ${userCount} users. Skipping seed.`);
-      return;
+    if (userCount >= Number(process.env.SEED_MORE_USERS || 0) + testUsers.length) {
+      console.log(`✅ Database already seeded with ${userCount} users. Skipping seed.`)
+      return
     }
 
     // First, seed tags
-    const tagMap = await seedTags();
+    const tagMap = await seedTags()
 
     // Generate faker users
-    console.log('🌱 Generating more users...');
-    const fakerUsers = Array.from({ length: Number(process.env.SEED_MORE_USERS) }, () => generateFakerUser());
+    console.log('🌱 Generating more users...')
+    const fakerUsers = Array.from({ length: Number(process.env.SEED_MORE_USERS) }, () =>
+      generateFakerUser()
+    )
 
     // Combine existing test users with faker-generated users
-    const allUsers = [...testUsers, ...fakerUsers];
-    console.log(`📊 Total users to seed: ${allUsers.length} (${testUsers.length} test users + ${fakerUsers.length} faker users)`);
+    const allUsers = [...testUsers, ...fakerUsers]
+    console.log(
+      `📊 Total users to seed: ${allUsers.length} (${testUsers.length} test users + ${fakerUsers.length} faker users)`
+    )
 
     for (const userData of allUsers) {
       // Check if user already exists
       const existingUser = await pool.query(
         'SELECT id FROM users WHERE email = $1 OR username = $2',
         [userData.email, userData.username]
-      );
+      )
 
       if (existingUser.rows.length > 0) {
-        console.log(`⏭️  User ${userData.email} already exists, skipping...`);
-        continue;
+        console.log(`⏭️  User ${userData.email} already exists, skipping...`)
+        continue
       }
 
       // Hash password
-      const password_hash = await bcrypt.hash(userData.password, 10);
+      const password_hash = await bcrypt.hash(userData.password, 10)
 
       // Insert user
       // NOTE: Database schema must include latitude and longitude columns for this to work
@@ -382,7 +391,7 @@ export const seedTestUsers = async () => {
           birthdate, gender, sexual_preferences, biography, location, latitude, longitude, icon_url, photo_urls
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING id, email, username;
-      `;
+      `
       const values = [
         userData.email,
         password_hash,
@@ -397,21 +406,20 @@ export const seedTestUsers = async () => {
         userData.latitude,
         userData.longitude,
         userData.icon_url || null,
-        userData.photo_urls || null,
-      ];
+        userData.photo_urls || null
+      ]
 
-      const result = await pool.query(query, values);
-      const userId = result.rows[0].id;
-      console.log(`✅ Created test user: ${result.rows[0].email} (${result.rows[0].username})`);
+      const result = await pool.query(query, values)
+      const userId = result.rows[0].id
+      console.log(`✅ Created test user: ${result.rows[0].email} (${result.rows[0].username})`)
 
       // Assign tags to the user
-      await assignTagsToUser(userId, tagMap);
+      await assignTagsToUser(userId, tagMap)
     }
 
-    console.log('✅ Test user seeding completed!');
+    console.log('✅ Test user seeding completed!')
   } catch (err: any) {
-    console.error('❌ Error seeding test users:', err.message);
+    console.error('❌ Error seeding test users:', err.message)
     // Don't throw - allow app to continue even if seeding fails
   }
-};
-
+}
