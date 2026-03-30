@@ -1,40 +1,15 @@
 import { z } from 'zod'
+import { queryNumber } from '../utils/zod.js'
 
 export const searchUsersShema = z
   .object({
-    ageMin: z.coerce
-      .number()
-      .min(18, { message: 'Minimum age must be at least 18' })
-      .max(100, { message: 'Minimum age cannot exceed 100' })
-      .optional(),
-
-    ageMax: z.coerce
-      .number()
-      .min(18, { message: 'Maximum age must be at least 18' })
-      .max(100, { message: 'Maximum age cannot exceed 100' })
-      .optional(),
-
-    distanceMax: z.coerce.number().min(0, { message: 'Distance cannot be negative' }).optional(),
-
-    fameMin: z.coerce
-      .number()
-      .min(0, { message: 'Minimum fame cannot be negative' })
-      .max(100, { message: 'Minimum fame cannot exceed 100' })
-      .optional(),
-
-    fameMax: z.coerce
-      .number()
-      .min(0, { message: 'Maximum fame cannot be negative' })
-      .max(100, { message: 'Maximum fame cannot exceed 100' })
-      .optional(),
-
-    page: z.coerce.number().min(0, { message: 'Page must be 0 or greater' }).default(0),
-
-    limit: z.coerce
-      .number()
-      .min(1, { message: 'Limit must be at least 1' })
-      .max(100, { message: 'Limit cannot exceed 100' })
-      .default(20),
+    ageMin: queryNumber(18, 100, 'Minimum age'),
+    ageMax: queryNumber(18, 100, 'Maximum age'),
+    distanceMax: queryNumber(0, undefined, 'Distance'),
+    fameMin: queryNumber(0, 100, 'Minimum fame'),
+    fameMax: queryNumber(0, 100, 'Maximum fame'),
+    page: queryNumber(0, undefined, 'Page').default(0),
+    limit: queryNumber(1, 100, 'Limit').default(20),
 
     tags: z
       .string()
