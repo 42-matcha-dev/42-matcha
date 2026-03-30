@@ -3,63 +3,61 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
-
-type SignedUrlData = {
-  signedUrl: string
-  path: string
-}
+import { getCookie } from '@/utils/cookie.util'
 
 interface Props {
   photoUrls: string[]
+  pendingToken?: string | null
   onChange: (urls: string[]) => void
+  error?: string
 }
-export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
+
+export default function PhotoGridUploader({
+  photoUrls,
+  pendingToken,
+  onChange,
+  error
+}: Props) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  const uploadFiles = async (files: FileList, index: number) => {
+  const uploadImage = async (files: FileList, index: number) => {
     const file = files?.[0]
     if (!file) return
     setUploading(true)
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload-urls`, {
+      const formData = new FormData()
+      formData.append('image', file)
+      const jwtToken = getCookie('token')
+      const headers: any = {};
+      if (jwtToken) {
+        headers.Authorization = `Bearer ${jwtToken}`
+      } else if (!pendingToken) {
+        throw new Error("Authentication required for upload");
+      }
+
+      const apiUrl = pendingToken
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar?token=${pendingToken}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/images/avatar`
+      const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          files: [
-            {
-              type: file.type,
-              size: file.size
-            }
-          ]
-        })
-      })
+        body: formData,
+        headers
+      });
 
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.message)
       }
 
-      const { urls }: { urls: SignedUrlData[] } = await res.json()
-      const { signedUrl, path } = urls[0]
-
-      const uploadRes = await fetch(signedUrl, {
-        method: 'PUT',
-        body: file
-      })
-
-      if (!uploadRes.ok) {
-        const data = await res.json()
-        throw new Error(data.message)
-      }
-
-      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-photos/${path}`
+      const { url } = await res.json()
 
       const newUrls = [...photoUrls]
-      newUrls[index] = publicUrl
+      newUrls[index] = url
       onChange(newUrls)
+    
     } catch (err: any) {
       toast.error(err.message || 'Failed to upload')
     } finally {
@@ -68,9 +66,10 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
   }
 
   const removePhoto = (index: number) => {
-    const newUrls = photoUrls.filter((_, i) => i !== index);
+    const newUrls = [...photoUrls];
+    newUrls[index] = "";
     onChange(newUrls);
-  }
+  };
 
   return (
     <div className="text-left w-full">
@@ -115,7 +114,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => e.target.files && uploadFiles(e.target.files, 0)}
+            onChange={(e) => e.target.files && uploadImage(e.target.files, 0)}
             disabled={uploading}
           />
         </div>
@@ -144,6 +143,7 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                     className="absolute top-1.5 right-1.5 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] text-[13px] cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
                       removePhoto(i)
                     }}
                   >
@@ -160,13 +160,14 @@ export default function PhotoGridUploader({ photoUrls, onChange}: Props) {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => e.target.files && uploadFiles(e.target.files, i)}
+                onChange={(e) => e.target.files && uploadImage(e.target.files, i)}
                 disabled={uploading}
               />
             </div>
           ))}
         </div>
       </div>
+      {error && <div className="text-red-500">{error}</div>}
     </div>
   )
 }

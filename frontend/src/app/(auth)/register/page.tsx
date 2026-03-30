@@ -9,6 +9,7 @@ import RegisterBasicForm from "@/app/components/SignupForms/RegisterBasicForm";
 import RegisterSpecificForm from "@/app/components/SignupForms/RegisterSpecificForm";
 import RegisterImagesForm from "@/app/components/SignupForms/RegisterImagesForm";
 import { toast } from "sonner";
+import { compactPhotoUrls } from "@/utils/photo.utils";
 
 const safeRegisterSchema = registerSchema.omit({
   email: true,
@@ -25,8 +26,12 @@ function RegisterFormStepperContent() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0); // 1 = next, -1 = back
-  const [formData, setFormData] = useState<Partial<FormData>>({});
-
+  const [formData, setFormData] = useState<Partial<FormData>>({
+    //Put default values here
+    iconUrl: "",
+    photoUrls: ["", "", "", ""]
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const updateData = (data: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
@@ -36,13 +41,15 @@ function RegisterFormStepperContent() {
       if (!token) throw new Error("Missing token.");
 
       const parsedData = safeRegisterSchema.parse(formData);
-      console.log("✅ Validation réussie :", parsedData);
-
+      const submitData = {
+        ...parsedData,
+        photoUrls: compactPhotoUrls(parsedData.photoUrls)
+      }
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${apiUrl}/api/auth/register?token=${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsedData),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -61,6 +68,15 @@ function RegisterFormStepperContent() {
       router.push("/login");
     } catch (err) {
       if (err instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+
+        err.issues.forEach((issue) => {
+          const field = issue.path[0];
+          if (field) {
+            fieldErrors[field.toString()] = issue.message;
+          }
+        })
+        setFormErrors(fieldErrors);
         toast.error("Form is incomplete")
       } else {
         toast.error((err as Error).message || "Something went wrong... Please try again later")
@@ -117,6 +133,7 @@ function RegisterFormStepperContent() {
       updateData={updateData}
       defaultValues={formData}
       onSubmitFinal={handleSubmitFinal}
+      errors={formErrors}
     />,
   ];
 

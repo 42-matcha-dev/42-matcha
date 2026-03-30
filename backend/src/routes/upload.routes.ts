@@ -1,7 +1,9 @@
 import { Router } from 'express';
-import { createUploadUrls } from '../controllers/upload.controller.js';
+import { uploadImage, uploadImages, uploadAuth } from '../middleware/upload.middleware.js';
+import { processAndUploadImage, uploadMultipleImages } from '../controllers/upload.controller.js';
 const router = Router();
 
-router.post('/upload-urls', createUploadUrls)
+router.post('/images/avatar', uploadAuth, uploadImage, processAndUploadImage)
+router.post('/images', uploadAuth, uploadImages, uploadMultipleImages)
 
 export default router;

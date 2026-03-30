@@ -78,7 +78,6 @@ function RegisterSpecificFormContent({ onNext, onBack, updateData, defaultValues
 
   const onSubmit = (data: RegisterSpecificSchema) => {
     updateData(data)
-    console.log('RegisterSpecificForm: ', data)
     onNext()
   }
 

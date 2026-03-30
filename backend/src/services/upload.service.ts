@@ -1,28 +1,52 @@
 import { randomUUID } from 'crypto'
 import supabase from '../database/supabase.init.js'
 import { HttpError } from '../errors/HttpError.js'
+import { fileTypeFromBuffer } from 'file-type';
+import sharp from 'sharp';
 
 export const uploadService = {
-  createSignedUrls: async (files: { type: string; size: number }[]) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
-    const MAX_SIZE = 5 * 1024 * 1024
-    const urls = []
+  processAndUploadImage: async (buffer: Buffer) => {
+    const type = await fileTypeFromBuffer(buffer);
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-    for (const file of files) {
-      if (!allowedTypes.includes(file.type)) {
+    if (!type || !ALLOWED_TYPES.includes(type.mime)) {
         throw new HttpError(400, 'Please upload jpeg, png or webp')
-      }
-
-      if (file.size > MAX_SIZE) {
-        throw new HttpError(400, 'File too large (<5MB)')
-      }
-      const path = `users/${randomUUID()}`
-      const { data, error } = await supabase.storage.from('user-photos').createSignedUploadUrl(path)
-      if (error) {
-        throw new Error('Supabase upload URL error')
-      }
-      urls.push(data)
     }
-    return urls
+
+    const processedImage = await sharp(buffer)
+      .resize(800, 800, {fit: 'inside'})
+      .jpeg({ quality: 80})
+      .toBuffer();
+
+    const filename = `${randomUUID()}.jpg`;
+
+    const { error } = await supabase.storage
+      .from('images')
+      .upload(filename, processedImage, {
+        contentType: 'image/jpeg',
+        upsert: false
+      })
+
+    if (error) {
+      throw new HttpError(400, 'Image upload failed');
+    }
+
+    const { data } = supabase.storage
+      .from('images')
+      .getPublicUrl(filename);
+    return data.publicUrl;
+  },
+  processMultipleImages: async (files: Express.Multer.File[]) => {
+    const urls = [];
+
+    if (files.length > 5) {
+      throw new HttpError(400, 'Maximum 5 images allowed');
+    }
+    for (const file of files) {
+      const url = await uploadService.processAndUploadImage(file.buffer);
+      urls.push(url);
+    }
+
+    return urls;
   }
 }

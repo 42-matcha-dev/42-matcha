@@ -16,6 +16,8 @@ import PhotoGridUploader from '@/app/components/PhotoGridUploader'
 import { toast } from 'sonner'
 import { apiFetch } from '@/utils/apiClient'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
+import { getArrayFieldError } from '@/utils/getArrayError'
+import { normalizePhotoUrls, compactPhotoUrls } from '@/utils/photo.utils';
 
 interface Tag {
   id: number
@@ -34,7 +36,7 @@ type UserProfile = {
   lookingFor: 'male' | 'female' | 'both'
   description: string
   tags: Tag[]
-  iconUrl: string | null
+  iconUrl: string
   photoUrls: string[]
 }
 
@@ -57,7 +59,8 @@ export default function EditForm() {
       lastName: '',
       location: '',
       latitude: 0,
-      longitude: 0
+      longitude: 0,
+      iconUrl: ""
     }
   })
   const selectedTags = watch('curiousAbout') || []
@@ -79,11 +82,9 @@ export default function EditForm() {
           lookingFor: user.lookingFor,
           description: user.description,
           curiousAbout: user.tags.map((tag: Tag) => tag.id) ?? [],
-          iconUrl: user.iconUrl,
-          photoUrls: user.photoUrls
+          iconUrl: user.iconUrl ?? "",
+          photoUrls: normalizePhotoUrls(user.photoUrls)
         })
-
-        console.log('user', user)
       } catch (err) {
         const errMsg = err ?? ''
         toast.error('Error fetching tags ', errMsg)
@@ -100,10 +101,15 @@ export default function EditForm() {
         return
       }
 
+      const cleanedData = {
+        ...data,
+        photoUrls: compactPhotoUrls(data.photoUrls)
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const response = await fetch(`${apiUrl}/api/users/me`, {
         method: 'PATCH',
-        body: JSON.stringify(data),
+        body: JSON.stringify(cleanedData),
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -133,7 +139,8 @@ export default function EditForm() {
       {/* Photos */}
       <PhotoGridUploader
         photoUrls={watch('photoUrls') ?? ['', '', '', '']}
-        onChange={(urls) => setValue('photoUrls', urls)}
+        onChange={(urls) => setValue('photoUrls', normalizePhotoUrls(urls))}
+        error={getArrayFieldError(errors.photoUrls)}
       />
 
       {/* Basic info */}
@@ -209,7 +216,11 @@ export default function EditForm() {
       />
 
       {/* Avatar */}
-      <AvatarUploader initialUrl={watch('iconUrl')} onChange={(url) => setValue('iconUrl', url)} />
+      <AvatarUploader
+        initialUrl={watch('iconUrl')}
+        onChange={(url) => setValue('iconUrl', url)}
+        error={errors.iconUrl?.message}
+      />
 
       {/* Submit */}
       <NextButton text="Save Profile" type="submit" />

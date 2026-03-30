@@ -1,11 +1,6 @@
 import pool from '../database/init.js';
 
 export const authRepository = {
-  findPendingByToken: async (token: string) => {
-    const res = await pool.query("SELECT * FROM pending_users WHERE token = $1", [token]);
-    return res.rows[0];
-  },
-
   findUserByEmail: async (email: string) => {
     const res = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     return res.rows[0];
@@ -37,9 +32,5 @@ export const authRepository = {
     ];
     const res = await pool.query(query, values);
     return res.rows[0];
-  },
-
-  deletePending: async (token: string) => {
-    await pool.query("DELETE FROM pending_users WHERE token = $1", [token]);
   },
 };
