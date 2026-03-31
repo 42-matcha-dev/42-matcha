@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
-import type { WithValidatedQuery } from '../types/request.types.js'
+import type { WithValidatedBody, WithValidatedQuery } from '../types/request.types.js'
 
 export const validate =
   (schema: z.ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
@@ -11,6 +11,26 @@ export const validate =
     }
 
     req.body = result.data
+    next()
+  }
+
+export const validateBody =
+  <T>(schema: z.ZodType<T>) =>
+  <R extends Request>(req: R, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body)
+
+    if (!result.success) {
+      const fieldErrors = Object.fromEntries(
+        result.error.issues.map((issue) => [issue.path.join('.'), issue.message])
+      )
+
+      return res.status(400).json({
+        error: 'Validation failed',
+        fields: fieldErrors
+      })
+    }
+
+    ;(req as WithValidatedBody<R, T>).body = result.data
     next()
   }
 
