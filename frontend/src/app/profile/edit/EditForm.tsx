@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { apiFetch } from '@/utils/apiClient'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { getArrayFieldError } from '@/utils/getArrayError'
-import { normalizePhotoUrls, compactPhotoUrls } from '@/utils/photo.utils';
+import { normalizePhotoUrls, compactPhotoUrls } from '@/utils/photo.utils'
 
 interface Tag {
   id: number
@@ -60,7 +60,7 @@ export default function EditForm() {
       location: '',
       latitude: 0,
       longitude: 0,
-      iconUrl: ""
+      iconUrl: ''
     }
   })
   const selectedTags = watch('curiousAbout') || []
@@ -82,7 +82,7 @@ export default function EditForm() {
           lookingFor: user.lookingFor,
           description: user.description,
           curiousAbout: user.tags.map((tag: Tag) => tag.id) ?? [],
-          iconUrl: user.iconUrl ?? "",
+          iconUrl: user.iconUrl ?? '',
           photoUrls: normalizePhotoUrls(user.photoUrls)
         })
       } catch (err) {
@@ -101,8 +101,10 @@ export default function EditForm() {
         return
       }
 
+      const { locationVerified, ...payload } = data
+
       const cleanedData = {
-        ...data,
+        ...payload,
         photoUrls: compactPhotoUrls(data.photoUrls)
       }
 
