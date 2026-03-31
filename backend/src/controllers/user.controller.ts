@@ -3,8 +3,12 @@ import { type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 import { userService } from '../services/user.service.js'
 import { emailChangeService } from '../services/change_email.service.js'
 import { HttpError } from '../errors/HttpError.js'
-import type { AuthenticatedValidatedQueryRequest } from '../types/request.types.js'
+import type {
+  AuthenticatedValidatedBodyRequest,
+  AuthenticatedValidatedQueryRequest
+} from '../types/request.types.js'
 import type { SearchUsersSchema } from '../shemas/search.schema.js'
+import type { UpdateProfileSchema } from '../shemas/updateProfile.schema.js'
 
 type Response = express.Response
 
@@ -42,7 +46,10 @@ export const getUserById = async (req: AuthenticatedRequest, res: Response) => {
   }
 }
 
-export const updateCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
+export const updateCurrentUser = async (
+  req: AuthenticatedValidatedBodyRequest<UpdateProfileSchema>,
+  res: Response
+) => {
   try {
     const userId = req.user!.userId
     const updatedUser = await userService.updateUserProfile(userId, req.body)

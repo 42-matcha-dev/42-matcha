@@ -4,9 +4,9 @@ import { blockRepository } from '../repositories/block.repository.js'
 import { reportRepository } from '../repositories/report.repository.js'
 import { conversationRepository } from '../repositories/conversation.repository.js'
 import { notificationService } from './notification.service.js'
-import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
 import { HttpError } from '../errors/HttpError.js'
 import type { SearchUsersSchema } from '../shemas/search.schema.js'
+import type { UpdateProfileSchema } from '../shemas/updateProfile.schema.js'
 
 export const userService = {
   getProfile: async (userId: number, currentUserId: number) => {
@@ -51,7 +51,7 @@ export const userService = {
     return { ...user, tags, isLiked, isMatch, isBlocked, isReported, conversationId }
   },
 
-  updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {
+  updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
     return userRepository.updateUserProfile(userId, data)
   },
 
