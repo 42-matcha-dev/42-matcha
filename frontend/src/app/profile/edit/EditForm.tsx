@@ -124,8 +124,16 @@ export default function EditForm() {
           router.push('/login')
           return
         }
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to fetch profile')
+        const errorData = !response.ok ? await response.json() : null
+        // Validation errors
+        if (errorData?.fields) {
+          toast.error(Object.values(errorData.fields)[0] as string)
+          return
+        }
+
+        // Other backend errors
+        toast.error(errorData?.error || 'Failed to update profile')
+        return
       }
 
       toast.success('profile updated')
