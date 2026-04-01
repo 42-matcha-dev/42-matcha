@@ -34,7 +34,13 @@ function SearchContent() {
       distanceMax: params.get('distanceMax') ? Number(params.get('distanceMax')) : undefined,
       fameMin: params.get('fameMin') ? Number(params.get('fameMin')) : undefined,
       fameMax: params.get('fameMax') ? Number(params.get('fameMax')) : undefined,
-      tagIds: params.get('tags') ? params.get('tags')!.split(',').map(Number) : [],
+      tagIds: params.get('tags')
+        ? params
+            .get('tags')!
+            .split(',')
+            .map((v) => Number(v))
+            .filter((v) => Number.isInteger(v) && v > 0)
+        : [],
       sortBy: params.get('sortBy') || 'distance-asc'
     }
   }, [searchParams])
