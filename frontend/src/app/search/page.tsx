@@ -162,6 +162,12 @@ function SearchContent() {
           return
         }
         const errorData = await response.json()
+
+        if (errorData.fields) {
+          const firstError = Object.values(errorData.fields)[0] as string
+          throw new Error(firstError)
+        }
+
         throw new Error(errorData.error || 'Failed to fetch users')
       }
 
@@ -170,7 +176,7 @@ function SearchContent() {
       setTotalCount(data.totalCount)
       setError(null)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'An error occurred')
+      toast.error(err instanceof Error ? err.message : 'Failed to search users')
     } finally {
       setLoading(false)
     }

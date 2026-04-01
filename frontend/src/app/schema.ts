@@ -17,18 +17,17 @@ export const passwordSchema = z
   .min(8, { message: 'Password must be at least 8 characters.' })
   .max(72, { message: 'Password must be at most 72 characters.' })
   .refine((v) => v === v.trim(), {
-    message: 'Password cannot start or end with spaces.',
+    message: 'Password cannot start or end with spaces.'
   })
 
-export const registerSchema = z.object({
-  email: z.email(),
-  password: passwordSchema,
-  repeatPassword: z.string(),
-  firstName: shortText(),
-  lastName: shortText(),
-  birthday: z
-    .string()
-    .refine((val) => {
+export const registerSchema = z
+  .object({
+    email: z.email(),
+    password: passwordSchema,
+    repeatPassword: z.string(),
+    firstName: shortText(),
+    lastName: shortText(),
+    birthday: z.string().refine((val) => {
       const date = new Date(val)
       if (isNaN(date.getTime())) return false
 
@@ -41,29 +40,28 @@ export const registerSchema = z.object({
       }
 
       return age >= 18 && age <= 100
-    }, "You must be between 18 and 100 years old"),
-  location: z.string(),
-  latitude: z.number(),
-  longitude: z.number(),
-  gender: z.enum(['male', 'female'], {
-    message: 'Please select an option.'
-  }),
-  lookingFor: z.enum(['male', 'female', 'both'], {
-    message: 'Please select an option.'
-  }),
-  description: longText(),
-  curiousAbout: z
-    .array(z.number())
-    .min(1, { message: 'Please select at least one tag.' })
-    .max(5, { message: 'You can select up to 5 tags.' }),
-  iconUrl: z.string().min(1, "Please select an image").url("Please select an image"),
-  photoUrls: z
-    .array(z.string().url().or(z.literal("")))
-    .max(4)
-}).refine((data) => data.password === data.repeatPassword, {
-  message: 'Passwords do not match.',
-  path: ['repeatPassword'],
-})
+    }, 'You must be between 18 and 100 years old'),
+    location: z.string(),
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+    gender: z.enum(['male', 'female'], {
+      message: 'Please select an option.'
+    }),
+    lookingFor: z.enum(['male', 'female', 'both'], {
+      message: 'Please select an option.'
+    }),
+    description: longText(),
+    curiousAbout: z
+      .array(z.number())
+      .min(1, { message: 'Please select at least one tag.' })
+      .max(5, { message: 'You can select up to 5 tags.' }),
+    iconUrl: z.string().min(1, 'Please select an image').url('Please select an image'),
+    photoUrls: z.array(z.string().url().or(z.literal(''))).max(4)
+  })
+  .refine((data) => data.password === data.repeatPassword, {
+    message: 'Passwords do not match.',
+    path: ['repeatPassword']
+  })
 
 export type RegisterSchema = z.infer<typeof registerSchema>
 export const profileEditSchema = registerSchema

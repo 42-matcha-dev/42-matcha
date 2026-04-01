@@ -2,7 +2,6 @@ import express from 'express';
 import { authService } from '../services/auth.service.js';
 import { passwordResetService } from '../services/password_reset.service.js';
 import { emailChangeService } from '../services/change_email.service.js';
-import type { RegisterSchema } from '../types/auth.types.js';
 import { HttpError } from '../errors/HttpError.js';
 import { validatePasswordPolicy } from '../utils/password.util.js';
 
@@ -23,20 +22,11 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-const validateRegisterData = (data: any): RegisterSchema => {
-  if (!data.firstName || !data.lastName || !data.birthday || !data.gender || !data.lookingFor ||
-      !data.description || !data.location || !data.iconUrl || !data.photoUrls) {
-    throw new Error('Missing required fields');
-  }
-  return data as RegisterSchema;
-};
-
 export const completeRegistration = async (req: Request, res: Response) => {
   try {
-    const parsed = validateRegisterData(req.body);
     const { token } = req.query;
 
-    const result = await authService.completeProfile(token as string, parsed);
+    const result = await authService.completeProfile(token as string, req.body);
     res.status(201).json({ message: "User profile completed", userId: result.id });
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : "Invalid input" });

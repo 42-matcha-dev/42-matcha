@@ -1,5 +1,6 @@
 import pool from '../database/init.js'
-import type { UpdateUserProfileDTO } from '../dto/user.dto.js'
+import type { SearchUsersSchema } from '../schemas/search.schema.js'
+import type { UpdateProfileSchema } from '../schemas/updateProfile.schema.js'
 
 type UserRow = {
   id: number
@@ -45,17 +46,14 @@ function mapUser(row: UserRow) {
 
 export const userRepository = {
   findCredentialById: async (userId: number) => {
-    const res = await pool.query(
-      'SELECT id, email, password_hash FROM users WHERE id = $1',
-      [userId]
-    )
+    const res = await pool.query('SELECT id, email, password_hash FROM users WHERE id = $1', [
+      userId
+    ])
     return res.rows[0]
   },
 
-  userExistsByEmail: async(email: string) => {
-    const res = await pool.query(
-      'SELECT id FROM users WHERE email = $1', [email]
-    )
+  userExistsByEmail: async (email: string) => {
+    const res = await pool.query('SELECT id FROM users WHERE email = $1', [email])
     return res.rowCount > 0
   },
 
@@ -126,7 +124,7 @@ export const userRepository = {
     }
   },
 
-  updateUserProfile: async (userId: number, data: UpdateUserProfileDTO) => {
+  updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
     const fieldMap: Record<string, string> = {
       firstName: 'first_name',
       lastName: 'last_name',
@@ -146,7 +144,7 @@ export const userRepository = {
     let index = 1
 
     for (const key in data) {
-      const typedKey = key as keyof UpdateUserProfileDTO
+      const typedKey = key as keyof UpdateProfileSchema
 
       if (fieldMap[typedKey]) {
         fields.push(`${fieldMap[typedKey]} = $${index}`)
@@ -185,21 +183,7 @@ export const userRepository = {
     return res.rows
   },
 
-  searchUsers: async (
-    currentUserId: number,
-    params: {
-      ageMin?: number
-      ageMax?: number
-      distanceMax?: number
-      fameMin?: number
-      fameMax?: number
-      tagIds?: number[]
-      page?: number
-      limit?: number
-      sortBy?: string
-      order?: string
-    }
-  ) => {
+  searchUsers: async (currentUserId: number, params: SearchUsersSchema) => {
     const {
       ageMin,
       ageMax,
@@ -289,14 +273,12 @@ export const userRepository = {
       `
       queryParams.push(fameMin, fameMax)
       paramIndex += 2
-
     } else if (fameMin !== undefined) {
       whereConditions += `
         AND ru.fame_rating >= $${paramIndex}
       `
       queryParams.push(fameMin)
       paramIndex++
-
     } else if (fameMax !== undefined) {
       whereConditions += `
         AND ru.fame_rating <= $${paramIndex}
