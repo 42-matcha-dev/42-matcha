@@ -8,8 +8,8 @@ import {
 } from '../controllers/user.controller.js'
 import { authenticateToken } from '../middleware/auth.middleware.js'
 import { validateBody, validateQuery } from '../middleware/validate.middleware.js'
-import { searchUsersShema } from '../shemas/search.schema.js'
-import { updateProfileSchema } from '../shemas/updateProfile.schema.js'
+import { searchUsersShema } from '../schemas/search.schema.js'
+import { updateProfileSchema } from '../schemas/updateProfile.schema.js'
 
 const router = Router()
 

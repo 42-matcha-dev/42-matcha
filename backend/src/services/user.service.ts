@@ -5,8 +5,8 @@ import { reportRepository } from '../repositories/report.repository.js'
 import { conversationRepository } from '../repositories/conversation.repository.js'
 import { notificationService } from './notification.service.js'
 import { HttpError } from '../errors/HttpError.js'
-import type { SearchUsersSchema } from '../shemas/search.schema.js'
-import type { UpdateProfileSchema } from '../shemas/updateProfile.schema.js'
+import type { SearchUsersSchema } from '../schemas/search.schema.js'
+import type { UpdateProfileSchema } from '../schemas/updateProfile.schema.js'
 
 export const userService = {
   getProfile: async (userId: number, currentUserId: number) => {

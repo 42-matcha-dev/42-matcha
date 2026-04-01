@@ -1,6 +1,6 @@
 import pool from '../database/init.js'
-import type { SearchUsersSchema } from '../shemas/search.schema.js'
-import type { UpdateProfileSchema } from '../shemas/updateProfile.schema.js'
+import type { SearchUsersSchema } from '../schemas/search.schema.js'
+import type { UpdateProfileSchema } from '../schemas/updateProfile.schema.js'
 
 type UserRow = {
   id: number

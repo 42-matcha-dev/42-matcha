@@ -36,12 +36,24 @@ export const searchUsersShema = z
       })
       .optional()
   })
-  .refine((data) => !data.ageMin || !data.ageMax || data.ageMin <= data.ageMax, {
-    message: 'Minimum age cannot be greater than maximum age'
-  })
-  .refine((data) => !data.fameMin || !data.fameMax || data.fameMin <= data.fameMax, {
-    message: 'Minimum fame cannot be greater than maximum fame'
-  })
+  .refine(
+    (data) => {
+      if (data.ageMin !== undefined && data.ageMax !== undefined) {
+        return data.ageMin <= data.ageMax
+      }
+      return true
+    },
+    { message: 'Minimum age cannot be greater than maximum age' }
+  )
+  .refine(
+    (data) => {
+      if (data.fameMin !== undefined && data.fameMax !== undefined) {
+        return data.fameMin <= data.fameMax
+      }
+      return true
+    },
+    { message: 'Minimum fame cannot be greater than maximum fame' }
+  )
   .transform((data) => {
     let sortBy: string | undefined
     let order: string | undefined
