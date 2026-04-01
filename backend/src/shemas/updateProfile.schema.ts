@@ -27,7 +27,7 @@ export const updateProfileSchema = z
     gender: z.enum(['male', 'female']).optional(),
     lookingFor: z.enum(['male', 'female', 'both']).optional(),
     description: longText().optional(),
-    curiousAbout: z.array(z.number()).min(1).max(5),
+    curiousAbout: z.array(z.number()).min(1).max(5).optional(),
     iconUrl: z.string().url().nullable().optional(),
     photoUrls: z.array(z.string().url()).max(4).optional()
   })
