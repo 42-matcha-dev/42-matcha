@@ -34,7 +34,14 @@ export const authService = {
     await sendEmail({
       to: email,
       subject: 'Verify your Matcha account',
-      text: `Click here to verify your account: ${verifyLink}. This link expires in ${PENDING_TOKEN_EXPIRY_HOURS} hour(s).`
+      text: `Click here to verify your account: ${verifyLink}. This link expires in ${PENDING_TOKEN_EXPIRY_HOURS} hour(s).`,
+      html: `
+        <p>Verify your Matcha account</p>
+        <p>
+          <a href="${verifyLink}">Click here to verify your account</a>
+        </p>
+        <p>This link expires in ${PENDING_TOKEN_EXPIRY_HOURS} hour(s).</p>
+      `
     })
   },
 
