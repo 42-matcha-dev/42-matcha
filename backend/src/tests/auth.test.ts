@@ -32,11 +32,11 @@ beforeEach(async () => {
   const password = 'password123'
   const hashed = await bcrypt.hash(password, 10)
   token = uuidv4()
-  await pool.query('INSERT INTO pending_users (email, password_hash, token) VALUES ($1, $2, $3)', [
-    email,
-    hashed,
-    token
-  ])
+  await pool.query(
+    `INSERT INTO pending_users (email, password_hash, token, expires_at)
+   VALUES ($1, $2, $3, NOW() + INTERVAL '24 hours')`,
+    [email, hashed, token]
+  )
 })
 
 afterAll(async () => {
