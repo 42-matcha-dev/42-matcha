@@ -33,7 +33,7 @@ type UserProfile = {
   latitude: number
   longitude: number
   gender: 'male' | 'female'
-  lookingFor: 'male' | 'female' | 'both'
+  lookingFor: '' | 'male' | 'female' | 'both'
   description: string
   tags: Tag[]
   iconUrl: string
@@ -105,6 +105,7 @@ export default function EditForm() {
 
       const cleanedData = {
         ...payload,
+        lookingFor: data.lookingFor === '' ? 'both' : data.lookingFor,
         photoUrls: compactPhotoUrls(data.photoUrls)
       }
 

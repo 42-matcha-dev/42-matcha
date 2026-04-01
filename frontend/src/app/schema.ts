@@ -47,9 +47,7 @@ export const registerSchema = z
     gender: z.enum(['male', 'female'], {
       message: 'Please select an option.'
     }),
-    lookingFor: z.enum(['male', 'female', 'both'], {
-      message: 'Please select an option.'
-    }),
+    lookingFor: z.enum(['', 'male', 'female', 'both']),
     description: longText(),
     curiousAbout: z
       .array(z.number())

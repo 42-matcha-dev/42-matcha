@@ -1,99 +1,110 @@
-import express from 'express';
-import { authService } from '../services/auth.service.js';
-import { passwordResetService } from '../services/password_reset.service.js';
-import { emailChangeService } from '../services/change_email.service.js';
-import { HttpError } from '../errors/HttpError.js';
-import { validatePasswordPolicy } from '../utils/password.util.js';
+import express from 'express'
+import { authService } from '../services/auth.service.js'
+import { passwordResetService } from '../services/password_reset.service.js'
+import { emailChangeService } from '../services/change_email.service.js'
+import { HttpError } from '../errors/HttpError.js'
+import { validatePasswordPolicy } from '../utils/password.util.js'
 
-type Request = express.Request;
-type Response = express.Response;
-
+type Request = express.Request
+type Response = express.Response
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: 'Missing fields' });
+    if (!req.body) {
+      return res.status(400).json({ error: 'Request body required' })
+    }
+    const { email, password } = req.body
+    if (!email || !password) return res.status(400).json({ error: 'Missing fields' })
     await authService.signup(email, password)
-    res.status(200).json({ message: 'Verification email sent' });
+    res.status(200).json({ message: 'Verification email sent' })
   } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    console.error(err)
+    res.status(500).json({ error: 'Internal server error' })
   }
-};
+}
 
 export const completeRegistration = async (req: Request, res: Response) => {
   try {
-    const { token } = req.query;
+    const { token } = req.query
 
-    const result = await authService.completeProfile(token as string, req.body);
-    res.status(201).json({ message: "User profile completed", userId: result.id });
+    const result = await authService.completeProfile(token as string, req.body)
+    res.status(201).json({ message: 'User profile completed', userId: result.id })
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : "Invalid input" });
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
-};
+}
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: 'Missing fields' });
+    if (!req.body) {
+      return res.status(400).json({ error: 'Request body required' })
+    }
+    const { email, password } = req.body
+    if (!email || !password) return res.status(400).json({ error: 'Missing fields' })
 
-    const { user, token } = await authService.login(email, password);
-    res.status(200).json({ message: 'Login successful', user, token });
+    const { user, token } = await authService.login(email, password)
+    res.status(200).json({ message: 'Login successful', user, token })
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : "Invalid input" });
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
-};
+}
 
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
-    if (!email)
-      return res.status(400).json({ error: 'Email is required' });
+    if (!req.body) {
+      return res.status(400).json({ error: 'Request body required' })
+    }
+    const { email } = req.body
+    if (!email) return res.status(400).json({ error: 'Email is required' })
 
-    await passwordResetService.requestReset(email);
-    res.status(200).json({ message: 'If this email is registered, a reset link has been sent.' });
+    await passwordResetService.requestReset(email)
+    res.status(200).json({ message: 'If this email is registered, a reset link has been sent.' })
   } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
   }
-};
+}
 
 export const resetPassword = async (req: Request, res: Response) => {
   try {
-    const { token, password } = req.body;
+    if (!req.body) {
+      return res.status(400).json({ error: 'Request body required' })
+    }
+    const { token, password } = req.body
     if (!token || !password)
-      return res.status(400).json({ error: 'Token and password are required' });
+      return res.status(400).json({ error: 'Token and password are required' })
 
-    const passwordError = await validatePasswordPolicy(password);
+    const passwordError = await validatePasswordPolicy(password)
     if (passwordError) {
-      return res.status(400).json({ error: passwordError, field: 'password' });
+      return res.status(400).json({ error: passwordError, field: 'password' })
     }
 
-    await passwordResetService.resetPassword(token, password);
-    res.status(200).json({ message: 'Password has been reset successfully' });
+    await passwordResetService.resetPassword(token, password)
+    res.status(200).json({ message: 'Password has been reset successfully' })
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid request' });
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid request' })
   }
-};
+}
 
 export const confirmEmailChange = async (req: Request, res: Response) => {
   try {
-    const { token } = req.body;
+    if (!req.body) {
+      return res.status(400).json({ error: 'Request body required' })
+    }
+    const { token } = req.body
     if (!token) {
-      return res.status(400).json({ error: 'Token is required' });
+      return res.status(400).json({ error: 'Token is required' })
     }
 
-    const result = await emailChangeService.confirmChange(token);
-    res.status(200).json(result);
+    const result = await emailChangeService.confirmChange(token)
+    res.status(200).json(result)
   } catch (error) {
     if (error instanceof HttpError) {
-      return res.status(error.status).json({ error: error.message });
+      return res.status(error.status).json({ error: error.message })
     }
     if (error instanceof Error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message })
     }
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error' })
   }
-};
+}
