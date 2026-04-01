@@ -43,6 +43,7 @@ function RegisterFormStepperContent() {
       const parsedData = safeRegisterSchema.parse(formData)
       const submitData = {
         ...parsedData,
+        lookingFor: parsedData.lookingFor === '' ? 'both' : parsedData.lookingFor,
         photoUrls: compactPhotoUrls(parsedData.photoUrls)
       }
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
