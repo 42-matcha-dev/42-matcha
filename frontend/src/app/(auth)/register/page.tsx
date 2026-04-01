@@ -66,7 +66,6 @@ function RegisterFormStepperContent() {
         return
       }
 
-      // const result = await response.json();
       toast.success('Registration successful!')
 
       sessionStorage.removeItem('registerBasic')
