@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 type Props = {
   showMenuButton?: boolean
   onMenuClick?: () => void
@@ -6,7 +8,9 @@ type Props = {
 const Header = ({ showMenuButton, onMenuClick }: Props) => {
   return (
     <header className="flex items-center justify-between bg-primary h-16 text-white p-4 fixed top-0 left-0 w-full z-10">
-      <h1 className="text-xl text-left font-bold">Matcha</h1>
+      <Link href="/">
+        <h1 className="text-xl text-left font-bold cursor-pointer">Matcha</h1>
+      </Link>
       {showMenuButton && (
         <button className="md:hidden text-3xl" onClick={onMenuClick}>
           ☰
