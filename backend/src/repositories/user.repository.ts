@@ -99,14 +99,17 @@ export const userRepository = {
         u.is_online,
         u.last_seen_at,
 
-        -- fame rating based on common tags
-        20 * (
-          SELECT COUNT(*)
-          FROM user_tags ut
-          WHERE ut.user_id = u.id
-            AND ut.tag_id IN (
-              SELECT tag_id FROM user_tags WHERE user_id = $2
-            )
+        -- fame rating
+        LEAST(
+          100,
+          (
+            SELECT
+              COUNT(*) FILTER (WHERE n.type = 'LIKE') * 5 +
+              COUNT(*) FILTER (WHERE n.type = 'VIEW') * 1 +
+              COUNT(*) FILTER (WHERE n.type = 'MATCH') * 10
+            FROM notifications n
+            WHERE n.user_id = u.id
+          )
         ) AS fame_rating,
 
         -- distance from current user
@@ -393,14 +396,16 @@ export const userRepository = {
             cos(radians(u.longitude) - radians(me.longitude)) +
             sin(radians(me.latitude)) * sin(radians(u.latitude))
           ) AS distance,
-          20 * (
-            SELECT COUNT(*)
-            FROM tags t
-            JOIN user_tags ut ON ut.tag_id = t.id
-            WHERE ut.user_id = u.id
-              AND ut.tag_id IN (
-                SELECT tag_id FROM user_tags WHERE user_id = $1
-              )
+          LEAST(
+            100,
+            (
+              SELECT
+                COUNT(*) FILTER (WHERE n.type = 'LIKE') * 5 +
+                COUNT(*) FILTER (WHERE n.type = 'VIEW') * 1 +
+                COUNT(*) FILTER (WHERE n.type = 'MATCH') * 10
+              FROM notifications n
+              WHERE n.user_id = u.id
+            )
           ) AS fame_rating,
           (
             SELECT json_agg(t.name)
