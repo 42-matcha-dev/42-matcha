@@ -86,7 +86,7 @@ const UserCard = ({ user }: UserCardProps) => {
               key={idx}
               className="bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-md backdrop-blur-sm"
             >
-              {tag}
+              #{tag}
             </span>
           ))}
           {user.common_tags && user.common_tags.length > 3 && (

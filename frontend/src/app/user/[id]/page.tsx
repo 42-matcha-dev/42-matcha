@@ -416,7 +416,7 @@ export default function UserProfilePage() {
                         key={tag.id}
                         className="px-2 py-1 bg-custom-medium text-white rounded-sm text-sm font-medium"
                       >
-                        {tag.name}
+                        #{tag.name}
                       </span>
                     ))}
                   </div>
