@@ -47,7 +47,8 @@ export const likeService = {
     // Check for mutual like (match)
     const isMatch = await likeRepository.checkMutualLike(likerId, likedId);
     let conversationId: number | null = null;
-
+    await notificationService.deleteNotification(likerId, likedId, "UNLIKE")
+    await notificationService.deleteNotification(likedId, likerId, "UNLIKE")
     if (!isMatch) {
       // Send LIKE notification to the liked user
       await notificationService.createNotification(likedId, likerId, "LIKE", likerId);
@@ -92,6 +93,8 @@ export const likeService = {
     await notificationService.deleteNotification(likedId, likerId, "MATCH");
     if (wasMatch) {
       await conversationRepository.removeConversation(likerId, likedId);
+      await likeRepository.deleteLike(likedId, likerId)
+      await notificationService.createNotification(likedId, likerId, "UNLIKE", likerId);
     }
 
     return {

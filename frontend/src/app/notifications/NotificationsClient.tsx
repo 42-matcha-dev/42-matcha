@@ -20,6 +20,8 @@ interface Notification {
   created_at: string
 }
 
+const REL_TYPES = ['LIKE', 'MATCH', 'UNLIKE']
+
 export default function NotificationsClient() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const router = useRouter()
@@ -53,13 +55,25 @@ export default function NotificationsClient() {
     const socket = getSocket()
     const onNewNotification = (notification: Notification) => {
       setNotifications(prev => {
+        if (REL_TYPES.includes(notification.type)) {
+          const filtered = prev.filter(n =>
+            !(REL_TYPES.includes(n.type) && n.actor_id === notification.actor_id)
+          )
+          return [notification, ...filtered]
+        }
         if (prev.some(n => n.id === notification.id)) return prev
         return [notification, ...prev]
       })
     }
+    const onRemoveNotification = (notification: Notification) => {
+      //remove notification that was removed
+    }
+
     socket.on('newNotification', onNewNotification)
+    socket.on('removeNotification', onRemoveNotification)
     return () => {
       socket.off('newNotification', onNewNotification)
+      socket.off('removeNotification', onRemoveNotification)
     }
   }, [])
 
