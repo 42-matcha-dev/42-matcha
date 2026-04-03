@@ -5,6 +5,7 @@ import NavbarButtonElement from './NavbarButtonElement'
 import { mdiAccount, mdiMagnify, mdiBell, mdiChat, mdiLogout, mdiCog } from '@mdi/js'
 import { deleteCookie } from '@/utils/cookie.util'
 import { useApp } from '../providers/AppProvider'
+import { disconnectSocket } from '@/lib/socket'
 
 type Props = {
   className?: string
@@ -17,6 +18,7 @@ const Navbar = ({ className }: Props) => {
   const notificationCount = app?.notificationCount ?? 0
   const messageCount = app?.messageCount ?? 0
   const handleLogout = () => {
+    disconnectSocket()
     deleteCookie('token')
     router.push('/login')
   }
