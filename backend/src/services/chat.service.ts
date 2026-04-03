@@ -12,6 +12,8 @@ type ConversationListRow = {
     other_first_name: string | null;
     other_last_name: string | null;
     other_icon_url: string | null;
+    other_is_online: boolean;
+    other_last_seen_at: Date | null;
     last_message_content: string | null;
     last_message_at: Date | null;
     unread_count: number;
@@ -27,6 +29,8 @@ const mapConversationSummary = (row: ConversationListRow) => ({
         first_name: row.other_first_name,
         last_name: row.other_last_name,
         icon_url: row.other_icon_url,
+        is_online: row.other_is_online,
+        last_seen_at: row.other_last_seen_at,
     },
     lastMessage: row.last_message_content
       ? {
