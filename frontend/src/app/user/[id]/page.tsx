@@ -14,6 +14,8 @@ import {
   type ReportReason
 } from '@/lib/chat'
 import AppLayout from '@/app/layouts/AppLayout'
+import { getSocket } from '@/lib/socket'
+import { formatTimeAgo } from '@/utils/format'
 
 interface Tag {
   id: number
@@ -45,6 +47,8 @@ interface UserProfile {
   conversationId?: number
   isBlocked?: boolean
   isReported?: boolean
+  isOnline: boolean
+  lastSeenAt: string | null
 }
 
 export default function UserProfilePage() {
@@ -144,6 +148,20 @@ export default function UserProfilePage() {
 
     fetchProfile()
   }, [userId, router])
+
+  useEffect(() => {
+    if (!userId) return
+    const socket = getSocket()
+    const onStatusChanged = ({ userId: changedId, isOnline }: { userId: number; isOnline: boolean }) => {
+      if (changedId === Number(userId)) {
+        setProfile(prev => prev ? { ...prev, isOnline, lastSeenAt: isOnline ? prev.lastSeenAt : new Date().toISOString() } : prev)
+      }
+    }
+    socket.on('userStatusChanged', onStatusChanged)
+    return () => {
+      socket.off('userStatusChanged', onStatusChanged)
+    }
+  }, [userId])
 
   const handleLike = async () => {
     if (!userId || !profile || likeLoading) return
@@ -312,12 +330,19 @@ export default function UserProfilePage() {
                     </span>
                   </div>
                 )}
-
                 {/* Name and Info */}
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold mb-3">
                     {displayName}, {age}
                   </h1>
+                  {/* Online status text */}
+                  <p className="text-sm mb-2 text-custom-medium" style={{ color: profile.isOnline ? '#22c553' : '#9ca3af' }}>
+                    {profile.isOnline
+                      ? '● Online'
+                      : profile.lastSeenAt
+                        ? `Last seen ${formatTimeAgo(profile.lastSeenAt)}`
+                        : 'Offline'}
+                  </p>
                   <div className="flex items-center mb-4">
                     {/* Location */}
                     {profile.location && (
