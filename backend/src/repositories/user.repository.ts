@@ -20,6 +20,9 @@ type UserRow = {
   longitude: number
   icon_url: string | null
   photo_urls: string[] | null
+  updated_at: string
+  is_online: boolean
+  last_seen_at: string | null
 }
 
 function mapUser(row: UserRow) {
@@ -40,7 +43,10 @@ function mapUser(row: UserRow) {
     latitude: row.latitude,
     longitude: row.longitude,
     iconUrl: row.icon_url,
-    photoUrls: row.photo_urls
+    photoUrls: row.photo_urls,
+    isOnline: row.is_online,
+    lastSeenAt: row.last_seen_at ?? null
+
   }
 }
 
@@ -55,6 +61,16 @@ export const userRepository = {
   userExistsByEmail: async (email: string) => {
     const res = await pool.query('SELECT id FROM users WHERE email = $1', [email])
     return res.rowCount > 0
+  },
+
+  setOnlineStatus: async (userId: number, isOnline: boolean) => {
+    await pool.query(
+      `UPDATE users
+       SET is_online = $2,
+           last_seen_at = CASE WHEN $2 = false THEN NOW() ELSE last_seen_at END
+       WHERE id = $1`,
+      [userId, isOnline]
+    )
   },
 
   findUserById: async (userId: number, currentUserId: number) => {
@@ -74,6 +90,8 @@ export const userRepository = {
         u.longitude,
         u.icon_url,
         u.photo_urls,
+        u.is_online,
+        u.last_seen_at,
 
         -- fame rating based on common tags
         20 * (

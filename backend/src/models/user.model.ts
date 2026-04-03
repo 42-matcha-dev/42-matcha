@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS users (
   icon_url TEXT,
   photo_urls TEXT[] CHECK (array_length(photo_urls, 1) <= 4),
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  updated_at TIMESTAMP DEFAULT NOW(),
+  is_online BOOLEAN DEFAULT false,
+  last_seen_at TIMESTAMP
 );
 `;

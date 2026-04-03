@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { fetchMessages, fetchConversation, blockUser as apiBlock, reportUser as apiReport, type Conversation, type Message, type ReportReason } from '@/lib/chat'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { getSocket } from '@/lib/socket'
+import { formatTimeAgo } from '@/utils/format'
 
 
 type MessageBubbleFormat = {
@@ -70,8 +71,16 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
   const [reportReason, setReportReason] = useState<ReportReason>('FAKE_ACCOUNT')
   const [reportDescription, setReportDescription] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
+  const [isOnline, setIsOnline] = useState(false)
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null)
+  const [, forceUpdate] = useState(0)
 
-  
+  useEffect(() => {
+    if (isOnline) return
+    const interval = setInterval(() => forceUpdate(n => n + 1), 60_000)
+    return () => clearInterval(interval)
+  }, [isOnline])
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -120,6 +129,8 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
           return
         }
         setConversation(conv)
+        setIsOnline(conv.otherUser.is_online ?? false)
+        setLastSeenAt(conv.otherUser.last_seen_at ?? null)
         const bubbles = msgs.map((m) => mapToBubbleFormat(m, normalizedCurrentUser, conv.otherUser))
         setMessages(bubbles)
       } catch (err) {
@@ -163,8 +174,18 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
       }
     }
     socket.on('newMessage', onNewMessage)
+
+    const onStatusChanged = ({ userId: changedId, isOnline: online }: { userId: number; isOnline: boolean }) => {
+      if (changedId === conversation.otherUser.id) {
+        setIsOnline(online)
+        if (!online) setLastSeenAt(new Date().toISOString())
+      }
+    }
+    socket.on('userStatusChanged', onStatusChanged)
+
     return () => {
       socket.off('newMessage', onNewMessage)
+      socket.off('userStatusChanged', onStatusChanged)
       socket.emit('leaveConversation', { conversationId })
     }
   }, [conversationId, currentUser, conversation, loading, error])
@@ -264,7 +285,13 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         />
         <div className="ml-2 flex-1">
           <h3 className="font-semibold text-[#2A3D39] text-lg">{fullName}</h3>
-          <p className="font-light text-[#2A3D39] text-sm">@{otherUser?.username ?? ''}</p>
+          <p className={`text-sm font-medium ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
+            {isOnline
+              ? '● Online'
+              : lastSeenAt
+                ? `● Last seen ${formatTimeAgo(lastSeenAt)}`
+                : '● Offline'}
+          </p>
         </div>
       <KebabMenu
          items={[

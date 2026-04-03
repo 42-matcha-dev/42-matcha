@@ -8,6 +8,8 @@ export type Conversation = {
         first_name: string | null;
         last_name: string | null;
         icon_url: string | null;
+        is_online: boolean;
+        last_seen_at: string | null;
     };
     lastMessage: { content: string; created_at: string } | null;
     created_at: string;

@@ -42,13 +42,18 @@ const NewMatchItem = ({ conversation }: NewMatchItemProps) => {
       className="flex flex-row items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 transition-colors text-left"
       onClick={() => router.push(`/chat/${id}`)}
     >
-      <Image
-        src={otherUser.icon_url || '/default-avatar.png'}
-        className="w-12 h-12 min-w-12 flex-shrink-0 rounded-full object-cover border border-gray-200 aspect-square"
-        alt=""
-        width={48}
-        height={48}
-      />
+      <div className="relative flex-shrink-0">
+        <Image
+          src={otherUser.icon_url || '/default-avatar.png'}
+          className="w-12 h-12 min-w-12 rounded-full object-cover border border-gray-200 aspect-square"
+          alt=""
+          width={48}
+          height={48}
+        />
+        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+          otherUser.is_online ? 'bg-green-500' : 'bg-gray-300'
+        }`} />
+      </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-black truncate">{fullName}</h3>
@@ -80,13 +85,18 @@ const MessageListItem = ({ conversation }: MessageListProps) => {
       className="flex flex-row items-center gap-3 w-full px-4 py-3 hover:bg-gray-50 transition-colors text-left"
       onClick={() => router.push(`/chat/${id}`)}
     >
-      <Image
-        src={otherUser.icon_url || '/default-avatar.png'}
-        className="w-12 h-12 min-w-12 flex-shrink-0 rounded-full object-cover border border-gray-200 aspect-square"
-        alt=""
-        width={48}
-        height={48}
-      />
+      <div className="relative flex-shrink-0">
+        <Image
+          src={otherUser.icon_url || '/default-avatar.png'}
+          className="w-12 h-12 min-w-12 rounded-full object-cover border border-gray-200 aspect-square"
+          alt=""
+          width={48}
+          height={48}
+        />
+        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+          otherUser.is_online ? 'bg-green-500' : 'bg-gray-300'
+        }`} />
+      </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-black truncate">{fullName}</h3>
@@ -177,6 +187,23 @@ const ChatList = () => {
       socket.off('conversationUpdated', onConversationUpdated)
     }
   }, [upsertConversation])
+
+  useEffect(() => {
+    const socket = getSocket()
+    const onStatusChanged = ({ userId, isOnline }: { userId: number; isOnline: boolean }) => {
+      setConversations(prev =>
+        prev.map(c =>
+          c.otherUser.id === userId
+            ? { ...c, otherUser: { ...c.otherUser, is_online: isOnline } }
+            : c
+        )
+      )
+    }
+    socket.on('userStatusChanged', onStatusChanged)
+    return () => {
+      socket.off('userStatusChanged', onStatusChanged)
+    }
+  }, [])
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-white w-full">

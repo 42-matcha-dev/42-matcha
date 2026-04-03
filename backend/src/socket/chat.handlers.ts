@@ -3,6 +3,7 @@ import { chatService } from '../services/chat.service.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { verifyToken } from '../utils/jwt.util.js';
 import { canChat } from '../services/canChat.service.js';
+import { userRepository } from '../repositories/user.repository.js';
 
 export function setupChatSocket(io: Server): void {
     io.use((socket, next) => {
@@ -24,6 +25,9 @@ export function setupChatSocket(io: Server): void {
         const userId = socket.data.userId;
         console.log("🔌 User connected:", socket.id, "userId:", userId);
         socket.join(`user:${userId}`);
+
+        await userRepository.setOnlineStatus(userId, true);
+        io.emit('userStatusChanged', { userId, isOnline: true })
 
         const emitUnreadCount = async (targetUserId: number) => {
             try {
@@ -159,8 +163,10 @@ export function setupChatSocket(io: Server): void {
                 }
             });
         
-        socket.on("disconnect", () => {
+        socket.on("disconnect", async () => {
             console.log("❌ User disconnected:", socket.id);
+            await userRepository.setOnlineStatus(userId, false);
+            io.emit('userStatusChanged', { userId, isOnline: false });
         });
     });
       

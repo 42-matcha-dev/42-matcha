@@ -55,6 +55,8 @@ export const conversationRepository = {
         u.first_name AS other_first_name,
         u.last_name AS other_last_name,
         u.icon_url AS other_icon_url,
+        u.is_online AS other_is_online,
+        u.last_seen_at AS other_last_seen_at,
         last_msg.content AS last_message_content,
         last_msg.created_at AS last_message_at,
         (SELECT COUNT(*)::int FROM messages m
@@ -99,6 +101,8 @@ export const conversationRepository = {
         u.first_name AS other_first_name,
         u.last_name AS other_last_name,
         u.icon_url AS other_icon_url,
+        u.is_online AS other_is_online,
+        u.last_seen_at AS other_last_seen_at,
         last_msg.content AS last_message_content,
         last_msg.created_at AS last_message_at,
         (
