@@ -73,8 +73,14 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
   const [actionLoading, setActionLoading] = useState(false)
   const [isOnline, setIsOnline] = useState(false)
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null)
+  const [, forceUpdate] = useState(0)
 
-  
+  useEffect(() => {
+    if (isOnline) return
+    const interval = setInterval(() => forceUpdate(n => n + 1), 60_000)
+    return () => clearInterval(interval)
+  }, [isOnline])
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])

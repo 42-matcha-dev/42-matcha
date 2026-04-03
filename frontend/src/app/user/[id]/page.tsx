@@ -64,6 +64,7 @@ export default function UserProfilePage() {
   const [reportReason, setReportReason] = useState<ReportReason>('FAKE_ACCOUNT')
   const [reportDescription, setReportDescription] = useState('')
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
+  const [, forceUpdate] = useState(0)
 
   const router = useRouter()
   const params = useParams()
@@ -162,6 +163,12 @@ export default function UserProfilePage() {
       socket.off('userStatusChanged', onStatusChanged)
     }
   }, [userId])
+
+  useEffect(() => {
+    if (profile?.isOnline) return
+    const interval = setInterval(() => forceUpdate(n => n + 1), 60_000)
+    return () => clearInterval(interval)
+  }, [profile?.isOnline])
 
   const handleLike = async () => {
     if (!userId || !profile || likeLoading) return
