@@ -52,6 +52,7 @@ export const userService = {
   },
 
   updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
+    await userRepository.updateUserTags(userId, data.curiousAbout ?? [])
     return userRepository.updateUserProfile(userId, data)
   },
 

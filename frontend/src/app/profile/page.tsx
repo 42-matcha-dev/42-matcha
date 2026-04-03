@@ -217,7 +217,7 @@ export default function Dashboard() {
                       key={tag.id}
                       className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
                     >
-                      {tag.name}
+                      #{tag.name}
                     </span>
                   ))}
                 </div>
