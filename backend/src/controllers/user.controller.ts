@@ -55,6 +55,9 @@ export const updateCurrentUser = async (
     const updatedUser = await userService.updateUserProfile(userId, req.body)
     res.status(200).json(updatedUser)
   } catch (error) {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message })
+    }
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to update profile'
     })

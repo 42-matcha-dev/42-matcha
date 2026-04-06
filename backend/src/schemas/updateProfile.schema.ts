@@ -1,8 +1,16 @@
 import { z } from 'zod'
 import { shortText, longText } from '../utils/zod.js'
 
+export const USERNAME_REGEX = /^(?!_)(?!.*_$)[a-z0-9_]{3,20}$/
+
 export const updateProfileSchema = z
   .object({
+    username: z
+      .string()
+      .regex(USERNAME_REGEX, {
+        message: 'Username must be 3–20 characters: lowercase letters, numbers, underscores. Cannot start or end with underscore.'
+      })
+      .optional(),
     firstName: shortText().optional(),
     lastName: shortText().optional(),
 

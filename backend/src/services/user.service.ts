@@ -52,6 +52,11 @@ export const userService = {
   },
 
   updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
+    if (data.username) {
+      data.username = data.username.toLowerCase()
+      const taken = await userRepository.usernameExistsForOther(data.username, userId)
+      if (taken) throw new HttpError(409, 'Username is already taken')
+    }
     await userRepository.updateUserTags(userId, data.curiousAbout ?? [])
     return userRepository.updateUserProfile(userId, data)
   },
