@@ -11,6 +11,15 @@ interface UserSettingsProfile {
   email: string
 }
 
+interface BlockedUser {
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+  icon_url: string | null
+  created_at: string
+}
+
 export default function SettingsPage() {
   const [profile, setProfile] = useState<UserSettingsProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -18,6 +27,9 @@ export default function SettingsPage() {
   const [newEmail, setNewEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [isSavingEmail, setIsSavingEmail] = useState(false)
+  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([])
+  const [blockedLoading, setBlockedLoading] = useState(true)
+  const [unblockingId, setUnblockingId] = useState<number | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -59,6 +71,51 @@ export default function SettingsPage() {
 
     fetchProfile()
   }, [router])
+
+  useEffect(() => {
+    const fetchBlockedUsers = async () => {
+      try {
+        const token = getCookie('token')
+        if (!token) return
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL
+        const response = await fetch(`${apiUrl}/api/blocks/blocked`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (response.ok) {
+          setBlockedUsers(await response.json())
+        }
+      } catch {
+        /* non-critical */
+      } finally {
+        setBlockedLoading(false)
+      }
+    }
+    fetchBlockedUsers()
+  }, [])
+
+  const handleUnblock = async (userId: number) => {
+    try {
+      setUnblockingId(userId)
+      const token = getCookie('token')
+      if (!token) return
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${apiUrl}/api/blocks/${userId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        toast.error(data.error || 'Failed to unblock user')
+        return
+      }
+      setBlockedUsers((prev) => prev.filter((u) => u.id !== userId))
+      toast.success('User unblocked')
+    } catch {
+      toast.error('Network error')
+    } finally {
+      setUnblockingId(null)
+    }
+  }
 
   const handleEmailUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -169,6 +226,51 @@ export default function SettingsPage() {
                 >
                   Go to Password Reset
                 </button>
+              </section>
+
+              <section className="border border-gray-200 rounded-lg p-4">
+                <h2 className="text-lg font-semibold text-black mb-4">Blocked Accounts</h2>
+                {blockedLoading && <p className="text-gray-500 text-sm">Loading...</p>}
+                {!blockedLoading && blockedUsers.length === 0 && (
+                  <p className="text-gray-500 text-sm">No blocked users.</p>
+                )}
+                {!blockedLoading && blockedUsers.length > 0 && (
+                  <ul className="divide-y divide-gray-100">
+                    {blockedUsers.map((user) => (
+                      <li key={user.id} className="flex items-center justify-between py-3">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/user/${user.id}`)}
+                          className="flex items-center gap-3 hover:opacity-80"
+                        >
+                          {user.icon_url ? (
+                            <img
+                              src={user.icon_url}
+                              alt={user.username}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
+                              {user.first_name?.[0]?.toUpperCase() || '?'}
+                            </div>
+                          )}
+                          <div className="text-left">
+                            <p className="text-sm font-medium text-black">{user.first_name} {user.last_name}</p>
+                            <p className="text-xs text-gray-500">@{user.username}</p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={unblockingId === user.id}
+                          onClick={() => handleUnblock(user.id)}
+                          className="text-sm text-red-600 border border-red-300 px-3 py-1 rounded-md hover:bg-red-50 disabled:opacity-50"
+                        >
+                          {unblockingId === user.id ? 'Unblocking...' : 'Unblock'}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
             </>
           )}
