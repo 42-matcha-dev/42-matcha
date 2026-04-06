@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { z } from "zod";
-import { registerSchema } from "@/app/schema";
+import { registerSchema, usernameSchema } from "@/app/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
@@ -35,6 +35,7 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues, externalE
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(false);
   const [lastVerifiedLocation, setLastVerifiedLocation] = useState<string | null>(null);
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<RegisterBasicSchema>({
     resolver: zodResolver(registerBasicSchema),
@@ -81,7 +82,7 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues, externalE
       setValue("latitude", 0, { shouldValidate: false });
       setValue("longitude", 0, { shouldValidate: false });
     }
-  }, [currentLocation])
+  }, [currentLocation, lastVerifiedLocation, setValue])
 
   // Forward geocode location text to get lat/lon when user manually enters location
   const geocodeLocation = async (locationText: string) => {
@@ -190,6 +191,32 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues, externalE
     );
   };
 
+  const { onBlur: rhfUsernameBlur, onChange: rhfUsernameChange, ...usernameRegister } = register("username");
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    rhfUsernameChange(e);
+    setUsernameStatus('idle');
+  };
+
+  const handleUsernameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    await rhfUsernameBlur(e);
+    const value = e.target.value;
+    const isValid = usernameSchema.safeParse(value).success;
+    if (!isValid) {
+      setUsernameStatus('idle');
+      return;
+    }
+    setUsernameStatus('checking');
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const res = await fetch(`${apiUrl}/api/users/check-username?username=${encodeURIComponent(value)}`);
+      const data = await res.json();
+      setUsernameStatus(data.available ? 'available' : 'taken');
+    } catch {
+      setUsernameStatus('idle');
+    }
+  };
+
   const onSubmit = async (data: RegisterBasicSchema) => {
     // Validate coordinates are not 0,0
     if (data.latitude === 0 && data.longitude === 0) {
@@ -208,9 +235,25 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues, externalE
       <Title title="Complete Your Profile" subTitle="Tell us more about you." />
       <Stepper currentStep="0" />
       <div className="flex flex-col gap-1">
-        <InputForm placeholder="Username" type="text" error={errors.username} {...register("username")} />
+        <InputForm
+          placeholder="Username"
+          type="text"
+          error={errors.username}
+          {...usernameRegister}
+          onChange={handleUsernameChange}
+          onBlur={handleUsernameBlur}
+        />
         {externalErrors?.username && (
           <p className="text-red-500 text-sm">{externalErrors.username}</p>
+        )}
+        {!errors.username && usernameStatus === 'checking' && (
+          <p className="text-gray-400 text-sm">Checking...</p>
+        )}
+        {!errors.username && usernameStatus === 'available' && (
+          <p className="text-green-500 text-sm">✓ Available</p>
+        )}
+        {!errors.username && usernameStatus === 'taken' && (
+          <p className="text-red-500 text-sm">✗ Username is already taken</p>
         )}
       </div>
       <InputForm placeholder="First name" type="text" error={errors.firstName} {...register("firstName")} />
@@ -282,7 +325,9 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues, externalE
           !!errors.firstName ||
           !!errors.lastName ||
           !!errors.birthday ||
-          !!errors.location
+          !!errors.location ||
+          usernameStatus === 'taken' ||
+          usernameStatus === 'checking'
         }
       />
     </form>
