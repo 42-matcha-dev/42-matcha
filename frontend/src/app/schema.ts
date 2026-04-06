@@ -20,11 +20,18 @@ export const passwordSchema = z
     message: 'Password cannot start or end with spaces.'
   })
 
+export const usernameSchema = z
+  .string()
+  .regex(/^(?!_)(?!.*_$)[a-z0-9_]{3,20}$/, {
+    message: 'Username must be 3–20 characters: lowercase letters, numbers, underscores. Cannot start or end with underscore.'
+  })
+
 export const registerSchema = z
   .object({
     email: z.email(),
     password: passwordSchema,
     repeatPassword: z.string(),
+    username: usernameSchema,
     firstName: shortText(),
     lastName: shortText(),
     birthday: z.string().refine((val) => {
@@ -62,6 +69,7 @@ export const registerSchema = z
   })
 
 export type RegisterSchema = z.infer<typeof registerSchema>
+
 export const profileEditSchema = registerSchema
   .omit({
     password: true,
@@ -69,6 +77,7 @@ export const profileEditSchema = registerSchema
     email: true
   })
   .extend({
+    username: usernameSchema.or(z.literal('')).optional(),
     locationVerified: z.boolean().refine((v) => v === true, {
       message: 'Please verify your location.'
     })
