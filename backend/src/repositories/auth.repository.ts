@@ -6,6 +6,15 @@ export const authRepository = {
     return res.rows[0];
   },
 
+  findUserByIdentifier: async (identifier: string) => {
+    const normalized = identifier.toLowerCase().trim()
+    const res = await pool.query(
+      'SELECT * FROM users WHERE email = $1 OR LOWER(username) = $1',
+      [normalized]
+    )
+    return res.rows[0]
+  },
+
   insertUser: async (data: any) => {
     const query = `
       INSERT INTO users (

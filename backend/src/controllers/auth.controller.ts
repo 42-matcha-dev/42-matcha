@@ -30,6 +30,9 @@ export const completeRegistration = async (req: Request, res: Response) => {
     const result = await authService.completeProfile(token as string, req.body)
     res.status(201).json({ message: 'User profile completed', userId: result.id })
   } catch (error) {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message })
+    }
     res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
 }
@@ -39,10 +42,10 @@ export const login = async (req: Request, res: Response) => {
     if (!req.body) {
       return res.status(400).json({ error: 'Request body required' })
     }
-    const { email, password } = req.body
-    if (!email || !password) return res.status(400).json({ error: 'Missing fields' })
+    const { identifier, password } = req.body
+    if (!identifier || !password) return res.status(400).json({ error: 'Missing fields' })
 
-    const { user, token } = await authService.login(email, password)
+    const { user, token } = await authService.login(identifier, password)
     res.status(200).json({ message: 'Login successful', user, token })
   } catch (error) {
     res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
