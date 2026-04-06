@@ -47,10 +47,11 @@ export const blockRepository = {
 
   getBlockedUsers: async (userId: number) => {
     const query = `
-      SELECT blocked_id, created_at
-      FROM blocks
-      WHERE blocker_id = $1
-      ORDER BY created_at DESC
+      SELECT b.blocked_id AS id, u.username, u.first_name, u.last_name, u.icon_url, b.created_at
+      FROM blocks b
+      JOIN users u ON u.id = b.blocked_id
+      WHERE b.blocker_id = $1
+      ORDER BY b.created_at DESC
     `;
     const res = await pool.query(query, [userId]);
     return res.rows;
