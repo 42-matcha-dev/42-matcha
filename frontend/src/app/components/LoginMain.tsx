@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 const loginSchema = z.object({
-  email: z.email(),
+  identifier: z.string().min(1, { message: "Email or username is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 })
 
@@ -25,7 +25,7 @@ export default function LoginForm() {
         resolver: zodResolver(loginSchema),
         mode: "onBlur",
         defaultValues: {
-            email: "",
+            identifier: "",
             password: ""
         }
     });
@@ -70,7 +70,7 @@ export default function LoginForm() {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-1 flex-col max-w-md items-center gap-12">
           <Title title="Welcome back" subTitle="Sign in to your Matcha account."/>
-          <InputForm placeholder="Email" type="text" error={errors.email} {...register("email")}/>
+          <InputForm placeholder="Email or Username" type="text" error={errors.identifier} {...register("identifier")}/>
           <InputForm placeholder="Password" type="password" error={errors.password} {...register("password")}/>
           <div className="w-full text-right">
             <Link href="/forgot-password" className="text-sm text-secondary hover:underline">
