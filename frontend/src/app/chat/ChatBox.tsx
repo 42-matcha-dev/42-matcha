@@ -17,6 +17,7 @@ type MessageBubbleFormat = {
   author: string
   username: string
   avatar: string
+  userId: number
   message: string
   date: string
   isMe: boolean
@@ -48,6 +49,7 @@ function mapToBubbleFormat(
     author: fullName,
     username: sender.username,
     avatar: sender.icon_url || '/default-avatar.png',
+    userId: sender.id,
     message: msg.content,
     date: msg.created_at,
     isMe,
@@ -276,15 +278,27 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         >
           <span className="text-2xl">←</span>
         </button>
-        <Image
-          src={otherUser?.icon_url || '/default-avatar.png'}
-          className="w-11 h-11 min-w-11 min-h-11 flex-shrink-0 border border-black rounded-full object-cover aspect-square"
-          alt=""
-          width={44}
-          height={44}
-        />
-        <div className="ml-2 flex-1">
-          <h3 className="font-semibold text-[#2A3D39] text-lg">{fullName}</h3>
+        <button
+          type="button"
+          onClick={() => otherUser && router.push(`/user/${otherUser.id}`)}
+          className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-[#01AA85]"
+          aria-label={`View ${fullName}'s profile`}
+        >
+          <Image
+            src={otherUser?.icon_url || '/default-avatar.png'}
+            className="w-11 h-11 min-w-11 min-h-11 border border-black rounded-full object-cover aspect-square hover:opacity-80 transition-opacity"
+            alt=""
+            width={44}
+            height={44}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => otherUser && router.push(`/user/${otherUser.id}`)}
+          className="ml-2 flex-1 text-left focus:outline-none"
+          aria-label={`View ${fullName}'s profile`}
+        >
+          <h3 className="font-semibold text-[#2A3D39] text-lg hover:underline">{fullName}</h3>
           <p className={`text-sm font-medium ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
             {isOnline
               ? '● Online'
@@ -292,7 +306,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
                 ? `● Last seen ${formatTimeAgo(lastSeenAt)}`
                 : '● Offline'}
           </p>
-        </div>
+        </button>
       <KebabMenu
          items={[
            { label: 'Block user', onClick: handleBlock, disabled: actionLoading },
