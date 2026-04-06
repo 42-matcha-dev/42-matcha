@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import { profileEditSchema } from '@/app/schema'
@@ -26,6 +26,7 @@ interface Tag {
 }
 
 type UserProfile = {
+  username: string
   firstName: string
   lastName: string
   birthday: string
@@ -44,6 +45,7 @@ type ProfileEditSchema = z.infer<typeof profileEditSchema>
 
 export default function EditForm() {
   const router = useRouter()
+  const [currentUsername, setCurrentUsername] = useState<string>('')
   const {
     register,
     handleSubmit,
@@ -54,7 +56,6 @@ export default function EditForm() {
   } = useForm<ProfileEditSchema>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
-      // set default values here
       firstName: '',
       lastName: '',
       location: '',
@@ -69,6 +70,7 @@ export default function EditForm() {
     async function loadProfile() {
       try {
         const user: UserProfile = await apiFetch('/api/users/me')
+        setCurrentUsername(user.username ?? '')
 
         reset({
           firstName: user.firstName,
@@ -101,10 +103,11 @@ export default function EditForm() {
         return
       }
 
-      const { locationVerified, ...payload } = data
+      const { locationVerified, username, ...rest } = data
 
       const cleanedData = {
-        ...payload,
+        ...rest,
+        ...(username ? { username } : {}),
         lookingFor: data.lookingFor === '' ? 'both' : data.lookingFor,
         photoUrls: compactPhotoUrls(data.photoUrls)
       }
@@ -125,7 +128,11 @@ export default function EditForm() {
           router.push('/login')
           return
         }
-        const errorData = !response.ok ? await response.json() : null
+        const errorData = await response.json()
+        if (response.status === 409) {
+          toast.error(errorData?.error || 'Username is already taken')
+          return
+        }
         // Validation errors
         if (errorData?.fields) {
           toast.error(Object.values(errorData.fields)[0] as string)
@@ -156,6 +163,20 @@ export default function EditForm() {
 
       {/* Basic info */}
       <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <InputForm
+            label="Username"
+            type="text"
+            error={errors.username}
+            {...register('username')}
+          />
+          <p className="text-sm text-gray-400">
+            {currentUsername
+              ? `Current: @${currentUsername} — leave blank to keep it`
+              : 'Leave blank to keep your current username'}
+          </p>
+        </div>
+
         <InputForm
           label="First name"
           type="text"
