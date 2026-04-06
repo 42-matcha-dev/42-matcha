@@ -22,8 +22,11 @@ export const passwordSchema = z
 
 export const usernameSchema = z
   .string()
-  .regex(/^(?!_)(?!.*_$)[a-z0-9_]{3,20}$/, {
-    message: 'Username must be 3–20 characters: lowercase letters, numbers, underscores. Cannot start or end with underscore.'
+  .min(3, { message: 'Username must be at least 3 characters.' })
+  .max(20, { message: 'Username must be at most 20 characters.' })
+  .regex(/^[a-z0-9_]+$/, { message: 'Only lowercase letters, numbers, and underscores are allowed.' })
+  .refine((v) => !v.startsWith('_') && !v.endsWith('_'), {
+    message: 'Username cannot start or end with an underscore.'
   })
 
 export const registerSchema = z
