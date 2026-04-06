@@ -1,3 +1,4 @@
+
 import express from 'express'
 import { authService } from '../services/auth.service.js'
 import { passwordResetService } from '../services/password_reset.service.js'
@@ -18,6 +19,9 @@ export const signup = async (req: Request, res: Response) => {
     await authService.signup(email, password)
     res.status(200).json({ message: 'Verification email sent' })
   } catch (err: any) {
+    if (err instanceof HttpError) {
+      return res.status(err.status).json({ error: err.message, field: 'password' })
+    }
     console.error(err)
     res.status(500).json({ error: 'Internal server error' })
   }
