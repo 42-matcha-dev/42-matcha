@@ -1,4 +1,5 @@
 import express from 'express'
+import { userRepository } from '../repositories/user.repository.js'
 import { type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 import { userService } from '../services/user.service.js'
 import { emailChangeService } from '../services/change_email.service.js'
@@ -10,7 +11,21 @@ import type {
 import type { SearchUsersSchema } from '../schemas/search.schema.js'
 import type { UpdateProfileSchema } from '../schemas/updateProfile.schema.js'
 
+type Request = express.Request
 type Response = express.Response
+
+export const checkUsername = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.query
+    if (!username || typeof username !== 'string') {
+      return res.status(400).json({ error: 'Username is required' })
+    }
+    const exists = await userRepository.userExistsByUsername(username.toLowerCase().trim())
+    return res.status(200).json({ available: !exists })
+  } catch {
+    return res.status(500).json({ error: 'Server error' })
+  }
+}
 
 export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   try {
