@@ -1,4 +1,5 @@
 import pool from '../database/init.js'
+import { HttpError } from '../errors/HttpError.js'
 import type { SearchUsersSchema } from '../schemas/search.schema.js'
 import type { UpdateProfileSchema } from '../schemas/updateProfile.schema.js'
 
@@ -214,8 +215,15 @@ export const userRepository = {
       RETURNING *
     `
 
-    const res = await pool.query(query, values)
-    return res.rows[0]
+    try {
+      const res = await pool.query(query, values)
+      return res.rows[0]
+    } catch (err: any) {
+      if (err.code === '23505' && err.constraint?.includes('username')) {
+        throw new HttpError(409, 'Username is already taken')
+      }
+      throw err
+    }
   },
 
   findUserTags: async (userId: number) => {
