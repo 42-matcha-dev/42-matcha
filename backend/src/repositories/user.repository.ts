@@ -63,6 +63,11 @@ export const userRepository = {
     return res.rowCount > 0
   },
 
+  userExistsByUsername: async (username: string) => {
+    const res = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username])
+    return res.rowCount > 0
+  },
+
   setOnlineStatus: async (userId: number, isOnline: boolean) => {
     await pool.query(
       `UPDATE users
@@ -157,8 +162,17 @@ export const userRepository = {
     }
   },
 
+  usernameExistsForOther: async (username: string, excludeUserId: number) => {
+    const res = await pool.query(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER($1) AND id != $2',
+      [username, excludeUserId]
+    )
+    return res.rowCount > 0
+  },
+
   updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
     const fieldMap: Record<string, string> = {
+      username: 'username',
       firstName: 'first_name',
       lastName: 'last_name',
       birthday: 'birthdate',
@@ -179,8 +193,8 @@ export const userRepository = {
     for (const key in data) {
       const typedKey = key as keyof UpdateProfileSchema
 
-      if (fieldMap[typedKey]) {
-        fields.push(`${fieldMap[typedKey]} = $${index}`)
+      if (fieldMap[typedKey as string]) {
+        fields.push(`${fieldMap[typedKey as string]} = $${index}`)
         values.push(data[typedKey])
         index++
       }
