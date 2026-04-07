@@ -46,11 +46,18 @@ export const authService = {
   },
 
   completeProfile: async (token: string, data: RegisterSchema) => {
+    if (!token) {
+      throw new HttpError(400, 'Token is required')
+    }
     const pending = await pendingUserRepository.findByToken(token)
-    if (!pending) throw new Error('Invalid or expired token')
+    if (!pending) {
+      throw new HttpError(400, 'Invalid or expired token')
+    }
 
     const existing = await authRepository.findUserByEmail(pending.email)
-    if (existing) throw new Error('User already registered')
+    if (existing) {
+      throw new HttpError(409, 'User already registered')
+    }
 
     const username = data.username.toLowerCase()
     const usernameTaken = await userRepository.userExistsByUsername(username)
@@ -84,10 +91,14 @@ export const authService = {
 
   login: async (identifier: string, password: string) => {
     const user = await authRepository.findUserByIdentifier(identifier)
-    if (!user) throw new Error('Invalid email or password')
+    if (!user) {
+      throw new HttpError(401, 'Invalid credentials')
+    }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
-    if (!isValidPassword) throw new Error('Invalid email or password')
+    if (!isValidPassword) {
+      throw new HttpError(401, 'Invalid credentials')
+    }
 
     // Generate JWT token
     const token = generateToken({

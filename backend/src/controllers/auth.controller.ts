@@ -37,7 +37,7 @@ export const completeRegistration = async (req: Request, res: Response) => {
     if (error instanceof HttpError) {
       return res.status(error.status).json({ error: error.message })
     }
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
 }
 
@@ -52,7 +52,10 @@ export const login = async (req: Request, res: Response) => {
     const { user, token } = await authService.login(identifier, password)
     res.status(200).json({ message: 'Login successful', user, token })
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message })
+    }
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
 }
 
@@ -89,7 +92,10 @@ export const resetPassword = async (req: Request, res: Response) => {
     await passwordResetService.resetPassword(token, password)
     res.status(200).json({ message: 'Password has been reset successfully' })
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid request' })
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message })
+    }
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Invalid request' })
   }
 }
 

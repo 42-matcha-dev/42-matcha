@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { passwordResetRepository } from '../repositories/password_reset.repository.js';
 import { authRepository } from '../repositories/auth.repository.js';
 import { sendEmail } from '../utils/email.util.js';
+import { HttpError } from '../errors/HttpError.js';
 
 const RESET_TOKEN_EXPIRY_HOURS = 1;
 
@@ -34,8 +35,9 @@ export const passwordResetService = {
 
   resetPassword: async (token: string, newPassword: string) => {
     const resetRecord = await passwordResetRepository.findValidByToken(token);
-    if (!resetRecord) throw new Error('Invalid or expired reset token');
-
+    if (!resetRecord) {
+      throw new HttpError(400, 'Invalid or expired reset token')
+    }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     const { default: pool } = await import('../database/init.js');
