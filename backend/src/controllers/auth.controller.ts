@@ -37,7 +37,7 @@ export const completeRegistration = async (req: Request, res: Response) => {
     if (error instanceof HttpError) {
       return res.status(error.status).json({ error: error.message })
     }
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
 }
 

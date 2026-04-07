@@ -46,11 +46,18 @@ export const authService = {
   },
 
   completeProfile: async (token: string, data: RegisterSchema) => {
+    if (!token) {
+      throw new HttpError(400, 'Token is required')
+    }
     const pending = await pendingUserRepository.findByToken(token)
-    if (!pending) throw new Error('Invalid or expired token')
+    if (!pending) {
+      throw new HttpError(400, 'Invalid or expired token')
+    }
 
     const existing = await authRepository.findUserByEmail(pending.email)
-    if (existing) throw new Error('User already registered')
+    if (existing) {
+      throw new HttpError(409, 'User already registered')
+    }
 
     const username = data.username.toLowerCase()
     const usernameTaken = await userRepository.userExistsByUsername(username)
