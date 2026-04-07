@@ -58,7 +58,7 @@ export default function LoginForm() {
             if (result.token) {
                 setCookie('token', result.token, 7); // 7 days expiration
             }
-            router.push("/profile");
+            router.push("/search");
         } catch {
             toast.error('Network error. Please try again.');
         }
