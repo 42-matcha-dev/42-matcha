@@ -54,7 +54,8 @@ export default function EditForm() {
     formState: { errors },
     setValue,
     watch,
-    reset
+    reset,
+    setError
   } = useForm<ProfileEditSchema>({
     resolver: zodResolver(profileEditSchema),
     defaultValues: {
@@ -163,7 +164,8 @@ export default function EditForm() {
         }
         const errorData = await response.json()
         if (response.status === 409) {
-          toast.error(errorData?.error || 'Username is already taken')
+          setError('username', { message: errorData?.error || 'Username is already taken' })
+          setUsernameStatus('taken')
           return
         }
         // Validation errors
@@ -294,7 +296,11 @@ export default function EditForm() {
       />
 
       {/* Submit */}
-      <NextButton text="Save Profile" type="submit" />
+      <NextButton
+        text="Save Profile"
+        type="submit"
+        disabled={usernameStatus === 'taken' || usernameStatus === 'checking'}
+      />
     </form>
   )
 }
