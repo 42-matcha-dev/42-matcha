@@ -69,6 +69,11 @@ export const userRepository = {
     return res.rowCount > 0
   },
 
+  findUserIdByUsername: async (username: string): Promise<number | null> => {
+    const res = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username])
+    return res.rows[0]?.id ?? null
+  },
+
   setOnlineStatus: async (userId: number, isOnline: boolean) => {
     await pool.query(
       `UPDATE users

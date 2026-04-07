@@ -61,6 +61,28 @@ export const getUserById = async (req: AuthenticatedRequest, res: Response) => {
   }
 }
 
+export const getUserByUsername = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      throw new Error('Authentication required')
+    }
+
+    const { username } = req.params
+    const userId = await userRepository.findUserIdByUsername(username)
+    if (!userId) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const profile = await userService.getProfile(userId, req.user.userId)
+    return res.status(200).json(profile)
+  } catch (error) {
+    if (error instanceof Error && error.message === 'User not found') {
+      return res.status(404).json({ error: 'User not found' })
+    }
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error' })
+  }
+}
+
 export const updateCurrentUser = async (
   req: AuthenticatedValidatedBodyRequest<UpdateProfileSchema>,
   res: Response
