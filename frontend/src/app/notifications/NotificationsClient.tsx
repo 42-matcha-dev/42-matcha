@@ -47,7 +47,7 @@ export default function NotificationsClient() {
       }
     }
     fetchNotifications()
-  }, [])
+  }, [router])
 
   useEffect(() => {
     const socket = getSocket()
