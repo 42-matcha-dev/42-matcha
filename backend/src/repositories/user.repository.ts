@@ -1,4 +1,5 @@
 import pool from '../database/init.js'
+import { HttpError } from '../errors/HttpError.js'
 import type { SearchUsersSchema } from '../schemas/search.schema.js'
 import type { UpdateProfileSchema } from '../schemas/updateProfile.schema.js'
 
@@ -60,6 +61,11 @@ export const userRepository = {
 
   userExistsByEmail: async (email: string) => {
     const res = await pool.query('SELECT id FROM users WHERE email = $1', [email])
+    return res.rowCount > 0
+  },
+
+  userExistsByUsername: async (username: string) => {
+    const res = await pool.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [username])
     return res.rowCount > 0
   },
 
@@ -157,8 +163,17 @@ export const userRepository = {
     }
   },
 
+  usernameExistsForOther: async (username: string, excludeUserId: number) => {
+    const res = await pool.query(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER($1) AND id != $2',
+      [username, excludeUserId]
+    )
+    return res.rowCount > 0
+  },
+
   updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
     const fieldMap: Record<string, string> = {
+      username: 'username',
       firstName: 'first_name',
       lastName: 'last_name',
       birthday: 'birthdate',
@@ -179,8 +194,8 @@ export const userRepository = {
     for (const key in data) {
       const typedKey = key as keyof UpdateProfileSchema
 
-      if (fieldMap[typedKey]) {
-        fields.push(`${fieldMap[typedKey]} = $${index}`)
+      if (fieldMap[typedKey as string]) {
+        fields.push(`${fieldMap[typedKey as string]} = $${index}`)
         values.push(data[typedKey])
         index++
       }
@@ -200,8 +215,15 @@ export const userRepository = {
       RETURNING *
     `
 
-    const res = await pool.query(query, values)
-    return res.rows[0]
+    try {
+      const res = await pool.query(query, values)
+      return res.rows[0]
+    } catch (err: any) {
+      if (err.code === '23505' && err.constraint?.includes('username')) {
+        throw new HttpError(409, 'Username is already taken')
+      }
+      throw err
+    }
   },
 
   findUserTags: async (userId: number) => {

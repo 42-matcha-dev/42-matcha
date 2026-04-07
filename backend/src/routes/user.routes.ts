@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import {
+  checkUsername,
   getProfile,
   getUserById,
   searchUsers,
@@ -13,6 +14,7 @@ import { updateProfileSchema } from '../schemas/updateProfile.schema.js'
 
 const router = Router()
 
+router.get('/check-username', checkUsername)
 router.get('/me', authenticateToken, getProfile)
 router.patch('/me', authenticateToken, validateBody(updateProfileSchema), updateCurrentUser)
 router.patch('/me/email', authenticateToken, updateCurrentUserEmail)

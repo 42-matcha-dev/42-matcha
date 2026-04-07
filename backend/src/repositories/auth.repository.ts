@@ -1,9 +1,19 @@
 import pool from '../database/init.js';
+import { HttpError } from '../errors/HttpError.js'
 
 export const authRepository = {
   findUserByEmail: async (email: string) => {
     const res = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     return res.rows[0];
+  },
+
+  findUserByIdentifier: async (identifier: string) => {
+    const normalized = identifier.toLowerCase().trim()
+    const res = await pool.query(
+      'SELECT * FROM users WHERE email = $1 OR LOWER(username) = $1',
+      [normalized]
+    )
+    return res.rows[0]
   },
 
   insertUser: async (data: any) => {
@@ -30,7 +40,14 @@ export const authRepository = {
       data.icon_url,
       data.photo_urls,
     ];
-    const res = await pool.query(query, values);
-    return res.rows[0];
+    try {
+      const res = await pool.query(query, values);
+      return res.rows[0];
+    } catch (err: any) {
+      if (err.code === '23505' && err.constraint?.includes('username')) {
+        throw new HttpError(409, 'Username is already taken')
+      }
+      throw err
+    }
   },
 };

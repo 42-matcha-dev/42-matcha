@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { z } from "zod";
-import { registerSchema } from "@/app/schema";
+import { registerSchema, usernameSchema } from "@/app/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Title from "@/app/components/Title";
@@ -12,6 +12,7 @@ import Stepper from "@/app/components/Stepper";
 import Image from "next/image";
 
 const registerBasicSchema = registerSchema.pick({
+  username: true,
   firstName: true,
   lastName: true,
   birthday: true,
@@ -26,18 +27,21 @@ interface Props {
   onNext: () => void;
   updateData: (data: Partial<RegisterBasicSchema>) => void;
   defaultValues: Partial<RegisterBasicSchema>;
+  externalErrors?: Record<string, string>;
 }
 
-function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) {
+function RegisterBasicFormContent({ onNext, updateData, defaultValues, externalErrors }: Props) {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [geocodingLoading, setGeocodingLoading] = useState(false);
   const [lastVerifiedLocation, setLastVerifiedLocation] = useState<string | null>(null);
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<RegisterBasicSchema>({
     resolver: zodResolver(registerBasicSchema),
     mode: "onBlur",
     defaultValues: {
+      username: defaultValues.username || "",
       firstName: defaultValues.firstName || "",
       lastName: defaultValues.lastName || "",
       birthday: defaultValues.birthday || "",
@@ -50,6 +54,7 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
   const currentLocation = watch("location");
   const currentLatitude = watch("latitude");
   const currentLongitude = watch("longitude");
+  const currentUsername = watch("username");
   const currentFirstName = watch("firstName");
   const currentLastName = watch("lastName");
   const currentBirthday = watch("birthday");
@@ -77,7 +82,7 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       setValue("latitude", 0, { shouldValidate: false });
       setValue("longitude", 0, { shouldValidate: false });
     }
-  }, [currentLocation])
+  }, [currentLocation, lastVerifiedLocation, setValue])
 
   // Forward geocode location text to get lat/lon when user manually enters location
   const geocodeLocation = async (locationText: string) => {
@@ -186,6 +191,32 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
     );
   };
 
+  const { onBlur: rhfUsernameBlur, onChange: rhfUsernameChange, ...usernameRegister } = register("username");
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    rhfUsernameChange(e);
+    setUsernameStatus('idle');
+  };
+
+  const handleUsernameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    await rhfUsernameBlur(e);
+    const value = e.target.value;
+    const isValid = usernameSchema.safeParse(value).success;
+    if (!isValid) {
+      setUsernameStatus('idle');
+      return;
+    }
+    setUsernameStatus('checking');
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const res = await fetch(`${apiUrl}/api/users/check-username?username=${encodeURIComponent(value)}`);
+      const data = await res.json();
+      setUsernameStatus(data.available ? 'available' : 'taken');
+    } catch {
+      setUsernameStatus('idle');
+    }
+  };
+
   const onSubmit = async (data: RegisterBasicSchema) => {
     // Validate coordinates are not 0,0
     if (data.latitude === 0 && data.longitude === 0) {
@@ -203,6 +234,28 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
       className="flex flex-col w-full gap-12">
       <Title title="Complete Your Profile" subTitle="Tell us more about you." />
       <Stepper currentStep="0" />
+      <div className="flex flex-col gap-1">
+        <InputForm
+          placeholder="Username"
+          type="text"
+          error={errors.username}
+          {...usernameRegister}
+          onChange={handleUsernameChange}
+          onBlur={handleUsernameBlur}
+        />
+        {externalErrors?.username && (
+          <p className="text-red-500 text-sm">{externalErrors.username}</p>
+        )}
+        {!errors.username && usernameStatus === 'checking' && (
+          <p className="text-gray-400 text-sm">Checking...</p>
+        )}
+        {!errors.username && usernameStatus === 'available' && (
+          <p className="text-green-500 text-sm">✓ Available</p>
+        )}
+        {!errors.username && usernameStatus === 'taken' && (
+          <p className="text-red-500 text-sm">✗ Username is already taken</p>
+        )}
+      </div>
       <InputForm placeholder="First name" type="text" error={errors.firstName} {...register("firstName")} />
       <InputForm placeholder="Last name" type="text" error={errors.lastName}{...register("lastName")} />
       <InputForm placeholder="Birthday" type="date" error={errors.birthday}{...register("birthday")} />
@@ -264,13 +317,17 @@ function RegisterBasicFormContent({ onNext, updateData, defaultValues }: Props) 
           currentLocation !== lastVerifiedLocation ||
           currentLatitude === 0 ||
           currentLongitude === 0 ||
+          !currentUsername ||
           !currentFirstName ||
           !currentLastName ||
           !currentBirthday ||
+          !!errors.username ||
           !!errors.firstName ||
           !!errors.lastName ||
           !!errors.birthday ||
-          !!errors.location
+          !!errors.location ||
+          usernameStatus === 'taken' ||
+          usernameStatus === 'checking'
         }
       />
     </form>

@@ -52,7 +52,9 @@ export const authService = {
     const existing = await authRepository.findUserByEmail(pending.email)
     if (existing) throw new Error('User already registered')
 
-    const username = `${data.firstName.toLowerCase()}_${Date.now()}`
+    const username = data.username.toLowerCase()
+    const usernameTaken = await userRepository.userExistsByUsername(username)
+    if (usernameTaken) throw new HttpError(409, 'Username is already taken')
 
     const user = await authRepository.insertUser({
       email: pending.email,
@@ -80,8 +82,8 @@ export const authService = {
     return user
   },
 
-  login: async (email: string, password: string) => {
-    const user = await authRepository.findUserByEmail(email)
+  login: async (identifier: string, password: string) => {
+    const user = await authRepository.findUserByIdentifier(identifier)
     if (!user) throw new Error('Invalid email or password')
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash)

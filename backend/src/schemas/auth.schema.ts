@@ -2,6 +2,14 @@ import { z } from 'zod'
 import { shortText, longText } from '../utils/zod.js';
 
 export const registerSchema = z.object({
+  username: z
+    .string()
+    .min(3, { message: 'Username must be at least 3 characters.' })
+    .max(20, { message: 'Username must be at most 20 characters.' })
+    .regex(/^[a-z0-9_]+$/, { message: 'Only lowercase letters, numbers, and underscores are allowed.' })
+    .refine((v) => !v.startsWith('_') && !v.endsWith('_'), {
+      message: 'Username cannot start or end with an underscore.'
+    }),
   firstName: shortText(),
   lastName: shortText(),
 

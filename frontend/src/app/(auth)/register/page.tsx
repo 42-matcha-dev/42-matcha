@@ -62,6 +62,14 @@ function RegisterFormStepperContent() {
           return
         }
 
+        // Username already taken — go back to step 0 and show inline error
+        if (response.status === 409) {
+          setFormErrors({ username: data.error || 'Username is already taken' })
+          setDirection(-1)
+          setCurrentStep(0)
+          return
+        }
+
         // Backend business error
         toast.error(data.error || 'Request failed')
         return
@@ -110,6 +118,7 @@ function RegisterFormStepperContent() {
   }
 
   const handleNext = () => {
+    setFormErrors({})
     setDirection(1)
     setCurrentStep((prev) => Math.min(prev + 1, 2))
   }
@@ -125,6 +134,7 @@ function RegisterFormStepperContent() {
       onNext={handleNext}
       updateData={updateData}
       defaultValues={formData}
+      externalErrors={formErrors}
     />,
     <RegisterSpecificForm
       key="specific"
