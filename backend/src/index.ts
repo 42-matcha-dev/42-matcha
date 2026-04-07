@@ -4,6 +4,7 @@ import http from 'http';
 import { Server as SocketServer } from 'socket.io';
 
 import { initDB } from './database/init.js';
+import { fameRatingService } from './services/fameRating.service.js';
 import { seedTestUsers } from './database/seed.js';
 import authRoutes from './routes/auth.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
@@ -63,6 +64,11 @@ initDB()
     console.log("🟡 Seeding test users...");
     await seedTestUsers();
     console.log("🟢 Test users seeded");
+
+    console.log("🟡 Computing initial fame ratings...");
+    await fameRatingService.refresh();
+    fameRatingService.scheduleRefresh();
+    console.log("🟢 Fame ratings ready (refreshes every hour)");
 
     console.log(`🟡 Starting server on port ${port}...`);
     server.listen(port, () => {
