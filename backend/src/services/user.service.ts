@@ -18,23 +18,24 @@ export const userService = {
 
     // Check like status if currentUserId is provided
     let isLiked = false
+    let hasLikedMe = false
     let isMatch = false
     let isBlocked = false
     let isReported = false
     let conversationId: number | null = null
 
     if (currentUserId && currentUserId !== userId) {
-      const [liked, blocked, reported] = await Promise.all([
+      const [liked, likeBack, blocked, reported] = await Promise.all([
         likeRepository.checkLikeExists(currentUserId, userId),
+        likeRepository.checkLikeExists(userId, currentUserId),
         blockRepository.checkBlockExists(currentUserId, userId),
         reportRepository.checkReportExists(currentUserId, userId)
       ])
       isLiked = liked
+      hasLikedMe = likeBack
       isBlocked = blocked
       isReported = reported
-      if (isLiked) {
-        isMatch = await likeRepository.checkMutualLike(currentUserId, userId)
-      }
+      isMatch = isLiked && hasLikedMe
       if (isBlocked || isReported) {
         isMatch = false
         isLiked = false
@@ -48,7 +49,7 @@ export const userService = {
       await notificationService.createNotification(userId, currentUserId, 'VIEW', currentUserId)
     }
 
-    return { ...user, tags, isLiked, isMatch, isBlocked, isReported, conversationId }
+    return { ...user, tags, isLiked, hasLikedMe, isMatch, isBlocked, isReported, conversationId }
   },
 
   updateUserProfile: async (userId: number, data: UpdateProfileSchema) => {
