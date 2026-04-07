@@ -7,6 +7,15 @@ import Header from '@/app/components/Header'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import AppLayout from '../layouts/AppLayout'
 
+interface LikeUser {
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+  icon_url: string | null
+  created_at: string
+}
+
 interface Tag {
   id: number
   name: string
@@ -35,6 +44,10 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [likesSent, setLikesSent] = useState<LikeUser[]>([])
+  const [likesReceived, setLikesReceived] = useState<LikeUser[]>([])
+  const [likesTab, setLikesTab] = useState<'sent' | 'received'>('received')
+  const [likesLoading, setLikesLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -76,6 +89,27 @@ export default function Dashboard() {
 
     fetchProfile()
   }, [router])
+
+  useEffect(() => {
+    const fetchLikes = async () => {
+      try {
+        const token = getCookie('token')
+        if (!token) return
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL
+        const [sentRes, receivedRes] = await Promise.all([
+          fetch(`${apiUrl}/api/likes/likes`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${apiUrl}/api/likes/liked-by`, { headers: { Authorization: `Bearer ${token}` } })
+        ])
+        if (sentRes.ok) setLikesSent(await sentRes.json())
+        if (receivedRes.ok) setLikesReceived(await receivedRes.json())
+      } catch {
+        /* non-critical */
+      } finally {
+        setLikesLoading(false)
+      }
+    }
+    fetchLikes()
+  }, [])
 
   if (loading) {
     return (
@@ -244,6 +278,75 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Likes Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 mt-8">
+          <h2 className="text-2xl font-semibold mb-4 text-black">Likes</h2>
+          <div className="flex border-b border-gray-200 mb-4">
+            <button
+              type="button"
+              onClick={() => setLikesTab('received')}
+              className={`px-4 py-2 text-sm font-medium -mb-px ${
+                likesTab === 'received'
+                  ? 'border-b-2 border-black text-black'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Received ({likesReceived.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLikesTab('sent')}
+              className={`px-4 py-2 text-sm font-medium -mb-px ${
+                likesTab === 'sent'
+                  ? 'border-b-2 border-black text-black'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Sent ({likesSent.length})
+            </button>
+          </div>
+
+          {likesLoading && <p className="text-gray-500 text-sm">Loading...</p>}
+
+          {!likesLoading && (
+            <>
+              {(likesTab === 'received' ? likesReceived : likesSent).length === 0 ? (
+                <p className="text-gray-500 text-sm">
+                  {likesTab === 'received' ? 'No one has liked you yet.' : 'You haven\'t liked anyone yet.'}
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {(likesTab === 'received' ? likesReceived : likesSent).map((user) => (
+                    <li key={user.id}>
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/user/${user.id}`)}
+                        className="flex items-center gap-3 py-3 w-full hover:bg-gray-50 rounded px-2"
+                      >
+                        {user.icon_url ? (
+                          <img
+                            src={user.icon_url}
+                            alt={user.username}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
+                            {user.first_name?.[0]?.toUpperCase() || '?'}
+                          </div>
+                        )}
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-black">{user.first_name} {user.last_name}</p>
+                          <p className="text-xs text-gray-500">@{user.username}</p>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
         </div>
       </div>
     </AppLayout>
