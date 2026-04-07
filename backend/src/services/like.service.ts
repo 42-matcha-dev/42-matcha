@@ -109,7 +109,6 @@ export const likeService = {
     await notificationService.deleteNotification(likerId, likedId, "MATCH");
     await notificationService.deleteNotification(likedId, likerId, "MATCH");
     if (wasMatch) {
-      await likeRepository.deleteLike(likedId, likerId);
       await conversationRepository.removeConversation(likerId, likedId);
       await notificationService.createNotification(likedId, likerId, "UNLIKE", likerId);
     }
