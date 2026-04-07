@@ -4,6 +4,7 @@ import { conversationRepository } from '../repositories/conversation.repository.
 import { verifyToken } from '../utils/jwt.util.js';
 import { canChat } from '../services/canChat.service.js';
 import { userRepository } from '../repositories/user.repository.js';
+import { notificationService } from '../services/notification.service.js';
 
 export function setupChatSocket(io: Server): void {
     io.use((socket, next) => {
@@ -151,6 +152,9 @@ export function setupChatSocket(io: Server): void {
                 });
 
                 await emitConversationUpdated(conversationId);
+
+                notificationService.createNotification(otherUserId, userId, "MESSAGE", conversationId)
+                    .catch(err => console.error('Failed to create MESSAGE notification:', err));
             } catch (err) {
                 cb?.({ error: err instanceof Error ? err.message : 'Failed to send message' });
             }
