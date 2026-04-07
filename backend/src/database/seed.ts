@@ -336,10 +336,10 @@ export const assignTagsToUser = async (userId: number, tagMap: Map<string, numbe
 const seedInteractions = async (userIds: number[]) => {
   if (userIds.length < 2) return
 
-  // Only seed if the notifications table is empty
-  const countRes = await pool.query('SELECT COUNT(*) FROM notifications')
+  // Only seed if the likes table is empty (domain-level guard)
+  const countRes = await pool.query('SELECT COUNT(*) FROM likes')
   if (parseInt(countRes.rows[0].count, 10) > 0) {
-    console.log('ℹ️  Notifications already exist, skipping interaction seeding')
+    console.log('ℹ️  Likes already exist, skipping interaction seeding')
     return
   }
 
@@ -398,22 +398,47 @@ const seedInteractions = async (userIds: number[]) => {
       if (likerSet.has(reverseKey)) {
         // Mutual like → MATCH
         matchedPairs.add(pairKey)
-        const fakeConvId = Math.min(userId, targetId) * 100000 + Math.max(userId, targetId)
+        const u1 = Math.min(userId, targetId)
+        const u2 = Math.max(userId, targetId)
 
+        // 1. Seed likes domain table (both directions)
+        await pool.query(
+          `INSERT INTO likes (liker_id, liked_id) VALUES ($1, $2), ($2, $1) ON CONFLICT DO NOTHING`,
+          [u1, u2]
+        )
+
+        // 2. Seed conversations domain table; upsert ensures we always get the id back
+        const convRes = await pool.query(
+          `INSERT INTO conversations (user1_id, user2_id)
+           VALUES ($1, $2)
+           ON CONFLICT (user1_id, user2_id) DO UPDATE SET user1_id = EXCLUDED.user1_id
+           RETURNING id`,
+          [u1, u2]
+        )
+        const convId: number = convRes.rows[0].id
+
+        // 3. Derive MATCH notifications from the real conversation id
         await pool.query(
           `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
            VALUES ($1, $2, 'MATCH', $3, $4)
            ON CONFLICT DO NOTHING`,
-          [userId, targetId, fakeConvId, dateAgo]
+          [userId, targetId, convId, dateAgo]
         )
         await pool.query(
           `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
            VALUES ($1, $2, 'MATCH', $3, $4)
            ON CONFLICT DO NOTHING`,
-          [targetId, userId, fakeConvId, dateAgo]
+          [targetId, userId, convId, dateAgo]
         )
       } else {
-        // One-sided like → targetId receives the notification
+        // One-sided like
+        // 1. Seed likes domain table
+        await pool.query(
+          `INSERT INTO likes (liker_id, liked_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [userId, targetId]
+        )
+
+        // 2. Derive LIKE notification
         await pool.query(
           `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
            VALUES ($1, $2, 'LIKE', $3, $4)
@@ -486,30 +511,21 @@ export const seedTestUsers = async () => {
       generateFakerUser()
     )
 
-    // Combine existing test users with faker-generated users
-    const allUsers = [...testUsers, ...fakerUsers]
     console.log(
-      `📊 Total users to seed: ${allUsers.length} (${testUsers.length} test users + ${fakerUsers.length} faker users)`
+      `📊 Total users to seed: ${testUsers.length + fakerUsers.length} (${testUsers.length} test users + ${fakerUsers.length} faker users)`
     )
 
-    for (const userData of allUsers) {
-      // Check if user already exists
+    const insertUser = async (userData: TestUser): Promise<number | null> => {
       const existingUser = await pool.query(
         'SELECT id FROM users WHERE email = $1 OR username = $2',
         [userData.email, userData.username]
       )
-
       if (existingUser.rows.length > 0) {
         console.log(`⏭️  User ${userData.email} already exists, skipping...`)
-        continue
+        return null
       }
 
-      // Hash password
       const password_hash = await bcrypt.hash(userData.password, 10)
-
-      // Insert user
-      // NOTE: Database schema must include latitude and longitude columns for this to work
-      // Add to users table: latitude DOUBLE PRECISION, longitude DOUBLE PRECISION
       const query = `
         INSERT INTO users (
           email, password_hash, username, first_name, last_name,
@@ -533,20 +549,29 @@ export const seedTestUsers = async () => {
         userData.icon_url || null,
         userData.photo_urls || null
       ]
-
       const result = await pool.query(query, values)
-      const userId = result.rows[0].id
       console.log(`✅ Created test user: ${result.rows[0].email} (${result.rows[0].username})`)
-
-      // Assign tags to the user
-      await assignTagsToUser(userId, tagMap)
+      return result.rows[0].id
     }
 
-    // Seed interactions so fame ratings have meaningful values after refresh
-    const allUserIds = (await pool.query('SELECT id FROM users')).rows.map(
-      (r: { id: number }) => r.id
-    )
-    await seedInteractions(allUserIds)
+    // Seed fixed test users (excluded from random interaction generation)
+    for (const userData of testUsers) {
+      const userId = await insertUser(userData)
+      if (userId) await assignTagsToUser(userId, tagMap)
+    }
+
+    // Seed faker users and collect their IDs for interaction seeding
+    const fakerUserIds: number[] = []
+    for (const userData of fakerUsers) {
+      const userId = await insertUser(userData)
+      if (userId) {
+        await assignTagsToUser(userId, tagMap)
+        fakerUserIds.push(userId)
+      }
+    }
+
+    // Seed interactions only among faker users so test accounts stay in a known state
+    await seedInteractions(fakerUserIds)
 
     console.log('✅ Test user seeding completed!')
   } catch (err: any) {
