@@ -54,7 +54,10 @@ export default function NotificationsClient() {
     const onNewNotification = (notification: Notification) => {
       setNotifications(prev => {
         if (prev.some(n => n.id === notification.id)) return prev
-        return [notification, ...prev]
+        const filtered = prev.filter(
+          n => !(n.actor_id === notification.actor_id && isSuperseded(n.type, notification.type))
+        )
+        return [notification, ...filtered]
       })
     }
     socket.on('newNotification', onNewNotification)
@@ -145,6 +148,13 @@ export default function NotificationsClient() {
       </div>
     </div>
   )
+}
+
+function isSuperseded(existing: Notification['type'], incoming: Notification['type']): boolean {
+  if (incoming === 'MATCH' && (existing === 'LIKE' || existing === 'UNLIKE')) return true
+  if (incoming === 'UNLIKE' && existing === 'MATCH') return true
+  if (incoming === 'LIKE' && existing === 'UNLIKE') return true
+  return false
 }
 
 function renderNotificationText(n: Notification) {
