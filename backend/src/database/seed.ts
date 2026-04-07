@@ -333,6 +333,131 @@ export const assignTagsToUser = async (userId: number, tagMap: Map<string, numbe
   }
 }
 
+const seedInteractions = async (userIds: number[]) => {
+  if (userIds.length < 2) return
+
+  // Only seed if the notifications table is empty
+  const countRes = await pool.query('SELECT COUNT(*) FROM notifications')
+  if (parseInt(countRes.rows[0].count, 10) > 0) {
+    console.log('ℹ️  Notifications already exist, skipping interaction seeding')
+    return
+  }
+
+  console.log('🌱 Seeding fake interactions for fame ratings...')
+
+  const randomDate = (minDaysAgo: number, maxDaysAgo: number): Date => {
+    const daysAgo = faker.number.int({ min: minDaysAgo, max: maxDaysAgo })
+    const d = new Date()
+    d.setDate(d.getDate() - daysAgo)
+    return d
+  }
+
+  // --- VIEWs ---
+  // (user_id=viewee, actor_id=viewer, reference_id=viewer)
+  const insertedViews = new Set<string>()
+  for (const userId of userIds) {
+    const others = userIds.filter((id) => id !== userId)
+    const count = faker.number.int({ min: 3, max: Math.min(25, others.length) })
+    const viewers = faker.helpers.arrayElements(others, count)
+
+    for (const actorId of viewers) {
+      const key = `${userId}-${actorId}`
+      if (insertedViews.has(key)) continue
+      insertedViews.add(key)
+
+      await pool.query(
+        `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
+         VALUES ($1, $2, 'VIEW', $3, $4)
+         ON CONFLICT DO NOTHING`,
+        [userId, actorId, actorId, randomDate(0, 365)]
+      )
+    }
+  }
+
+  // --- LIKEs and MATCHes ---
+  // (user_id=liked, actor_id=liker, reference_id=liker for LIKEs)
+  // (user_id=either, actor_id=other, reference_id=fakeConvId for MATCHes)
+  const likerSet = new Set<string>() // "likerId->likedId" already inserted
+  const matchedPairs = new Set<string>() // "minId-maxId" already matched
+
+  for (const userId of userIds) {
+    const others = userIds.filter((id) => id !== userId)
+    const count = faker.number.int({ min: 1, max: Math.min(10, others.length) })
+    const targets = faker.helpers.arrayElements(others, count)
+
+    for (const targetId of targets) {
+      const likeKey = `${userId}->${targetId}`
+      const reverseKey = `${targetId}->${userId}`
+      const pairKey = `${Math.min(userId, targetId)}-${Math.max(userId, targetId)}`
+
+      if (likerSet.has(likeKey) || matchedPairs.has(pairKey)) continue
+
+      const dateAgo = randomDate(0, 180)
+      likerSet.add(likeKey)
+
+      if (likerSet.has(reverseKey)) {
+        // Mutual like → MATCH
+        matchedPairs.add(pairKey)
+        const fakeConvId = Math.min(userId, targetId) * 100000 + Math.max(userId, targetId)
+
+        await pool.query(
+          `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
+           VALUES ($1, $2, 'MATCH', $3, $4)
+           ON CONFLICT DO NOTHING`,
+          [userId, targetId, fakeConvId, dateAgo]
+        )
+        await pool.query(
+          `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
+           VALUES ($1, $2, 'MATCH', $3, $4)
+           ON CONFLICT DO NOTHING`,
+          [targetId, userId, fakeConvId, dateAgo]
+        )
+      } else {
+        // One-sided like → targetId receives the notification
+        await pool.query(
+          `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
+           VALUES ($1, $2, 'LIKE', $3, $4)
+           ON CONFLICT DO NOTHING`,
+          [targetId, userId, userId, dateAgo]
+        )
+      }
+    }
+  }
+
+  // --- UNLIKEs (small subset of users) ---
+  // (user_id=unliked, actor_id=unliker, reference_id=unliker)
+  const unlikedSet = new Set<string>()
+  const unlikeCandidates = faker.helpers.arrayElements(userIds, Math.min(15, userIds.length))
+
+  for (const userId of unlikeCandidates) {
+    const others = userIds.filter(
+      (id) =>
+        id !== userId &&
+        !matchedPairs.has(`${Math.min(userId, id)}-${Math.max(userId, id)}`)
+    )
+    if (others.length === 0) continue
+    const count = faker.number.int({ min: 0, max: Math.min(3, others.length) })
+    const targets = faker.helpers.arrayElements(others, count)
+
+    for (const actorId of targets) {
+      const key = `${userId}-${actorId}`
+      if (unlikedSet.has(key)) continue
+      unlikedSet.add(key)
+
+      await pool.query(
+        `INSERT INTO notifications (user_id, actor_id, type, reference_id, created_at)
+         VALUES ($1, $2, 'UNLIKE', $3, $4)
+         ON CONFLICT DO NOTHING`,
+        [userId, actorId, actorId, randomDate(0, 90)]
+      )
+    }
+  }
+
+  console.log(
+    `✅ Seeded interactions: ${insertedViews.size} views, ${likerSet.size} likes/matches, ${unlikedSet.size} unlikes`
+  )
+}
+
 export const seedTestUsers = async () => {
   // Only seed if SEED_TEST_USERS environment variable is set
   if (process.env.SEED_TEST_USERS !== 'true') {
@@ -416,6 +541,12 @@ export const seedTestUsers = async () => {
       // Assign tags to the user
       await assignTagsToUser(userId, tagMap)
     }
+
+    // Seed interactions so fame ratings have meaningful values after refresh
+    const allUserIds = (await pool.query('SELECT id FROM users')).rows.map(
+      (r: { id: number }) => r.id
+    )
+    await seedInteractions(allUserIds)
 
     console.log('✅ Test user seeding completed!')
   } catch (err: any) {
