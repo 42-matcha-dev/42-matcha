@@ -60,9 +60,14 @@ export default function NotificationsClient() {
         return [notification, ...filtered]
       })
     }
+    const onRemoveNotification = ({ actorId, type }: { userId: number; actorId: number; type: Notification['type'] }) => {
+      setNotifications(prev => prev.filter(n => !(n.actor_id === actorId && n.type === type)))
+    }
     socket.on('newNotification', onNewNotification)
+    socket.on('removeNotification', onRemoveNotification)
     return () => {
       socket.off('newNotification', onNewNotification)
+      socket.off('removeNotification', onRemoveNotification)
     }
   }, [])
 
