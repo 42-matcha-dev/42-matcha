@@ -3,6 +3,13 @@ import { faker } from '@faker-js/faker'
 import pool from './init.js'
 import tagsData from '../data/tags.json' with { type: 'json' }
 
+const normalizeUsername = (raw: string) =>
+  raw
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '')
+
 interface TestUser {
   email: string
   password: string
@@ -259,7 +266,7 @@ const generateFakerUser = (): TestUser => {
   return {
     email: faker.internet.email(),
     password: 'password123', // Use same default password as test users
-    username: faker.internet.username(),
+    username: normalizeUsername(faker.internet.username()),
     first_name: faker.person.firstName(),
     last_name: faker.person.lastName(),
     birthday,
