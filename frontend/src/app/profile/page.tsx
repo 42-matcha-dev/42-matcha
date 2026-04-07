@@ -153,7 +153,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto p-16">
+      <div className="max-w-4xl mx-auto py-16 px-6 md:px-16">
         <div className="mb-8 flex items-center justify-between gap-2 sm:gap-4">
           <h1 className="text-3xl font-bold text-black">Dashboard</h1>
           <button
@@ -210,7 +210,7 @@ export default function Dashboard() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <p className="text-black text-lg">{profile.email}</p>
+              <p className="text-black text-lg break-words">{profile.email}</p>
             </div>
 
             <div>
@@ -314,7 +314,9 @@ export default function Dashboard() {
             <>
               {(likesTab === 'received' ? likesReceived : likesSent).length === 0 ? (
                 <p className="text-gray-500 text-sm">
-                  {likesTab === 'received' ? 'No one has liked you yet.' : 'You haven\'t liked anyone yet.'}
+                  {likesTab === 'received'
+                    ? 'No one has liked you yet.'
+                    : "You haven't liked anyone yet."}
                 </p>
               ) : (
                 <ul className="divide-y divide-gray-100">
@@ -337,7 +339,9 @@ export default function Dashboard() {
                           </div>
                         )}
                         <div className="text-left">
-                          <p className="text-sm font-medium text-black">{user.first_name} {user.last_name}</p>
+                          <p className="text-sm font-medium text-black">
+                            {user.first_name} {user.last_name}
+                          </p>
                           <p className="text-xs text-gray-500">@{user.username}</p>
                         </div>
                       </button>
