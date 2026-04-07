@@ -337,29 +337,28 @@ export default function UserProfilePage() {
                 )}
                 {/* Name and Info */}
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold mb-3 flex items-center gap-2">
+                  <h1 className="text-3xl font-bold mb-3">
                     {displayName}, {age}
-
+                  </h1>
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    <span style={{ color: profile.isOnline ? '#22c553' : '#9ca3af' }}>
+                      {profile.isOnline
+                        ? '● Online'
+                        : profile.lastSeenAt
+                          ? `Last seen ${formatTimeAgo(profile.lastSeenAt)}`
+                          : 'Offline'}
+                    </span>
                     {profile.isMatch && (
-                      <span className="px-2 py-1 text-xs bg-primary text-white rounded">
-                        Match
+                      <span className="px-2 py-0.5 text-xs font-medium bg-primary/15 text-primary rounded-full">
+                        Matched
                       </span>
                     )}
-
                     {!profile.isMatch && profile.hasLikedMe && (
-                      <span className="px-2 py-1 text-xs bg-[#FCE7F3] text-[#9D174D] rounded">
+                      <span className="px-2 py-0.5 text-xs font-medium bg-pink-100 text-pink-700 rounded-full">
                         Liked you
                       </span>
                     )}
-                  </h1>
-                  {/* Online status text */}
-                  <p className="text-sm mb-2 text-custom-medium" style={{ color: profile.isOnline ? '#22c553' : '#9ca3af' }}>
-                    {profile.isOnline
-                      ? '● Online'
-                      : profile.lastSeenAt
-                        ? `Last seen ${formatTimeAgo(profile.lastSeenAt)}`
-                        : 'Offline'}
-                  </p>
+                  </div>
                   <div className="flex items-center mb-4">
                     {/* Location */}
                     {profile.location && (
