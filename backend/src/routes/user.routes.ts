@@ -3,6 +3,7 @@ import {
   checkUsername,
   getProfile,
   getUserById,
+  getUserByUsername,
   searchUsers,
   updateCurrentUser,
   updateCurrentUserEmail
@@ -19,6 +20,7 @@ router.get('/me', authenticateToken, getProfile)
 router.patch('/me', authenticateToken, validateBody(updateProfileSchema), updateCurrentUser)
 router.patch('/me/email', authenticateToken, updateCurrentUserEmail)
 router.get('/search', authenticateToken, validateQuery(searchUsersShema), searchUsers)
+router.get('/username/:username', authenticateToken, getUserByUsername)
 router.get('/:id', authenticateToken, getUserById)
 
 export default router

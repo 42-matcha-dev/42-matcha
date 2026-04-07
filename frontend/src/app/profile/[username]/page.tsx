@@ -69,9 +69,8 @@ export default function UserProfilePage() {
 
   const router = useRouter()
   const params = useParams()
-  const userId = params?.id as string
+  const username = params?.username as string
 
-  // Calculate age from createdAt (or could be a separate field)
   const calculateAge = (): number => {
     if (!profile?.birthday) return 0
     const birth = new Date(profile.birthday)
@@ -107,7 +106,7 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!userId) return
+      if (!username) return
 
       try {
         const token = getCookie('token')
@@ -123,7 +122,7 @@ export default function UserProfilePage() {
         }
 
         const [profileRes, meRes] = await Promise.all([
-          fetch(`${apiUrl}/api/users/${userId}`, { method: 'GET', headers }),
+          fetch(`${apiUrl}/api/users/username/${username}`, { method: 'GET', headers }),
           fetch(`${apiUrl}/api/users/me`, { method: 'GET', headers })
         ])
 
@@ -149,13 +148,13 @@ export default function UserProfilePage() {
     }
 
     fetchProfile()
-  }, [userId, router])
+  }, [username, router])
 
   useEffect(() => {
-    if (!userId) return
+    if (!profile?.id) return
     const socket = getSocket()
     const onStatusChanged = ({ userId: changedId, isOnline }: { userId: number; isOnline: boolean }) => {
-      if (changedId === Number(userId)) {
+      if (changedId === profile.id) {
         setProfile(prev => prev ? { ...prev, isOnline, lastSeenAt: isOnline ? prev.lastSeenAt : new Date().toISOString() } : prev)
       }
     }
@@ -163,7 +162,7 @@ export default function UserProfilePage() {
     return () => {
       socket.off('userStatusChanged', onStatusChanged)
     }
-  }, [userId])
+  }, [profile?.id])
 
   useEffect(() => {
     if (profile?.isOnline) return
@@ -172,7 +171,7 @@ export default function UserProfilePage() {
   }, [profile?.isOnline])
 
   const handleLike = async () => {
-    if (!userId || !profile || likeLoading) return
+    if (!profile || likeLoading) return
 
     try {
       setLikeLoading(true)
@@ -184,7 +183,7 @@ export default function UserProfilePage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const method = profile.isLiked ? 'DELETE' : 'POST'
-      const response = await fetch(`${apiUrl}/api/likes/${userId}`, {
+      const response = await fetch(`${apiUrl}/api/likes/${profile.id}`, {
         method,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -204,7 +203,6 @@ export default function UserProfilePage() {
 
       const result = await response.json()
 
-      // Update profile state with new like status
       setProfile((prev) => ({
         ...prev!,
         isLiked: !prev!.isLiked,
@@ -222,14 +220,14 @@ export default function UserProfilePage() {
   }
 
   const handleBlock = async () => {
-    if (!userId || !profile || actionLoading) return
+    if (!profile || actionLoading) return
     try {
       setActionLoading(true)
       if (profile.isBlocked) {
-        await apiUnblock(Number(userId))
+        await apiUnblock(profile.id)
         setProfile({ ...profile, isBlocked: false })
       } else {
-        await apiBlock(Number(userId))
+        await apiBlock(profile.id)
         setProfile({ ...profile, isBlocked: true, isLiked: false, isMatch: false })
       }
     } catch (err) {
@@ -240,10 +238,10 @@ export default function UserProfilePage() {
   }
 
   const handleReport = async () => {
-    if (!userId || !profile || actionLoading) return
+    if (!profile || actionLoading) return
     try {
       setActionLoading(true)
-      await apiReport(Number(userId), reportReason, reportDescription || undefined)
+      await apiReport(profile.id, reportReason, reportDescription || undefined)
       setProfile({ ...profile, isReported: true, isLiked: false, isMatch: false })
       setShowReportModal(false)
       toast.success('User reported successfully')
@@ -254,7 +252,6 @@ export default function UserProfilePage() {
     }
   }
 
-  // Touch handlers for mobile swipe
   const minSwipeDistance = 50
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -454,7 +451,6 @@ export default function UserProfilePage() {
               {/* Tags */}
               {profile.tags && profile.tags.length > 0 && (
                 <div>
-                  {/* <h2 className="font-semibold text-custom-medium mb-3">Tags</h2> */}
                   <div className="flex flex-wrap justify-center gap-2">
                     {profile.tags.map((tag) => (
                       <span

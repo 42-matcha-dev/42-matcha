@@ -102,7 +102,7 @@ export default function NotificationsClient() {
       case 'LIKE':
       case 'VIEW':
       case 'UNLIKE':
-        if (n.reference_id) router.push(`/user/${n.reference_id}`)
+        router.push(`/profile/${n.username}`)
         break
     }
   }

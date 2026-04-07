@@ -324,7 +324,7 @@ export default function Dashboard() {
                     <li key={user.id}>
                       <button
                         type="button"
-                        onClick={() => router.push(`/user/${user.id}`)}
+                        onClick={() => router.push(`/profile/${user.username}`)}
                         className="flex items-center gap-3 py-3 w-full hover:bg-gray-50 rounded px-2"
                       >
                         {user.icon_url ? (
