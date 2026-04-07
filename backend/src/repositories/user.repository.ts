@@ -96,21 +96,9 @@ export const userRepository = {
         u.longitude,
         u.icon_url,
         u.photo_urls,
+        u.fame_rating,
         u.is_online,
         u.last_seen_at,
-
-        -- fame rating
-        LEAST(
-          100,
-          (
-            SELECT
-              COUNT(*) FILTER (WHERE n.type = 'LIKE') * 5 +
-              COUNT(*) FILTER (WHERE n.type = 'VIEW') * 1 +
-              COUNT(*) FILTER (WHERE n.type = 'MATCH') * 10
-            FROM notifications n
-            WHERE n.user_id = u.id
-          )
-        ) AS fame_rating,
 
         -- distance from current user
         6371 * acos(
@@ -127,7 +115,6 @@ export const userRepository = {
           AND
           (u.id != me.id)
         ) AS can_like
-
 
       FROM users u
       JOIN users me ON me.id = $2
@@ -370,7 +357,7 @@ export const userRepository = {
         orderByClause = `ORDER BY ru.fame_rating ${sortOrder}, ru.distance ASC`
         break
       case 'tags':
-        orderByClause = `ORDER BY ru.fame_rating ${sortOrder}, ru.distance ASC`
+        orderByClause = `ORDER BY COALESCE(json_array_length(ru.common_tags), 0) ${sortOrder}, ru.distance ASC`
         break
       case 'distance':
       default:
@@ -379,7 +366,7 @@ export const userRepository = {
     }
 
     const baseQuery = `
-      WITH ranked_users AS (
+      WITH base_users AS (
         SELECT
           u.id,
           u.username,
@@ -391,22 +378,12 @@ export const userRepository = {
           u.location,
           u.icon_url,
           u.photo_urls[1] AS photo_url,
+          u.fame_rating,
           6371 * acos(
             cos(radians(me.latitude)) * cos(radians(u.latitude)) *
             cos(radians(u.longitude) - radians(me.longitude)) +
             sin(radians(me.latitude)) * sin(radians(u.latitude))
           ) AS distance,
-          LEAST(
-            100,
-            (
-              SELECT
-                COUNT(*) FILTER (WHERE n.type = 'LIKE') * 5 +
-                COUNT(*) FILTER (WHERE n.type = 'VIEW') * 1 +
-                COUNT(*) FILTER (WHERE n.type = 'MATCH') * 10
-              FROM notifications n
-              WHERE n.user_id = u.id
-            )
-          ) AS fame_rating,
           (
             SELECT json_agg(t.name)
             FROM tags t
@@ -423,7 +400,7 @@ export const userRepository = {
     const searchQuery = `
       ${baseQuery}
       SELECT ru.*
-      FROM ranked_users ru
+      FROM base_users ru
       JOIN users me ON me.id = $1
       WHERE ${whereConditions}
       ${orderByClause}
@@ -435,7 +412,7 @@ export const userRepository = {
     const countQuery = `
       ${baseQuery}
       SELECT COUNT(*) as total
-      FROM ranked_users ru
+      FROM base_users ru
       JOIN users me ON me.id = $1
       WHERE ${whereConditions}
     `
