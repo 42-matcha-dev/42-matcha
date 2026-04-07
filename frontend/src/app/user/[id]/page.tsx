@@ -43,6 +43,7 @@ interface UserProfile {
   createdAt: string
   updatedAt: string
   isLiked: boolean
+  hasLikedMe: boolean
   isMatch: boolean
   conversationId?: number
   isBlocked?: boolean
@@ -339,8 +340,20 @@ export default function UserProfilePage() {
                 )}
                 {/* Name and Info */}
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold mb-3">
+                  <h1 className="text-3xl font-bold mb-3 flex items-center gap-2">
                     {displayName}, {age}
+
+                    {profile.isMatch && (
+                      <span className="px-2 py-1 text-xs bg-primary text-white rounded">
+                        Match
+                      </span>
+                    )}
+
+                    {!profile.isMatch && profile.hasLikedMe && (
+                      <span className="px-2 py-1 text-xs bg-[#FCE7F3] text-[#9D174D] rounded">
+                        Liked you
+                      </span>
+                    )}
                   </h1>
                   {/* Online status text */}
                   <p className="text-sm mb-2 text-custom-medium" style={{ color: profile.isOnline ? '#22c553' : '#9ca3af' }}>
