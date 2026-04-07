@@ -1,6 +1,7 @@
 import { likeRepository } from '../repositories/like.repository.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { notificationService } from './notification.service.js';
+import { fameRatingService } from './fameRating.service.js';
 import { HttpError } from '../errors/HttpError.js';
 import { blockRepository } from '../repositories/block.repository.js';
 import { reportRepository } from '../repositories/report.repository.js';
@@ -44,6 +45,10 @@ export const likeService = {
     // Create the like
     await likeRepository.createLike(likerId, likedId);
 
+    // Clear any stale UNLIKE from a previous unlike cycle (both directions)
+    await notificationService.deleteNotification(likedId, likerId, "UNLIKE");
+    await notificationService.deleteNotification(likerId, likedId, "UNLIKE");
+
     // Check for mutual like (match)
     const isMatch = await likeRepository.checkMutualLike(likerId, likedId);
     let conversationId: number | null = null;
@@ -52,6 +57,9 @@ export const likeService = {
       // Send LIKE notification to the liked user
       await notificationService.createNotification(likedId, likerId, "LIKE", likerId);
     } else {
+      // Clear the old LIKE notification (now superseded by MATCH)
+      await notificationService.deleteNotification(likerId, likedId, "LIKE");
+
       const user1 = Math.min(likerId, likedId);
       const user2 = Math.max(likerId, likedId);
 
@@ -69,6 +77,10 @@ export const likeService = {
       await notificationService.createNotification(likedId, likerId, "MATCH", conversation.id);
     }
 
+
+    fameRatingService.refresh().catch(err =>
+      console.error('❌ Fame rating refresh failed after like:', err)
+    )
 
     return {
       success: true,
@@ -91,8 +103,14 @@ export const likeService = {
     await notificationService.deleteNotification(likerId, likedId, "MATCH");
     await notificationService.deleteNotification(likedId, likerId, "MATCH");
     if (wasMatch) {
+      await likeRepository.deleteLike(likedId, likerId);
       await conversationRepository.removeConversation(likerId, likedId);
+      await notificationService.createNotification(likedId, likerId, "UNLIKE", likerId);
     }
+
+    fameRatingService.refresh().catch(err =>
+      console.error('❌ Fame rating refresh failed after unlike:', err)
+    )
 
     return {
       success: true,

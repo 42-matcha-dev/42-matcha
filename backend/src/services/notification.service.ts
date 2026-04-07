@@ -29,7 +29,7 @@ export const notificationService = {
     deleteNotification: async (userId: number, actorId: number, type: NotificationType ) => {
         const result = await notificationRepository.deleteNotification(userId, actorId, type);
         if (result) {
-            notificationEmitter.emit('notification:deleted', { userId });
+            notificationEmitter.emit('notification:deleted', { userId, notification: { userId, actorId, type } });
         }
         return result;
     },

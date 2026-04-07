@@ -3,6 +3,7 @@ import { likeRepository } from '../repositories/like.repository.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { blockRepository } from '../repositories/block.repository.js';
 import { notificationService } from './notification.service.js';
+import { fameRatingService } from './fameRating.service.js';
 
 
 const VALID_REASONS: ReportReason[] = ['FAKE_ACCOUNT', 'SPAM', 'HARASSMENT', 'INAPPROPRIATE', 'OTHER'];
@@ -42,6 +43,10 @@ export const reportService = {
       notificationService.deleteNotification(reporterId, reportedId, "VIEW"),
       notificationService.deleteNotification(reportedId, reporterId, "VIEW"),
     ]);
+
+    fameRatingService.refresh().catch(err =>
+      console.error('❌ Fame rating refresh failed after report:', err)
+    )
 
     return {
       success: true,

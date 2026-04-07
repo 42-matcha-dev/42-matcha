@@ -47,19 +47,27 @@ export default function NotificationsClient() {
       }
     }
     fetchNotifications()
-  }, [])
+  }, [router])
 
   useEffect(() => {
     const socket = getSocket()
     const onNewNotification = (notification: Notification) => {
       setNotifications(prev => {
         if (prev.some(n => n.id === notification.id)) return prev
-        return [notification, ...prev]
+        const filtered = prev.filter(
+          n => !(n.actor_id === notification.actor_id && isSuperseded(n.type, notification.type))
+        )
+        return [notification, ...filtered]
       })
     }
+    const onRemoveNotification = ({ actorId, type }: { userId: number; actorId: number; type: Notification['type'] }) => {
+      setNotifications(prev => prev.filter(n => !(n.actor_id === actorId && n.type === type)))
+    }
     socket.on('newNotification', onNewNotification)
+    socket.on('removeNotification', onRemoveNotification)
     return () => {
       socket.off('newNotification', onNewNotification)
+      socket.off('removeNotification', onRemoveNotification)
     }
   }, [])
 
@@ -145,6 +153,13 @@ export default function NotificationsClient() {
       </div>
     </div>
   )
+}
+
+function isSuperseded(existing: Notification['type'], incoming: Notification['type']): boolean {
+  if (incoming === 'MATCH' && (existing === 'LIKE' || existing === 'UNLIKE')) return true
+  if (incoming === 'UNLIKE' && existing === 'MATCH') return true
+  if (incoming === 'LIKE' && existing === 'UNLIKE') return true
+  return false
 }
 
 function renderNotificationText(n: Notification) {

@@ -3,6 +3,7 @@ import { likeRepository } from '../repositories/like.repository.js';
 import { conversationRepository } from '../repositories/conversation.repository.js';
 import { reportRepository } from '../repositories/report.repository.js';
 import { notificationService } from './notification.service.js';
+import { fameRatingService } from './fameRating.service.js';
 
 export const blockService = {
   blockUser: async (blockerId: number, blockedId: number) => {
@@ -35,7 +36,13 @@ export const blockService = {
       notificationService.deleteNotification(blockedId, blockerId, "MATCH"),
       notificationService.deleteNotification(blockerId, blockedId, "VIEW"),
       notificationService.deleteNotification(blockedId, blockerId, "VIEW"),
+      notificationService.deleteNotification(blockerId, blockedId, "UNLIKE"),
+      notificationService.deleteNotification(blockedId, blockerId, "UNLIKE"),
     ]);
+
+    fameRatingService.refresh().catch(err =>
+      console.error('❌ Fame rating refresh failed after block:', err)
+    )
 
     return {
       success: true,
