@@ -52,7 +52,10 @@ export const login = async (req: Request, res: Response) => {
     const { user, token } = await authService.login(identifier, password)
     res.status(200).json({ message: 'Login successful', user, token })
   } catch (error) {
-    res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid input' })
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: error.message })
+    }
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Invalid input' })
   }
 }
 

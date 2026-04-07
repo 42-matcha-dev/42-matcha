@@ -91,10 +91,14 @@ export const authService = {
 
   login: async (identifier: string, password: string) => {
     const user = await authRepository.findUserByIdentifier(identifier)
-    if (!user) throw new Error('Invalid email or password')
+    if (!user) {
+      throw new HttpError(401, 'Invalid credentials')
+    }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
-    if (!isValidPassword) throw new Error('Invalid email or password')
+    if (!isValidPassword) {
+      throw new HttpError(401, 'Invalid credentials')
+    }
 
     // Generate JWT token
     const token = generateToken({
