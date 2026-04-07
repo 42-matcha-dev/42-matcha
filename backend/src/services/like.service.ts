@@ -45,8 +45,9 @@ export const likeService = {
     // Create the like
     await likeRepository.createLike(likerId, likedId);
 
-    // Clear any stale UNLIKE from a previous unlike cycle
+    // Clear any stale UNLIKE from a previous unlike cycle (both directions)
     await notificationService.deleteNotification(likedId, likerId, "UNLIKE");
+    await notificationService.deleteNotification(likerId, likedId, "UNLIKE");
 
     // Check for mutual like (match)
     const isMatch = await likeRepository.checkMutualLike(likerId, likedId);
@@ -101,9 +102,10 @@ export const likeService = {
     await notificationService.deleteNotification(likedId, likerId, "LIKE");
     await notificationService.deleteNotification(likerId, likedId, "MATCH");
     await notificationService.deleteNotification(likedId, likerId, "MATCH");
-    await notificationService.createNotification(likedId, likerId, "UNLIKE", likerId);
     if (wasMatch) {
+      await likeRepository.deleteLike(likedId, likerId);
       await conversationRepository.removeConversation(likerId, likedId);
+      await notificationService.createNotification(likedId, likerId, "UNLIKE", likerId);
     }
 
     fameRatingService.refresh().catch(err =>
