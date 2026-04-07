@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import AppLayout from '../layouts/AppLayout'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { toast } from 'sonner'
@@ -240,13 +241,16 @@ export default function SettingsPage() {
                       <li key={user.id} className="flex items-center justify-between py-3">
                         <button
                           type="button"
-                          onClick={() => router.push(`/user/${user.id}`)}
+                          onClick={() => router.push(`/profile/${user.username}`)}
                           className="flex items-center gap-3 hover:opacity-80"
                         >
                           {user.icon_url ? (
-                            <img
+                            <Image
                               src={user.icon_url}
                               alt={user.username}
+                              width={40}
+                              height={40}
+                              unoptimized
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (

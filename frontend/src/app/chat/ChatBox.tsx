@@ -280,7 +280,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         </button>
         <button
           type="button"
-          onClick={() => otherUser && router.push(`/user/${otherUser.id}`)}
+          onClick={() => otherUser && router.push(`/profile/${otherUser.username}`)}
           className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-[#01AA85]"
           aria-label={`View ${fullName}'s profile`}
         >
@@ -294,7 +294,7 @@ const ChatBox = ({ conversationId }: ChatBoxProps) => {
         </button>
         <button
           type="button"
-          onClick={() => otherUser && router.push(`/user/${otherUser.id}`)}
+          onClick={() => otherUser && router.push(`/profile/${otherUser.username}`)}
           className="ml-2 flex-1 text-left focus:outline-none"
           aria-label={`View ${fullName}'s profile`}
         >

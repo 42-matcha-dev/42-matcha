@@ -28,7 +28,7 @@ const UserCard = ({ user }: UserCardProps) => {
   const router = useRouter()
 
   const handleCardClick = () => {
-    router.push(`/user/${user.id}`)
+    router.push(`/profile/${user.username}`)
   }
 
   return (
