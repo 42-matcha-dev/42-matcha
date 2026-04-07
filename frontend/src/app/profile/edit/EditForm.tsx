@@ -18,6 +18,7 @@ import { apiFetch } from '@/utils/apiClient'
 import { getCookie, deleteCookie } from '@/utils/cookie.util'
 import { getArrayFieldError } from '@/utils/getArrayError'
 import { normalizePhotoUrls, compactPhotoUrls } from '@/utils/photo.utils'
+import { usernameSchema } from '@/app/schema'
 
 interface Tag {
   id: number
@@ -46,6 +47,7 @@ type ProfileEditSchema = z.infer<typeof profileEditSchema>
 export default function EditForm() {
   const router = useRouter()
   const [currentUsername, setCurrentUsername] = useState<string>('')
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
   const {
     register,
     handleSubmit,
@@ -73,6 +75,7 @@ export default function EditForm() {
         setCurrentUsername(user.username ?? '')
 
         reset({
+          username: user.username ?? '',
           firstName: user.firstName,
           lastName: user.lastName,
           birthday: user.birthday?.split('T')[0],
@@ -94,6 +97,36 @@ export default function EditForm() {
     }
     loadProfile()
   }, [reset])
+
+  const { onBlur: rhfUsernameBlur, onChange: rhfUsernameChange, ...usernameRegisterProps } = register('username')
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    rhfUsernameChange(e)
+    setUsernameStatus('idle')
+  }
+
+  const handleUsernameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    await rhfUsernameBlur(e)
+    const value = e.target.value
+    if (!value || value === currentUsername) {
+      setUsernameStatus('idle')
+      return
+    }
+    const isValid = usernameSchema.safeParse(value).success
+    if (!isValid) {
+      setUsernameStatus('idle')
+      return
+    }
+    setUsernameStatus('checking')
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+      const res = await fetch(`${apiUrl}/api/users/check-username?username=${encodeURIComponent(value)}`)
+      const data = await res.json()
+      setUsernameStatus(data.available ? 'available' : 'taken')
+    } catch {
+      setUsernameStatus('idle')
+    }
+  }
 
   const onSubmit = async (data: ProfileEditSchema) => {
     try {
@@ -168,13 +201,19 @@ export default function EditForm() {
             label="Username"
             type="text"
             error={errors.username}
-            {...register('username')}
+            {...usernameRegisterProps}
+            onChange={handleUsernameChange}
+            onBlur={handleUsernameBlur}
           />
-          <p className="text-sm text-gray-400">
-            {currentUsername
-              ? `Current: @${currentUsername} — leave blank to keep it`
-              : 'Leave blank to keep your current username'}
-          </p>
+          {!errors.username && usernameStatus === 'checking' && (
+            <p className="text-gray-400 text-sm">Checking...</p>
+          )}
+          {!errors.username && usernameStatus === 'available' && (
+            <p className="text-green-500 text-sm">✓ Available</p>
+          )}
+          {!errors.username && usernameStatus === 'taken' && (
+            <p className="text-red-500 text-sm">✗ Username is already taken</p>
+          )}
         </div>
 
         <InputForm
