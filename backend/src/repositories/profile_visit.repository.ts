@@ -13,17 +13,20 @@ export const profileVisitRepository = {
 
   getVisitors: async (visitedId: number) => {
     const query = `
-      SELECT DISTINCT ON (pv.visitor_id)
-        pv.visitor_id AS id,
-        u.username,
-        u.first_name,
-        u.last_name,
-        u.icon_url,
-        pv.created_at
-      FROM profile_visits pv
-      JOIN users u ON u.id = pv.visitor_id
-      WHERE pv.visited_id = $1
-      ORDER BY pv.visitor_id, pv.created_at DESC
+      SELECT * FROM (
+        SELECT DISTINCT ON (pv.visitor_id)
+          pv.visitor_id AS id,
+          u.username,
+          u.first_name,
+          u.last_name,
+          u.icon_url,
+          pv.created_at
+        FROM profile_visits pv
+        JOIN users u ON u.id = pv.visitor_id
+        WHERE pv.visited_id = $1
+        ORDER BY pv.visitor_id, pv.created_at DESC
+      ) latest_visits
+      ORDER BY created_at DESC
     `;
     const res = await pool.query(query, [visitedId]);
     return res.rows;
