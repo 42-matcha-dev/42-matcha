@@ -5,12 +5,13 @@ import { createTagTable } from '../models/tag.model.js';
 import { createUserTagsTable } from '../models/user_tags.model.js';
 import { createLikeTable } from '../models/like.model.js';
 import { createBlockTable } from '../models/block.model.js';
-import { createConversationTable } from '../models/converstation.model.js';
+import { createConversationTable } from '../models/conversation.model.js';
 import { createMessageTable } from '../models/messages.model.js';
 import { createNotificationTable } from '../models/notification.model.js';
 import { createReportTable } from '../models/report.model.js';
 import { createPasswordResetTable } from '../models/password_reset.model.js';
 import { createChangeEmailTable } from '../models/change_email.model.js';
+import { createProfileVisitTable } from '../models/profile_visit.model.js';
 
 let pool: any;
 
@@ -47,6 +48,7 @@ export const initDB = async () => {
       await pool.query(createReportTable);
       await pool.query(createPasswordResetTable);
       await pool.query(createChangeEmailTable);
+      await pool.query(createProfileVisitTable);
       console.log('✅ Database initialized');
       return;
     } catch (err) {

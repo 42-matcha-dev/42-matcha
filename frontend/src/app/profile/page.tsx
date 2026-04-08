@@ -46,7 +46,8 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
   const [likesSent, setLikesSent] = useState<LikeUser[]>([])
   const [likesReceived, setLikesReceived] = useState<LikeUser[]>([])
-  const [likesTab, setLikesTab] = useState<'sent' | 'received'>('received')
+  const [visitors, setVisitors] = useState<LikeUser[]>([])
+  const [likesTab, setLikesTab] = useState<'received' | 'sent' | 'visitors'>('received')
   const [likesLoading, setLikesLoading] = useState(true)
   const router = useRouter()
 
@@ -96,12 +97,14 @@ export default function Dashboard() {
         const token = getCookie('token')
         if (!token) return
         const apiUrl = process.env.NEXT_PUBLIC_API_URL
-        const [sentRes, receivedRes] = await Promise.all([
+        const [sentRes, receivedRes, visitorsRes] = await Promise.all([
           fetch(`${apiUrl}/api/likes/likes`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${apiUrl}/api/likes/liked-by`, { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${apiUrl}/api/likes/liked-by`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${apiUrl}/api/users/visitors`, { headers: { Authorization: `Bearer ${token}` } })
         ])
         if (sentRes.ok) setLikesSent(await sentRes.json())
         if (receivedRes.ok) setLikesReceived(await receivedRes.json())
+        if (visitorsRes.ok) setVisitors(await visitorsRes.json())
       } catch {
         /* non-critical */
       } finally {
@@ -185,7 +188,7 @@ export default function Dashboard() {
                 <div className="flex justify-center mb-6">
                   <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
                     <span className="text-4xl text-gray-500">
-                      {profile.firstName?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
+                      {profile.firstName?.[0]?.toUpperCase() || profile.email?.[0]?.toUpperCase() || '?'}
                     </span>
                   </div>
                 </div>
@@ -282,7 +285,7 @@ export default function Dashboard() {
 
         {/* Likes Section */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 mt-8">
-          <h2 className="text-2xl font-semibold mb-4 text-black">Likes</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-black">Activity</h2>
           <div className="flex border-b border-gray-200 mb-4">
             <button
               type="button"
@@ -293,7 +296,7 @@ export default function Dashboard() {
                   : 'text-gray-500 hover:text-black'
               }`}
             >
-              Received ({likesReceived.length})
+              Likes Received ({likesReceived.length})
             </button>
             <button
               type="button"
@@ -304,7 +307,18 @@ export default function Dashboard() {
                   : 'text-gray-500 hover:text-black'
               }`}
             >
-              Sent ({likesSent.length})
+              Likes Sent ({likesSent.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLikesTab('visitors')}
+              className={`px-4 py-2 text-sm font-medium -mb-px ${
+                likesTab === 'visitors'
+                  ? 'border-b-2 border-black text-black'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              Visitors ({visitors.length})
             </button>
           </div>
 
@@ -312,15 +326,17 @@ export default function Dashboard() {
 
           {!likesLoading && (
             <>
-              {(likesTab === 'received' ? likesReceived : likesSent).length === 0 ? (
+              {(likesTab === 'received' ? likesReceived : likesTab === 'sent' ? likesSent : visitors).length === 0 ? (
                 <p className="text-gray-500 text-sm">
                   {likesTab === 'received'
                     ? 'No one has liked you yet.'
-                    : "You haven't liked anyone yet."}
+                    : likesTab === 'sent'
+                      ? "You haven't liked anyone yet."
+                      : 'No one has visited your profile yet.'}
                 </p>
               ) : (
                 <ul className="divide-y divide-gray-100">
-                  {(likesTab === 'received' ? likesReceived : likesSent).map((user) => (
+                  {(likesTab === 'received' ? likesReceived : likesTab === 'sent' ? likesSent : visitors).map((user) => (
                     <li key={user.id}>
                       <button
                         type="button"
@@ -328,9 +344,12 @@ export default function Dashboard() {
                         className="flex items-center gap-3 py-3 w-full hover:bg-gray-50 rounded px-2"
                       >
                         {user.icon_url ? (
-                          <img
+                          <Image
                             src={user.icon_url}
                             alt={user.username}
+                            width={40}
+                            height={40}
+                            unoptimized
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (

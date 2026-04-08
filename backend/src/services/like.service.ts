@@ -5,6 +5,7 @@ import { fameRatingService } from './fameRating.service.js';
 import { HttpError } from '../errors/HttpError.js';
 import { blockRepository } from '../repositories/block.repository.js';
 import { reportRepository } from '../repositories/report.repository.js';
+import pool from '../database/init.js';
 
 export const likeService = {
   likeUser: async (likerId: number, likedId: number) => {
@@ -13,12 +14,19 @@ export const likeService = {
       throw new HttpError(400, 'Cannot like yourself');
     }
 
-    const [isBlocked, isBlockedBy, isReported, isReportedBy] = await Promise.all([
+    const [likerRow, isBlocked, isBlockedBy, isReported, isReportedBy] = await Promise.all([
+      pool.query('SELECT icon_url, photo_urls FROM users WHERE id = $1', [likerId]),
       blockRepository.checkBlockExists(likerId, likedId),
       blockRepository.checkBlockExists(likedId, likerId),
       reportRepository.checkReportExists(likerId, likedId),
       reportRepository.checkReportExists(likedId, likerId),
     ]);
+
+    const liker = likerRow.rows[0];
+    const hasProfilePicture = liker?.icon_url || (Array.isArray(liker?.photo_urls) && liker.photo_urls.length > 0);
+    if (!hasProfilePicture) {
+      throw new HttpError(403, 'You must have a profile picture to like someone');
+    }
     
     // Block checks - separate messages
     if (isBlocked) {
@@ -103,7 +111,6 @@ export const likeService = {
     await notificationService.deleteNotification(likerId, likedId, "MATCH");
     await notificationService.deleteNotification(likedId, likerId, "MATCH");
     if (wasMatch) {
-      await likeRepository.deleteLike(likedId, likerId);
       await conversationRepository.removeConversation(likerId, likedId);
       await notificationService.createNotification(likedId, likerId, "UNLIKE", likerId);
     }

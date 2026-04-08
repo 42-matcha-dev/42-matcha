@@ -3,6 +3,7 @@ import { likeRepository } from '../repositories/like.repository.js'
 import { blockRepository } from '../repositories/block.repository.js'
 import { reportRepository } from '../repositories/report.repository.js'
 import { conversationRepository } from '../repositories/conversation.repository.js'
+import { profileVisitRepository } from '../repositories/profile_visit.repository.js'
 import { notificationService } from './notification.service.js'
 import { HttpError } from '../errors/HttpError.js'
 import type { SearchUsersSchema } from '../schemas/search.schema.js'
@@ -46,6 +47,7 @@ export const userService = {
         const conv = await conversationRepository.getConversationByUserIds(u1, u2)
         conversationId = conv?.id ?? null
       }
+      await profileVisitRepository.createVisit(currentUserId, userId)
       await notificationService.createNotification(userId, currentUserId, 'VIEW', currentUserId)
     }
 

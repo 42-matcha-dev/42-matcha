@@ -43,6 +43,7 @@ export const config = {
     '/profile/:path*',
     '/chat/:path*',
     '/notifications/:path*',
+    '/settings/:path*',
   ],
 };
 
