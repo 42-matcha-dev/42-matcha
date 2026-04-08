@@ -1,5 +1,6 @@
 import express from 'express'
 import { userRepository } from '../repositories/user.repository.js'
+import { profileVisitRepository } from '../repositories/profile_visit.repository.js'
 import { type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 import { userService } from '../services/user.service.js'
 import { emailChangeService } from '../services/change_email.service.js'
@@ -143,5 +144,17 @@ export const searchUsers = async (
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Server error'
     })
+  }
+}
+
+export const getVisitors = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' })
+    }
+    const visitors = await profileVisitRepository.getVisitors(req.user.userId)
+    return res.status(200).json(visitors)
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error' })
   }
 }
