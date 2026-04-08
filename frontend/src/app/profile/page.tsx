@@ -185,7 +185,7 @@ export default function Dashboard() {
                 <div className="flex justify-center mb-6">
                   <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
                     <span className="text-4xl text-gray-500">
-                      {profile.firstName?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
+                      {profile.firstName?.[0]?.toUpperCase() || profile.email?.[0]?.toUpperCase() || '?'}
                     </span>
                   </div>
                 </div>

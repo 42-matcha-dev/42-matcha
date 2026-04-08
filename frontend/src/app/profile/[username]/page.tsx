@@ -331,7 +331,7 @@ export default function UserProfilePage() {
                 ) : (
                   <div className="w-36 h-36 rounded-full bg-custom-light flex items-center justify-center flex-shrink-0">
                     <span className="text-5xl text-custom-medium">
-                      {profile.firstName?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
+                      {profile.firstName?.[0]?.toUpperCase() || profile.username?.[0]?.toUpperCase() || '?'}
                     </span>
                   </div>
                 )}
