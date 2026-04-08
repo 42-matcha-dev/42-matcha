@@ -15,14 +15,16 @@ export const likeService = {
     }
 
     const [likerRow, isBlocked, isBlockedBy, isReported, isReportedBy] = await Promise.all([
-      pool.query('SELECT icon_url FROM users WHERE id = $1', [likerId]),
+      pool.query('SELECT icon_url, photo_urls FROM users WHERE id = $1', [likerId]),
       blockRepository.checkBlockExists(likerId, likedId),
       blockRepository.checkBlockExists(likedId, likerId),
       reportRepository.checkReportExists(likerId, likedId),
       reportRepository.checkReportExists(likedId, likerId),
     ]);
 
-    if (!likerRow.rows[0]?.icon_url) {
+    const liker = likerRow.rows[0];
+    const hasProfilePicture = liker?.icon_url || (Array.isArray(liker?.photo_urls) && liker.photo_urls.length > 0);
+    if (!hasProfilePicture) {
       throw new HttpError(403, 'You must have a profile picture to like someone');
     }
     
