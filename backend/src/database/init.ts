@@ -5,7 +5,7 @@ import { createTagTable } from '../models/tag.model.js';
 import { createUserTagsTable } from '../models/user_tags.model.js';
 import { createLikeTable } from '../models/like.model.js';
 import { createBlockTable } from '../models/block.model.js';
-import { createConversationTable } from '../models/converstation.model.js';
+import { createConversationTable } from '../models/conversation.model.js';
 import { createMessageTable } from '../models/messages.model.js';
 import { createNotificationTable } from '../models/notification.model.js';
 import { createReportTable } from '../models/report.model.js';
