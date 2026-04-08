@@ -6,7 +6,8 @@ import {
   getUserByUsername,
   searchUsers,
   updateCurrentUser,
-  updateCurrentUserEmail
+  updateCurrentUserEmail,
+  getVisitors
 } from '../controllers/user.controller.js'
 import { authenticateToken } from '../middleware/auth.middleware.js'
 import { validateBody, validateQuery } from '../middleware/validate.middleware.js'
@@ -20,6 +21,7 @@ router.get('/me', authenticateToken, getProfile)
 router.patch('/me', authenticateToken, validateBody(updateProfileSchema), updateCurrentUser)
 router.patch('/me/email', authenticateToken, updateCurrentUserEmail)
 router.get('/search', authenticateToken, validateQuery(searchUsersShema), searchUsers)
+router.get('/visitors', authenticateToken, getVisitors)
 router.get('/username/:username', authenticateToken, getUserByUsername)
 router.get('/:id', authenticateToken, getUserById)
 
